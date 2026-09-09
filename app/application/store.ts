@@ -7,6 +7,7 @@ import {
   STORAGE_KEY,
   validateDataset,
   type WorkspaceState,
+  type Analysis,
 } from './model';
 const initial: WorkspaceState = {
   version: 1,
@@ -20,6 +21,44 @@ let error = '';
 const listeners = new Set<() => void>();
 function notify() {
   listeners.forEach((l) => l());
+}
+function validAnalysis(value: unknown): boolean {
+  const a = value as Analysis | undefined;
+  return Boolean(
+    a &&
+    typeof a.title === 'string' &&
+    typeof a.summary === 'string' &&
+    typeof a.recommendation === 'string' &&
+    typeof a.chartTitle === 'string' &&
+    Array.isArray(a.columns) &&
+    a.columns.every((c) => typeof c === 'string') &&
+    Array.isArray(a.rows) &&
+    a.rows.every(
+      (row) => Array.isArray(row) && row.every((c) => typeof c === 'string'),
+    ) &&
+    Array.isArray(a.basis) &&
+    a.basis.every((b) => typeof b === 'string') &&
+    Array.isArray(a.metrics) &&
+    a.metrics.every(
+      (m) =>
+        m &&
+        typeof m.label === 'string' &&
+        typeof m.value === 'string' &&
+        typeof m.detail === 'string',
+    ) &&
+    Array.isArray(a.bars) &&
+    a.bars.every(
+      (b) =>
+        b &&
+        typeof b.label === 'string' &&
+        Number.isFinite(b.value) &&
+        typeof b.display === 'string',
+    ) &&
+    Array.isArray(a.steps) &&
+    a.steps.every(
+      (s) => s && typeof s.title === 'string' && typeof s.body === 'string',
+    ),
+  );
 }
 function hydrate() {
   if (typeof window === 'undefined' || hydrated) return;
@@ -57,40 +96,7 @@ function hydrate() {
         typeof r.name === 'string' &&
         typeof r.createdAt === 'string' &&
         r.inputs &&
-        r.analysis &&
-        typeof r.analysis.title === 'string' &&
-        typeof r.analysis.summary === 'string' &&
-        Array.isArray(r.analysis.columns) &&
-        r.analysis.columns.every((c) => typeof c === 'string') &&
-        Array.isArray(r.analysis.rows) &&
-        r.analysis.rows.every(
-          (row) =>
-            Array.isArray(row) && row.every((c) => typeof c === 'string'),
-        ) &&
-        Array.isArray(r.analysis.basis) &&
-        r.analysis.basis.every((b) => typeof b === 'string') &&
-        typeof r.analysis.recommendation === 'string' &&
-        typeof r.analysis.chartTitle === 'string' &&
-        Array.isArray(r.analysis.metrics) &&
-        r.analysis.metrics.every(
-          (m) =>
-            m &&
-            typeof m.label === 'string' &&
-            typeof m.value === 'string' &&
-            typeof m.detail === 'string',
-        ) &&
-        Array.isArray(r.analysis.bars) &&
-        r.analysis.bars.every(
-          (b) =>
-            b &&
-            typeof b.label === 'string' &&
-            Number.isFinite(b.value) &&
-            typeof b.display === 'string',
-        ) &&
-        Array.isArray(r.analysis.steps) &&
-        r.analysis.steps.every(
-          (s) => s && typeof s.title === 'string' && typeof s.body === 'string',
-        ),
+        validAnalysis(r.analysis),
     );
     parsed.drafts = Object.fromEntries(
       Object.entries(parsed.drafts)
@@ -103,6 +109,33 @@ function hydrate() {
         .map(([id, draft]) => [
           id,
           { ...defaultInputs[id as keyof typeof defaultInputs], ...draft },
+        ]),
+    );
+    parsed.conversations = Object.fromEntries(
+      Object.entries(parsed.conversations ?? {})
+        .filter(
+          ([id, turns]) =>
+            modules.some((m) => m.id === id) && Array.isArray(turns),
+        )
+        .map(([id, turns]) => [
+          id,
+          turns
+            .filter(
+              (t) =>
+                t &&
+                typeof t.id === 'string' &&
+                typeof t.question === 'string' &&
+                typeof t.answer === 'string' &&
+                typeof t.createdAt === 'string' &&
+                typeof t.sourceName === 'string' &&
+                (t.sourceOrigin === 'sample' || t.sourceOrigin === 'local') &&
+                t.inputs &&
+                typeof t.inputs === 'object' &&
+                Object.values(t.inputs).every((v) => typeof v === 'string') &&
+                (!t.analysis || validAnalysis(t.analysis)) &&
+                (!t.savedRecordId || typeof t.savedRecordId === 'string'),
+            )
+            .slice(-20),
         ]),
     );
     snapshot = parsed;

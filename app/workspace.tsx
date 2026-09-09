@@ -184,7 +184,9 @@ export default function Workspace({ path = '/' }: { path?: string }) {
             </Button>
           </div>
         </header>
-        <div className="application-content">
+        <div
+          className={'application-content' + (activeModule ? ' is-chat' : '')}
+        >
           {(message || storageMessage()) && (
             <output className="app-message">
               {message || storageMessage()}
@@ -209,10 +211,12 @@ export default function Workspace({ path = '/' }: { path?: string }) {
           ) : (
             <DataManager state={state} navigate={navigate} />
           )}
-          <footer className="application-footer">
-            <span>丰宾电子 · 智能制造平台</span>
-            <span>工作记录保存在当前浏览器</span>
-          </footer>
+          {!activeModule && (
+            <footer className="application-footer">
+              <span>丰宾电子 · 智能制造平台</span>
+              <span>工作记录保存在当前浏览器</span>
+            </footer>
+          )}
         </div>
       </main>
     </SidebarProvider>

@@ -1,26 +1,14 @@
-# 丰宾电子 POC design
+# 丰宾电子智能制造平台设计
 
-## Scene and direction
-客户业务负责人坐在明亮会议室，演示者用笔记本与投屏讲解五个智能体。白色内容页与石墨色导航提供稳固层级；铜橙仅用于当前场景和主要动作。
+用户在明亮办公室和会议室使用电脑处理制造业务。保留铜橙品牌动作色，使用深石墨导航、简洁的品牌展示区与明亮工作面。
 
-## Color strategy
-Restrained. Pure white background, neutral secondary surface, graphite navigation, copper-orange primary.
-- Background: oklch(1 0 0)
-- Surface: oklch(.975 0 0)
-- Ink: oklch(.25 .008 60)
-- Muted: oklch(.49 .008 60)
-- Primary: oklch(.54 .135 55)
-- Sidebar: oklch(.22 .006 60)
-- Positive: oklch(.42 .09 160)
+## 智能体广场
+五张独立卡片是用户指定的入口结构。每张使用固定身份图标与专业色标，配合真实资料中的产品、用能、生产及供应商预览；维修展示处理步骤。避免虚构在线状态或使用量，使用当前资料和实际保存记录。
 
-## Typography
-System sans with PingFang SC / Microsoft YaHei. Main copy 16px, labels 14px, metadata 12px. Fixed heading sizes 24px and 30px.
+## 智能体问答
+进入后立即呈现欢迎信息、三个业务专属示例问题、底部多行输入框。中间问答区独立滚动；发送支持 Enter，中文输入法组合期间不发送，Shift + Enter 换行。可停止分析、保存草稿和开始新对话。详细表单收进“分析条件”，资料按钮进入已有数据管理。
 
-## Layout
-240px persistent sidebar, compact 68px top bar, main work area with scenario context, an editable demo request, and a result workspace. Secondary scenario context is a quiet right rail. Below 1100px the right rail stacks; below 768px navigation becomes a sheet.
+回复按“采用的条件 → 分析结论 → 明细/依据 → 保存分析”组织，保持宽阅读面。问答按智能体分别在当前浏览器保存，保留最近 20 轮。前端依据本地数据与可解释规则回答，不暗示已连接真实 AI。
 
-## Controls
-Use provided sidebar, tabs, button, textarea, table and progress primitives. Corners 8–12px. Outlined surfaces, no ornamental soft shadows. Selected navigation uses neutral fill with copper icon. Motion only during simulated analysis and result replacement; reduced-motion supported.
-
-## Application revision
-用户要求完整应用前端。登录后首页为智能体广场：五张独立入口卡片，展示图标、职责、能力与进入操作。桌面采用三列卡片，窄屏自适应两列或单列；持久侧栏包含广场、五个智能体、分析记录和数据管理。业务模块使用各自的结构化表单与图表结果，不以同一段聊天提示替代工作流。示例数据标记统一放入顶部状态栏，正文使用正常业务语言。
+## 视觉与响应
+采用统一系统字体、16px 正文、14px 常用说明、12px 元信息；标题 20–34px。主色 oklch(.54 .135 55)，石墨导航 oklch(.205 .014 255)，浅灰工作面 oklch(.977 .004 255)。对话不使用装饰性动画；分析等待使用轻量进度点并支持减少动态效果。桌面三列广场，窄屏两列/单列；移动端简化助手头部，输入区始终可达。
