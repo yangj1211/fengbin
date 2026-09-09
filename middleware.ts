@@ -5,4 +5,13 @@ export function middleware() {
   response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   return response;
 }
-export const config = { matcher: ['/', '/login', '/api/auth/:path*'] };
+export const config = {
+  matcher: [
+    '/',
+    '/login',
+    '/apps/:path*',
+    '/records/:path*',
+    '/data',
+    '/api/auth/:path*',
+  ],
+};

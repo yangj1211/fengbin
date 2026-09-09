@@ -21,3 +21,6 @@ System sans with PingFang SC / Microsoft YaHei. Main copy 16px, labels 14px, met
 
 ## Controls
 Use provided sidebar, tabs, button, textarea, table and progress primitives. Corners 8–12px. Outlined surfaces, no ornamental soft shadows. Selected navigation uses neutral fill with copper icon. Motion only during simulated analysis and result replacement; reduced-motion supported.
+
+## Application revision
+用户要求完整应用前端。登录后首页为智能体广场：五张独立入口卡片，展示图标、职责、能力与进入操作。桌面采用三列卡片，窄屏自适应两列或单列；持久侧栏包含广场、五个智能体、分析记录和数据管理。业务模块使用各自的结构化表单与图表结果，不以同一段聊天提示替代工作流。示例数据标记统一放入顶部状态栏，正文使用正常业务语言。

@@ -55,11 +55,11 @@ export default function LoginForm() {
           </div>
           <div>
             <strong>丰宾电子</strong>
-            <span>智能工厂 · AI 工作台</span>
+            <span>智能制造平台</span>
           </div>
         </div>
         <div className="login-story">
-          <span className="login-edition">智能工厂场景验证</span>
+          <span className="login-edition">丰宾电子智能制造平台</span>
           <h1>
             业务有问题，
             <br />
@@ -68,7 +68,7 @@ export default function LoginForm() {
           <p>
             从客户需求到工厂运营，
             <br />
-            在同一个工作台体验五个智能体。
+            在同一个平台处理业务、分析数据。
           </p>
           <div className="login-scene-list">
             {[
@@ -88,16 +88,16 @@ export default function LoginForm() {
             })}
           </div>
         </div>
-        <span className="login-brand-footer">丰宾电子 · POC 演示环境</span>
+        <span className="login-brand-footer">丰宾电子 · 智能制造平台</span>
       </section>
       <section className="login-form-panel">
-        <span className="login-demo-tag">POC DEMO</span>
+        <span className="login-demo-tag">FENG BIN</span>
         <div className="login-form-wrap">
           <div className="login-icon">
             <LockKeyhole size={25} />
           </div>
           <h2>管理员登录</h2>
-          <p>登录后，进入智能体工作台。</p>
+          <p>登录后，进入智能体广场。</p>
           <form onSubmit={submit}>
             <div className="login-field">
               <Label htmlFor="username">管理员账号</Label>
@@ -142,7 +142,7 @@ export default function LoginForm() {
               {error}
             </p>
             <Button type="submit" className="login-submit" disabled={pending}>
-              {pending ? '正在登录…' : '进入工作台'}
+              {pending ? '正在登录…' : '登录并进入'}
               {!pending && <ArrowRight size={17} />}
             </Button>
           </form>
@@ -151,7 +151,7 @@ export default function LoginForm() {
             <span>管理员专用 · 登录状态保留 8 小时</span>
           </div>
         </div>
-        <p className="login-footer">演示数据仅用于 POC 场景验证</p>
+        <p className="login-footer">企业应用 · 管理员访问</p>
       </section>
     </main>
   );
