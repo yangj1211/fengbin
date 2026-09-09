@@ -205,7 +205,7 @@ function Forecast({
         />
         <path
           d={`M88 200 L580 ${y(baseline)}`}
-          stroke="#929da5"
+          stroke="var(--dashboard-reference)"
           strokeWidth="2"
           strokeDasharray="6 5"
           fill="none"
