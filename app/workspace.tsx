@@ -21,6 +21,7 @@ import {
 import Navigation from './application/navigation';
 import AgentPlaza from './application/home';
 import ModuleWorkspace from './application/module';
+import ConversationLayout from './application/conversation-layout';
 import Records from './application/records';
 import DataManager from './application/data-manager';
 export default function Workspace({ path = '/' }: { path?: string }) {
@@ -121,14 +122,24 @@ export default function Workspace({ path = '/' }: { path?: string }) {
     }
   }
   const conversation = activeModule ? (
-    <ModuleWorkspace
-      key={activeModule.id + (session?.id ?? 'initial')}
-      id={activeModule.id}
-      session={session}
-      registerLeaveGuard={registerLeaveGuard}
+    <ConversationLayout
+      key={activeModule.id}
       state={state}
-      navigate={navigate}
-    />
+      moduleId={activeModule.id}
+      sessionId={session?.id}
+      onNew={newConversation}
+      onSelect={selectSession}
+      onDelete={deleteSession}
+    >
+      <ModuleWorkspace
+        key={activeModule.id + (session?.id ?? 'initial')}
+        id={activeModule.id}
+        session={session}
+        registerLeaveGuard={registerLeaveGuard}
+        state={state}
+        navigate={navigate}
+      />
+    </ConversationLayout>
   ) : null;
   return (
     <SidebarProvider
@@ -137,12 +148,6 @@ export default function Workspace({ path = '/' }: { path?: string }) {
       <Navigation
         path={path}
         navigate={navigate}
-        state={state}
-        moduleId={activeModule?.id}
-        sessionId={view === 'chat' ? session?.id : undefined}
-        onNew={newConversation}
-        onSelect={selectSession}
-        onDelete={deleteSession}
         onLogout={logout}
         loggingOut={loggingOut}
       />
