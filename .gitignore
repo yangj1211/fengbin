@@ -39,3 +39,6 @@ next-env.d.ts
 
 # incremental compiler cache
 *.tsbuildinfo
+
+# Local Cloudflare secrets
+.dev.vars*

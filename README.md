@@ -17,8 +17,19 @@
 
 Node.js 22.13+，使用 npm：`npm install`、`npm run dev`。生产构建：`npm run build`。检查：`npx tsc --noEmit`、`npx oxlint app`。
 
-主页面位于 `app/page.tsx`，五场景数据在 `app/scenes.ts`，预设问题变体在 `app/answers.ts`，样式在 `app/globals.css`。
+工作台位于 `app/workspace.tsx`，受保护入口位于 `app/page.tsx`，五场景数据在 `app/scenes.ts`，预设问题变体在 `app/answers.ts`，样式在 `app/globals.css`。
 
 ## 可选 WebMCP
 
 支持该浏览器接口时注册 `select_demo_scene`，接受场景编号，使用和界面相同的动作切换场景。当前环境没有可调用的 WebMCP 验证上下文，未做该可选接口的运行时契约验证；普通浏览器操作不依赖它。本次未执行浏览器视觉或交互 QA。
+
+
+## 管理员认证
+
+`/login` 使用服务端验证的管理员账号登录；工作台根页面在服务器检查会话。生产配置使用 Sites secret `ADMIN_PASSWORD_HASH` 和 `ADMIN_SESSION_SECRET`，以及 `ADMIN_USERNAME`。本地使用未提交的 `.dev.vars`。明文密码不写入源码或构建产物。
+
+密码采用带随机 salt 的 PBKDF2 SHA-256；会话采用独立密钥 HMAC 签名，HttpOnly、SameSite=Strict，HTTPS 下启用 Secure，8 小时到期。修改密码记录或签名密钥可使现有会话失效。退出清除当前浏览器 Cookie；无持久化会话撤销表，因此被复制的有效 Cookie 在到期/密钥轮换前仍可能使用。
+
+登录接口检查 Origin、限制输入大小，并提供单个 Worker 实例内的失败次数限制；它不是跨实例的全局限流。当前只含固定 POC 样例，真实业务接入前需增加统一身份和持久化安全策略。
+
+托管平台的访问权限独立于站点管理员登录。在用户明确确认将托管入口设为公开可达之前，保留原有 Sites 私有访问设置。
