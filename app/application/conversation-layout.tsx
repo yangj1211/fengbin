@@ -18,7 +18,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
-import { modules, type ModuleId, type WorkspaceState } from './model';
+import type { ModuleId, WorkspaceState } from './model';
 import { storageMessage } from './store';
 
 type HistoryProps = {
@@ -42,7 +42,6 @@ function ConversationHistory({
 }: HistoryProps) {
   const [remove, setRemove] = useState<string | null>(null);
   const [message, setMessage] = useState('');
-  const agent = modules.find((m) => m.id === moduleId)!;
   const sessions = (state.sessions ?? [])
     .filter((s) => s.module === moduleId)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
@@ -60,7 +59,6 @@ function ConversationHistory({
   return (
     <div className="conversation-history-panel">
       <div className="conversation-history-start">
-        <span>{agent.name}</span>
         <Button
           className="conversation-new-chat"
           onClick={() => finish(onNew())}
