@@ -29,7 +29,7 @@
   font-size: 12px;
 }
 .agent-mode-tabs .chat-workspace {
-  height: calc(100svh - 118px);
+  height: calc(100svh - 52px);
 }
 .business-dashboard {
   --dashboard-accent: #327369;

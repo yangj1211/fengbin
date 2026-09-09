@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import {
-  ArrowLeft,
   ArrowUp,
   ArrowUpRight,
   SlidersHorizontal,
@@ -272,29 +271,7 @@ export default function ModuleWorkspace({
   }
   return (
     <div className={'chat-workspace agent-tone-' + id}>
-      <div className="chat-heading">
-        <div className="chat-heading-identity">
-          <button
-            aria-label="返回智能体广场"
-            title="返回智能体广场"
-            className="chat-back"
-            onClick={() => navigate('/')}
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <AgentIdentity id={id} />
-          <div>
-            <h1>{m.name}</h1>
-            <p>
-              {m.category}
-              <span>·</span>资料驱动的业务助手
-            </p>
-          </div>
-        </div>
-        <span className="chat-current-title" title={session?.title}>
-          {session?.turns.length ? session.title : '新对话'}
-        </span>
-      </div>
+      <h1 className="sr-only">{m.name}</h1>
       <div className="chat-body">
         {!turns.length && !pending ? (
           <div className="chat-welcome">

@@ -11,6 +11,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
+  SidebarTrigger,
   SidebarFooter,
   SidebarMenu,
   SidebarMenuItem,
@@ -36,29 +37,45 @@ export default function Navigation({
   onLogout: () => void;
   loggingOut: boolean;
 }) {
-  const { setOpenMobile } = useSidebar();
+  const {
+    setOpenMobile,
+    state: sidebarState,
+    isMobile,
+    openMobile,
+  } = useSidebar();
+  const expanded = isMobile ? openMobile : sidebarState === 'expanded';
   function go(path: string) {
     if (navigate(path)) setOpenMobile(false);
   }
   return (
     <>
-      <Sidebar className="application-sidebar">
+      <Sidebar className="application-sidebar" collapsible="icon">
         <SidebarHeader className="brand-area">
-          <div className="brand">
-            <div className="brand-symbol">
-              <Layers2 size={24} />
+          <div className="directory-brand-row">
+            <div className="brand">
+              <div className="brand-symbol">
+                <Layers2 size={24} />
+              </div>
+              <div>
+                <strong>丰宾电子</strong>
+                <span>智能制造平台</span>
+              </div>
             </div>
-            <div>
-              <strong>丰宾电子</strong>
-              <span>智能制造平台</span>
-            </div>
+            <SidebarTrigger
+              className="directory-collapse-trigger"
+              aria-label={expanded ? '收起应用目录' : '展开应用目录'}
+              title={expanded ? '收起应用目录' : '展开应用目录'}
+              aria-expanded={expanded}
+            />
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="agent-menu">
             <SidebarMenuItem>
               <SidebarMenuButton
-                className="agent-nav"
+                className="agent-nav group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-0!"
+                aria-label="智能体广场"
+                tooltip="智能体广场"
                 isActive={path === '/'}
                 onClick={() => go('/')}
               >
@@ -74,7 +91,9 @@ export default function Navigation({
               return (
                 <SidebarMenuItem key={m.id}>
                   <SidebarMenuButton
-                    className="agent-nav"
+                    className="agent-nav group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-0!"
+                    aria-label={m.name}
+                    tooltip={m.name}
                     isActive={path === '/apps/' + m.id}
                     onClick={() => go('/apps/' + m.id)}
                   >
@@ -90,7 +109,9 @@ export default function Navigation({
             <SidebarMenu className="agent-menu">
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  className="agent-nav"
+                  className="agent-nav group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-0!"
+                  aria-label="分析记录"
+                  tooltip="分析记录"
                   isActive={path.startsWith('/records')}
                   onClick={() => go('/records')}
                 >
@@ -100,7 +121,9 @@ export default function Navigation({
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  className="agent-nav"
+                  className="agent-nav group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-0!"
+                  aria-label="数据管理"
+                  tooltip="数据管理"
                   isActive={path === '/data'}
                   onClick={() => go('/data')}
                 >
@@ -143,6 +166,13 @@ export default function Navigation({
           </DropdownMenu>
         </SidebarFooter>
       </Sidebar>
+      <div className="mobile-directory-rail">
+        <SidebarTrigger
+          aria-label="打开应用目录"
+          title="打开应用目录"
+          aria-expanded={openMobile}
+        />
+      </div>
     </>
   );
 }

@@ -1,8 +1,8 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, LayoutDashboard, MessageSquareText } from 'lucide-react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { LayoutDashboard, MessageSquareText } from 'lucide-react';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { modules, type Inputs } from './application/model';
 import { hasDashboard } from './application/dashboard-data';
@@ -104,11 +104,6 @@ export default function Workspace({ path = '/' }: { path?: string }) {
       setMessage(storageMessage());
     else setMessage('');
   }
-  const title =
-    path === '/'
-      ? '智能体广场'
-      : (activeModule?.name ??
-        (path.startsWith('/records') ? '分析记录' : '数据管理'));
   async function logout() {
     if (loggingOut || !canLeave()) return;
     setLoggingOut(true);
@@ -143,7 +138,12 @@ export default function Workspace({ path = '/' }: { path?: string }) {
   ) : null;
   return (
     <SidebarProvider
-      style={{ '--sidebar-width': '240px' } as React.CSSProperties}
+      style={
+        {
+          '--sidebar-width': '240px',
+          '--sidebar-width-icon': '64px',
+        } as React.CSSProperties
+      }
     >
       <Navigation
         path={path}
@@ -152,25 +152,6 @@ export default function Workspace({ path = '/' }: { path?: string }) {
         loggingOut={loggingOut}
       />
       <main className="application-main">
-        <header className="topbar">
-          <div className="breadcrumb">
-            <SidebarTrigger aria-label="切换导航" />
-            <span>丰宾电子</span>
-            <ChevronRight size={14} />
-            <strong>{title}</strong>
-          </div>
-          <div className="topbar-right">
-            <button
-              className="data-mode-button"
-              onClick={() => navigate('/data')}
-            >
-              <span className="status-dot" />
-              {state.datasets.every((d) => d.origin === 'sample')
-                ? '示例数据'
-                : '本地数据工作区'}
-            </button>
-          </div>
-        </header>
         <div
           className={'application-content' + (activeModule ? ' is-chat' : '')}
         >
