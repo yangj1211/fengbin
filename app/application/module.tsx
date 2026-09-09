@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   ArrowUp,
   ArrowUpRight,
-  Plus,
   SlidersHorizontal,
   Paperclip,
   Save,
@@ -13,7 +12,6 @@ import {
   ChevronDown,
   MessageSquareText,
   RotateCcw,
-  History,
   Square,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -29,14 +27,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-} from '@/components/ui/alert-dialog';
-import {
   defaultInputs,
   modules,
   type ModuleId,
@@ -49,7 +39,9 @@ import {
   conditionSummary,
   suggestions,
   type ConversationTurn,
+  type ConversationSession,
 } from './conversation';
+import { mergeConversationTurns } from './sessions';
 import { AgentIdentity } from './identity';
 import AnalysisConditions from './conditions';
 import AnalysisResult from './result';
@@ -57,23 +49,26 @@ export default function ModuleWorkspace({
   id,
   state,
   navigate,
+  session,
+  registerLeaveGuard,
 }: {
   id: ModuleId;
   state: WorkspaceState;
   navigate: (path: string) => void;
+  session?: ConversationSession;
+  registerLeaveGuard: (guard: ((discard?: boolean) => boolean) | null) => void;
 }) {
   const m = modules.find((m) => m.id === id)!;
   const dataset = state.datasets.find((d) => d.id === m.dataset)!;
   const [edited, setEdited] = useState<Inputs | null>(null);
-  const input = edited ?? state.drafts[id] ?? defaultInputs[id];
+  const input = edited ?? session?.draft ?? defaultInputs[id];
   const [question, setQuestion] = useState<string | null>(null);
   const text = question ?? input.question ?? '';
   const [localTurns, setLocalTurns] = useState<ConversationTurn[] | null>(null);
-  const turns = localTurns ?? state.conversations?.[id] ?? [];
+  const turns = localTurns ?? session?.turns ?? [];
   const [pending, setPending] = useState('');
   const [message, setMessage] = useState('');
   const [conditionsOpen, setConditionsOpen] = useState(false);
-  const [clearOpen, setClearOpen] = useState(false);
   const [saveTarget, setSaveTarget] = useState<ConversationTurn | null>(null);
   const [recordName, setRecordName] = useState('');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -97,6 +92,41 @@ export default function ModuleWorkspace({
       scrollNext.current = false;
     }
   }, [turns.length, pending]);
+  useEffect(() => {
+    registerLeaveGuard((discard = false) => {
+      if (pending) {
+        setMessage('请等待本次回答完成，或先点击停止，再切换对话。');
+        return false;
+      }
+      if (discard || !session) return true;
+      const draft = { ...input, question: text };
+      if (
+        !localTurns &&
+        JSON.stringify(draft) === JSON.stringify(session.draft)
+      )
+        return true;
+      const ok = updateWorkspace((s) => ({
+        ...s,
+        sessions: (s.sessions ?? []).map((item) =>
+          item.id === session.id
+            ? {
+                ...item,
+                draft,
+                turns: localTurns
+                  ? mergeConversationTurns(item.turns, localTurns)
+                  : item.turns,
+                title: item.turns.length
+                  ? item.title
+                  : text.trim().slice(0, 48) || '新对话',
+              }
+            : item,
+        ),
+      }));
+      if (!ok) setMessage(storageMessage());
+      return ok;
+    });
+    return () => registerLeaveGuard(null);
+  });
   function change(key: string, value: string) {
     setEdited({ ...input, [key]: value });
     setMessage('');
@@ -104,6 +134,10 @@ export default function ModuleWorkspace({
   function send(value = text) {
     const query = value.trim();
     if (!query || pending) return;
+    if (!session) {
+      setMessage('对话尚未准备好，请稍后重试。');
+      return;
+    }
     if (query.length > 2000) {
       setMessage('问题请控制在 2000 字以内。');
       return;
@@ -131,8 +165,21 @@ export default function ModuleWorkspace({
         if (
           updateWorkspace((s) => ({
             ...s,
-            conversations: { ...s.conversations, [id]: next },
-            drafts: { ...s.drafts, [id]: nextInput },
+            sessions: (s.sessions ?? []).map((item) =>
+              item.id === session.id
+                ? {
+                    ...item,
+                    turns: localTurns
+                      ? mergeConversationTurns(item.turns, next)
+                      : [...item.turns, turn].slice(-20),
+                    draft: nextInput,
+                    title:
+                      item.turns[0]?.question.slice(0, 48) ||
+                      query.slice(0, 48),
+                    updatedAt: turn.createdAt,
+                  }
+                : item,
+            ),
           }))
         )
           setLocalTurns(null);
@@ -162,7 +209,17 @@ export default function ModuleWorkspace({
     if (
       updateWorkspace((s) => ({
         ...s,
-        drafts: { ...s.drafts, [id]: { ...input, question: text } },
+        sessions: (s.sessions ?? []).map((item) =>
+          item.id === session?.id
+            ? {
+                ...item,
+                draft: { ...input, question: text },
+                title: item.turns.length
+                  ? item.title
+                  : text.trim().slice(0, 48) || '新对话',
+              }
+            : item,
+        ),
       }))
     )
       setMessage('问题与分析条件已保存为草稿。');
@@ -189,35 +246,28 @@ export default function ModuleWorkspace({
       state: '待跟进' as const,
       note: '',
     };
-    const next = turns.map((t) =>
-      t.id === target.id ? { ...t, savedRecordId: recordId } : t,
-    );
     if (
       updateWorkspace((s) => ({
         ...s,
         records: [record, ...s.records],
-        conversations: { ...s.conversations, [id]: next },
+        sessions: (s.sessions ?? []).map((item) =>
+          item.id === session?.id
+            ? {
+                ...item,
+                turns: (localTurns
+                  ? mergeConversationTurns(item.turns, localTurns)
+                  : item.turns
+                ).map((t) =>
+                  t.id === target.id ? { ...t, savedRecordId: recordId } : t,
+                ),
+              }
+            : item,
+        ),
       }))
     ) {
       setLocalTurns(null);
       setSaveTarget(null);
       setMessage('分析已保存，可在分析记录中继续跟进。');
-    } else setMessage(storageMessage());
-  }
-  function clear() {
-    if (
-      updateWorkspace((s) => ({
-        ...s,
-        conversations: { ...s.conversations, [id]: [] },
-        drafts: { ...s.drafts, [id]: { ...defaultInputs[id], question: '' } },
-      }))
-    ) {
-      setLocalTurns(null);
-      setEdited(null);
-      setQuestion('');
-      setClearOpen(false);
-      setMessage('');
-      composer.current?.focus();
     } else setMessage(storageMessage());
   }
   return (
@@ -241,24 +291,9 @@ export default function ModuleWorkspace({
             </p>
           </div>
         </div>
-        <div className="chat-heading-actions">
-          <Button variant="ghost" onClick={() => navigate('/records')}>
-            <History size={16} />
-            <span>分析记录</span>
-          </Button>
-          <Button
-            variant="outline"
-            disabled={Boolean(pending)}
-            onClick={() => {
-              if (turns.length || text.trim() || edited || state.drafts[id])
-                setClearOpen(true);
-              else composer.current?.focus();
-            }}
-          >
-            <Plus size={17} />
-            <span>新对话</span>
-          </Button>
-        </div>
+        <span className="chat-current-title" title={session?.title}>
+          {session?.turns.length ? session.title : '新对话'}
+        </span>
       </div>
       <div className="chat-body">
         {!turns.length && !pending ? (
@@ -562,22 +597,6 @@ export default function ModuleWorkspace({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
-        <AlertDialogContent className="app-dialog">
-          <AlertDialogHeader>
-            <AlertDialogTitle>开始一段新对话？</AlertDialogTitle>
-            <AlertDialogDescription>
-              将清空此智能体的当前问答和草稿。已保存到分析记录的内容仍然保留。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <Button variant="outline" onClick={() => setClearOpen(false)}>
-              取消
-            </Button>
-            <Button onClick={clear}>开始新对话</Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

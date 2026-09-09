@@ -1,4 +1,4 @@
-import type { ConversationTurn } from './conversation';
+import type { ConversationTurn, ConversationSession } from './conversation';
 export const modules = [
   {
     id: 'customer',
@@ -244,6 +244,9 @@ export type WorkspaceState = {
   datasets: Dataset[];
   drafts: Partial<Record<ModuleId, Inputs>>;
   conversations?: Partial<Record<ModuleId, ConversationTurn[]>>;
+  sessions?: ConversationSession[];
+  activeSessionIds?: Partial<Record<ModuleId, string>>;
+  moduleViews?: Partial<Record<ModuleId, 'dashboard' | 'chat'>>;
 };
 export const STORAGE_KEY = 'fengbin.application.v1';
 const n = (row: Row, key: string) => Number(row[key]);

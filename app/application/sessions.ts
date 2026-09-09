@@ -1,0 +1,107 @@
+import {
+  defaultInputs,
+  type Inputs,
+  type ModuleId,
+  type WorkspaceState,
+} from './model';
+import type { ConversationSession, ConversationTurn } from './conversation';
+export function currentSession(
+  state: WorkspaceState,
+  module: ModuleId,
+): ConversationSession | undefined {
+  const sessions = (state.sessions ?? []).filter((s) => s.module === module);
+  return (
+    sessions.find((s) => s.id === state.activeSessionIds?.[module]) ??
+    sessions[0]
+  );
+}
+export function startConversation(
+  state: WorkspaceState,
+  module: ModuleId,
+  draft?: Inputs,
+): WorkspaceState {
+  const current = currentSession(state, module);
+  if (
+    !draft &&
+    current &&
+    !current.turns.length &&
+    Object.entries(current.draft).every(
+      ([k, v]) => v === (defaultInputs[module][k] ?? ''),
+    )
+  )
+    return state.moduleViews?.[module] === 'chat'
+      ? state
+      : {
+          ...state,
+          moduleViews: { ...state.moduleViews, [module]: 'chat' },
+        };
+  const now = new Date().toISOString();
+  const session: ConversationSession = {
+    id: crypto.randomUUID(),
+    module,
+    title: draft?.question?.trim().slice(0, 48) || '新对话',
+    createdAt: now,
+    updatedAt: now,
+    turns: [],
+    draft: {
+      ...defaultInputs[module],
+      ...draft,
+      question: draft?.question ?? '',
+    },
+  };
+  return {
+    ...state,
+    sessions: [session, ...(state.sessions ?? [])],
+    activeSessionIds: { ...state.activeSessionIds, [module]: session.id },
+    moduleViews: { ...state.moduleViews, [module]: 'chat' },
+  };
+}
+export function selectConversation(
+  state: WorkspaceState,
+  sessionId: string,
+): WorkspaceState {
+  const session = state.sessions?.find((s) => s.id === sessionId);
+  return session
+    ? {
+        ...state,
+        moduleViews: { ...state.moduleViews, [session.module]: 'chat' },
+        activeSessionIds: {
+          ...state.activeSessionIds,
+          [session.module]: session.id,
+        },
+      }
+    : state;
+}
+export function removeConversation(
+  state: WorkspaceState,
+  sessionId: string,
+): WorkspaceState {
+  const removed = state.sessions?.find((s) => s.id === sessionId);
+  if (!removed) return state;
+  const sessions = (state.sessions ?? []).filter((s) => s.id !== sessionId);
+  const activeSessionIds = { ...state.activeSessionIds };
+  if (activeSessionIds[removed.module] === sessionId) {
+    const next = sessions.find((s) => s.module === removed.module);
+    if (next) activeSessionIds[removed.module] = next.id;
+    else delete activeSessionIds[removed.module];
+  }
+  return { ...state, sessions, activeSessionIds };
+}
+
+export function mergeConversationTurns(
+  existing: ConversationTurn[],
+  incoming: ConversationTurn[],
+): ConversationTurn[] {
+  const merged = new Map(existing.map((turn) => [turn.id, turn]));
+  for (const turn of incoming) {
+    const stored = merged.get(turn.id);
+    merged.set(turn.id, {
+      ...stored,
+      ...turn,
+      savedRecordId: turn.savedRecordId ?? stored?.savedRecordId,
+    });
+  }
+  return Array.from(merged.values())
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .slice(-20);
+}

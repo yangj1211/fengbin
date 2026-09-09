@@ -1,157 +1,151 @@
 'use client';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ChevronRight, LayoutDashboard, MessageSquareText } from 'lucide-react';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { modules, type Inputs } from './application/model';
+import { hasDashboard } from './application/dashboard-data';
+import BusinessDashboard from './application/dashboard';
 import {
-  Home,
-  UsersRound,
-  Wrench,
-  Zap,
-  ChartNoAxesCombined,
-  ShieldCheck,
-  Database,
-  History,
-  LogOut,
-  Layers2,
-  ChevronRight,
-} from 'lucide-react';
+  useWorkspace,
+  storageMessage,
+  updateWorkspace,
+} from './application/store';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
-} from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { modules } from './application/model';
-import { useWorkspace, storageMessage } from './application/store';
+  currentSession,
+  startConversation,
+  selectConversation,
+  removeConversation,
+} from './application/sessions';
+import Navigation from './application/navigation';
 import AgentPlaza from './application/home';
 import ModuleWorkspace from './application/module';
 import Records from './application/records';
 import DataManager from './application/data-manager';
-const icons = [UsersRound, Wrench, Zap, ChartNoAxesCombined, ShieldCheck];
-function Navigation({
-  path,
-  navigate,
-}: {
-  path: string;
-  navigate: (path: string) => void;
-}) {
-  const { setOpenMobile } = useSidebar();
-  function go(url: string) {
-    navigate(url);
-    setOpenMobile(false);
-  }
-  return (
-    <Sidebar className="application-sidebar">
-      <SidebarHeader className="brand-area">
-        <div className="brand">
-          <div className="brand-symbol">
-            <Layers2 size={24} />
-          </div>
-          <div>
-            <strong>丰宾电子</strong>
-            <span>智能制造平台</span>
-          </div>
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarMenu className="agent-menu">
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className="agent-nav"
-              isActive={path === '/'}
-              onClick={() => go('/')}
-            >
-              <Home />
-              <span>智能体广场</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <div className="workspace-label nav-group-label">智能体应用</div>
-        <SidebarMenu className="agent-menu">
-          {modules.map((m, i) => {
-            const Icon = icons[i];
-            return (
-              <SidebarMenuItem key={m.id}>
-                <SidebarMenuButton
-                  className="agent-nav"
-                  isActive={path === '/apps/' + m.id}
-                  onClick={() => go('/apps/' + m.id)}
-                >
-                  <Icon />
-                  <span>{m.name}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
-        </SidebarMenu>
-        <div className="workspace-label nav-group-label">工作空间</div>
-        <SidebarMenu className="agent-menu">
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className="agent-nav"
-              isActive={path.startsWith('/records')}
-              onClick={() => go('/records')}
-            >
-              <History />
-              <span>分析记录</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className="agent-nav"
-              isActive={path === '/data'}
-              onClick={() => go('/data')}
-            >
-              <Database />
-              <span>数据管理</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarContent>
-      <SidebarFooter className="sidebar-bottom">
-        <div className="account">
-          <span className="avatar">管</span>
-          <div>
-            <strong>管理员</strong>
-            <span>丰宾电子 · 管理员工作区</span>
-          </div>
-          <ShieldCheck size={17} />
-        </div>
-      </SidebarFooter>
-    </Sidebar>
-  );
-}
 export default function Workspace({ path = '/' }: { path?: string }) {
   const router = useRouter();
   const state = useWorkspace();
   const [message, setMessage] = useState('');
-  const navigate = (url: string) => router.push(url);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const leaveGuard = useRef<((discard?: boolean) => boolean) | null>(null);
+  const registerLeaveGuard = useCallback(
+    (guard: ((discard?: boolean) => boolean) | null) => {
+      leaveGuard.current = guard;
+    },
+    [],
+  );
+  const canLeave = (discard = false) => leaveGuard.current?.(discard) ?? true;
+  const navigate = (url: string) => {
+    if (!canLeave()) return false;
+    router.push(url);
+    return true;
+  };
   const activeModule = modules.find((m) => path === '/apps/' + m.id);
+  const view =
+    activeModule && hasDashboard(activeModule.id)
+      ? (state.moduleViews?.[activeModule.id] ?? 'dashboard')
+      : 'chat';
+  const session = activeModule
+    ? currentSession(state, activeModule.id)
+    : undefined;
+  const activeSessionId = session?.id;
+  useEffect(() => {
+    if (!activeModule || activeSessionId || view !== 'chat') return;
+    const timer = setTimeout(() => {
+      if (storageMessage()) {
+        setMessage(storageMessage());
+        return;
+      }
+      if (
+        !updateWorkspace((s) =>
+          currentSession(s, activeModule.id)
+            ? s
+            : startConversation(s, activeModule.id),
+        )
+      )
+        setMessage(storageMessage());
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [activeModule, activeSessionId, view]);
+  function newConversation(input?: Inputs) {
+    if (!activeModule || !canLeave()) return false;
+    const ok = updateWorkspace((s) =>
+      startConversation(s, activeModule.id, input),
+    );
+    if (!ok) setMessage(storageMessage());
+    else setMessage('');
+    return ok;
+  }
+  function selectSession(sessionId: string) {
+    if (sessionId === session?.id && view === 'chat') return true;
+    if (!canLeave()) return false;
+    const ok = updateWorkspace((s) => selectConversation(s, sessionId));
+    if (!ok) setMessage(storageMessage());
+    else setMessage('');
+    return ok;
+  }
+  function deleteSession(sessionId: string) {
+    if (sessionId === session?.id && !canLeave(true)) return false;
+    const ok = updateWorkspace((s) => removeConversation(s, sessionId));
+    if (!ok) setMessage(storageMessage());
+    else setMessage('');
+    return ok;
+  }
+  function changeView(value: 'chat' | 'dashboard') {
+    if (!activeModule || value === view || !canLeave()) return;
+    if (
+      !updateWorkspace((s) => ({
+        ...s,
+        moduleViews: { ...s.moduleViews, [activeModule.id]: value },
+      }))
+    )
+      setMessage(storageMessage());
+    else setMessage('');
+  }
   const title =
     path === '/'
       ? '智能体广场'
       : (activeModule?.name ??
         (path.startsWith('/records') ? '分析记录' : '数据管理'));
   async function logout() {
+    if (loggingOut || !canLeave()) return;
+    setLoggingOut(true);
     try {
       const r = await fetch('/api/auth/logout', { method: 'POST' });
       if (!r.ok) throw new Error();
       window.location.replace('/login');
     } catch {
       setMessage('退出失败，请稍后重试。');
+      setLoggingOut(false);
     }
   }
+  const conversation = activeModule ? (
+    <ModuleWorkspace
+      key={activeModule.id + (session?.id ?? 'initial')}
+      id={activeModule.id}
+      session={session}
+      registerLeaveGuard={registerLeaveGuard}
+      state={state}
+      navigate={navigate}
+    />
+  ) : null;
   return (
     <SidebarProvider
       style={{ '--sidebar-width': '240px' } as React.CSSProperties}
     >
-      <Navigation path={path} navigate={navigate} />
+      <Navigation
+        path={path}
+        navigate={navigate}
+        state={state}
+        moduleId={activeModule?.id}
+        sessionId={view === 'chat' ? session?.id : undefined}
+        onNew={newConversation}
+        onSelect={selectSession}
+        onDelete={deleteSession}
+        onLogout={logout}
+        loggingOut={loggingOut}
+      />
       <main className="application-main">
         <header className="topbar">
           <div className="breadcrumb">
@@ -170,18 +164,6 @@ export default function Workspace({ path = '/' }: { path?: string }) {
                 ? '示例数据'
                 : '本地数据工作区'}
             </button>
-            <span className="topbar-divider" />
-            <span className="workspace-owner">管理员</span>
-            <span className="top-avatar">管</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="退出登录"
-              title="退出登录"
-              onClick={logout}
-            >
-              <LogOut size={16} />
-            </Button>
           </div>
         </header>
         <div
@@ -195,12 +177,42 @@ export default function Workspace({ path = '/' }: { path?: string }) {
           {path === '/' ? (
             <AgentPlaza state={state} navigate={navigate} />
           ) : activeModule ? (
-            <ModuleWorkspace
-              key={activeModule.id}
-              id={activeModule.id}
-              state={state}
-              navigate={navigate}
-            />
+            hasDashboard(activeModule.id) ? (
+              <Tabs
+                key={activeModule.id}
+                value={view}
+                onValueChange={(value) => {
+                  if (value === 'chat' || value === 'dashboard')
+                    changeView(value);
+                }}
+                className="agent-mode-tabs"
+              >
+                <div className="agent-mode-bar">
+                  <TabsList variant="line">
+                    <TabsTrigger value="dashboard">
+                      <LayoutDashboard size={16} />
+                      业务看板
+                    </TabsTrigger>
+                    <TabsTrigger value="chat">
+                      <MessageSquareText size={16} />
+                      智能问答
+                    </TabsTrigger>
+                  </TabsList>
+                  <span>看指标 · 查异常 · 问原因</span>
+                </div>
+                <TabsContent value="dashboard" keepMounted>
+                  <BusinessDashboard
+                    id={activeModule.id}
+                    state={state}
+                    onAsk={newConversation}
+                    navigate={navigate}
+                  />
+                </TabsContent>
+                <TabsContent value="chat">{conversation}</TabsContent>
+              </Tabs>
+            ) : (
+              conversation
+            )
           ) : path.startsWith('/records') ? (
             <Records
               key={path}

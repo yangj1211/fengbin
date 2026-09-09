@@ -18,6 +18,15 @@ export type ConversationTurn = {
   sourceOrigin: 'sample' | 'local';
   savedRecordId?: string;
 };
+export type ConversationSession = {
+  id: string;
+  module: ModuleId;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  turns: ConversationTurn[];
+  draft: Inputs;
+};
 export const suggestions: Record<
   ModuleId,
   { title: string; question: string }[]

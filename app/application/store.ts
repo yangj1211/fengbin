@@ -9,11 +9,14 @@ import {
   type WorkspaceState,
   type Analysis,
 } from './model';
+import type { ConversationTurn } from './conversation';
 const initial: WorkspaceState = {
   version: 1,
   records: [],
   datasets: initialDatasets,
   drafts: {},
+  sessions: [],
+  activeSessionIds: {},
 };
 let snapshot = initial;
 let hydrated = false;
@@ -58,6 +61,22 @@ function validAnalysis(value: unknown): boolean {
     a.steps.every(
       (s) => s && typeof s.title === 'string' && typeof s.body === 'string',
     ),
+  );
+}
+function validTurn(t: ConversationTurn): boolean {
+  return Boolean(
+    t &&
+    typeof t.id === 'string' &&
+    typeof t.question === 'string' &&
+    typeof t.answer === 'string' &&
+    typeof t.createdAt === 'string' &&
+    typeof t.sourceName === 'string' &&
+    (t.sourceOrigin === 'sample' || t.sourceOrigin === 'local') &&
+    t.inputs &&
+    typeof t.inputs === 'object' &&
+    Object.values(t.inputs).every((v) => typeof v === 'string') &&
+    (!t.analysis || validAnalysis(t.analysis)) &&
+    (!t.savedRecordId || typeof t.savedRecordId === 'string'),
   );
 }
 function hydrate() {
@@ -111,33 +130,80 @@ function hydrate() {
           { ...defaultInputs[id as keyof typeof defaultInputs], ...draft },
         ]),
     );
-    parsed.conversations = Object.fromEntries(
-      Object.entries(parsed.conversations ?? {})
-        .filter(
-          ([id, turns]) =>
-            modules.some((m) => m.id === id) && Array.isArray(turns),
+    if (!Array.isArray(parsed.sessions)) {
+      parsed.sessions = modules.flatMap((m) => {
+        const turns = (
+          Array.isArray(parsed.conversations?.[m.id])
+            ? parsed.conversations![m.id]!
+            : []
         )
-        .map(([id, turns]) => [
-          id,
-          turns
-            .filter(
-              (t) =>
-                t &&
-                typeof t.id === 'string' &&
-                typeof t.question === 'string' &&
-                typeof t.answer === 'string' &&
-                typeof t.createdAt === 'string' &&
-                typeof t.sourceName === 'string' &&
-                (t.sourceOrigin === 'sample' || t.sourceOrigin === 'local') &&
-                t.inputs &&
-                typeof t.inputs === 'object' &&
-                Object.values(t.inputs).every((v) => typeof v === 'string') &&
-                (!t.analysis || validAnalysis(t.analysis)) &&
-                (!t.savedRecordId || typeof t.savedRecordId === 'string'),
-            )
-            .slice(-20),
-        ]),
+          .filter(validTurn)
+          .slice(-20);
+        const draft = parsed.drafts[m.id];
+        if (!turns.length && !draft) return [];
+        const createdAt = turns[0]?.createdAt ?? new Date().toISOString();
+        return [
+          {
+            id: 'legacy-' + m.id,
+            module: m.id,
+            title:
+              turns[0]?.question.slice(0, 48) ||
+              draft?.question?.slice(0, 48) ||
+              '未发送的对话',
+            createdAt,
+            updatedAt: turns.at(-1)?.createdAt ?? createdAt,
+            turns,
+            draft: {
+              ...defaultInputs[m.id],
+              ...turns.at(-1)?.inputs,
+              question: '',
+              ...draft,
+            },
+          },
+        ];
+      });
+    } else {
+      const seen = new Set<string>();
+      parsed.sessions = parsed.sessions.filter((session) => {
+        if (
+          !session ||
+          typeof session.id !== 'string' ||
+          seen.has(session.id) ||
+          !modules.some((m) => m.id === session.module) ||
+          typeof session.title !== 'string' ||
+          typeof session.createdAt !== 'string' ||
+          !Number.isFinite(Date.parse(session.createdAt)) ||
+          typeof session.updatedAt !== 'string' ||
+          !Number.isFinite(Date.parse(session.updatedAt)) ||
+          !Array.isArray(session.turns) ||
+          !session.draft ||
+          typeof session.draft !== 'object' ||
+          Object.values(session.draft).some((v) => typeof v !== 'string')
+        )
+          return false;
+        seen.add(session.id);
+        session.turns = session.turns.filter(validTurn).slice(-20);
+        session.draft = { ...defaultInputs[session.module], ...session.draft };
+        return true;
+      });
+    }
+    parsed.activeSessionIds = Object.fromEntries(
+      modules.flatMap((m) => {
+        const sessions = parsed.sessions!.filter((s) => s.module === m.id);
+        const active =
+          sessions.find((s) => s.id === parsed.activeSessionIds?.[m.id]) ??
+          sessions[0];
+        return active ? [[m.id, active.id]] : [];
+      }),
     );
+    delete parsed.conversations;
+    parsed.moduleViews = Object.fromEntries(
+      modules.flatMap((m) => {
+        const view = parsed.moduleViews?.[m.id];
+        return view === 'chat' || view === 'dashboard' ? [[m.id, view]] : [];
+      }),
+    );
+    parsed.drafts = {};
     snapshot = parsed;
     error = '';
   } catch {

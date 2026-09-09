@@ -36,6 +36,7 @@ import {
   download,
   formatDate,
 } from './ui';
+import { startConversation } from './sessions';
 export default function Records({
   state,
   recordId,
@@ -93,10 +94,9 @@ export default function Records({
     if (!record) return;
     const current = record;
     if (
-      updateWorkspace((s) => ({
-        ...s,
-        drafts: { ...s.drafts, [current.module]: { ...current.inputs } },
-      }))
+      updateWorkspace((s) =>
+        startConversation(s, current.module, current.inputs),
+      )
     )
       navigate('/apps/' + current.module);
     else setMessage(storageMessage());

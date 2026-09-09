@@ -8,6 +8,7 @@ import {
   FileCheck2,
   History,
   Check,
+  LayoutDashboard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +19,7 @@ import {
   type ModuleId,
 } from './model';
 import { AgentIdentity } from './identity';
+import { hasDashboard } from './dashboard-data';
 const capabilities = [
   ['客户需求', '产品选型'],
   ['故障排查', '维修建议'],
@@ -106,7 +108,7 @@ export default function AgentPlaza({
           <p>把业务问题，交给专业助手。</p>
           <div className="plaza-intro-details">
             <span>五个制造业务场景</span>
-            <span>独立对话与分析</span>
+            <span>业务看板与专业问答</span>
           </div>
         </div>
         <div className="plaza-workflow" aria-label="从业务资料到分析结果">
@@ -134,7 +136,7 @@ export default function AgentPlaza({
           <h2>
             选择你的业务助手 <span>5</span>
           </h2>
-          <p>每位助手专注一个领域，点击即可开始对话。</p>
+          <p>每位助手专注一个领域，查看业务看板，或直接开始对话。</p>
         </div>
         <Button variant="ghost" onClick={() => navigate('/records')}>
           <History size={16} />
@@ -162,8 +164,12 @@ export default function AgentPlaza({
               <div className="plaza-card-bottom">
                 <span>{capabilities[i].join(' · ')}</span>
                 <strong>
-                  <MessageSquareText size={16} />
-                  开始对话
+                  {hasDashboard(m.id) ? (
+                    <LayoutDashboard size={16} />
+                  ) : (
+                    <MessageSquareText size={16} />
+                  )}
+                  {hasDashboard(m.id) ? '进入应用' : '开始对话'}
                 </strong>
               </div>
               {count > 0 && (
