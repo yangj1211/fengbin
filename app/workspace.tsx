@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { LayoutDashboard, MessageSquareText } from 'lucide-react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,8 +24,17 @@ import ModuleWorkspace from './application/module';
 import ConversationLayout from './application/conversation-layout';
 import Records from './application/records';
 import DataManager from './application/data-manager';
-export default function Workspace({ path = '/' }: { path?: string }) {
-  const router = useRouter();
+import {
+  navigateWorkspace,
+  syncWorkspaceHistory,
+} from './application/workspace-path';
+import { monitorAdminSession } from './application/session-monitor';
+export default function Workspace({
+  path: initialPath = '/',
+}: {
+  path?: string;
+}) {
+  const path = usePathname() ?? initialPath;
   const state = useWorkspace();
   const [message, setMessage] = useState('');
   const [loggingOut, setLoggingOut] = useState(false);
@@ -38,10 +47,14 @@ export default function Workspace({ path = '/' }: { path?: string }) {
   );
   const canLeave = (discard = false) => leaveGuard.current?.(discard) ?? true;
   const navigate = (url: string) => {
-    if (!canLeave()) return false;
-    router.push(url);
-    return true;
+    return navigateWorkspace(url, canLeave);
   };
+  useEffect(() => syncWorkspaceHistory(), []);
+  useEffect(() => monitorAdminSession(), [path]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    setMessage('');
+  }, [path]);
   const activeModule = modules.find((m) => path === '/apps/' + m.id);
   const view =
     activeModule && hasDashboard(activeModule.id)

@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation';
 import { isAdmin } from '@/lib/admin-server';
 import Workspace from '../workspace';
+import { isWorkspacePath } from '../application/workspace-path';
 export const dynamic = 'force-dynamic';
 async function ProtectedPage({
   params,
@@ -10,12 +11,7 @@ async function ProtectedPage({
   if (!(await isAdmin())) redirect('/login');
   const segments = (await params).path;
   const path = '/' + segments.join('/');
-  if (
-    !/^\/(apps\/(customer|maintenance|energy|production|supplier)|records(?:\/[a-zA-Z0-9-]+)?|data)$/.test(
-      path,
-    )
-  )
-    notFound();
+  if (!isWorkspacePath(path)) notFound();
   return <Workspace path={path} />;
 }
 export default function ApplicationPage({

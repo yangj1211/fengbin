@@ -1,6 +1,6 @@
 'use client';
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- Inline SVG charts need an image role; replacing the SVG with an img would remove its content. */
-import { useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import {
   ArrowUpRight,
   SlidersHorizontal,
@@ -25,17 +25,20 @@ import {
 import {
   buildDashboard,
   numberLabel as f,
+  chartNumber,
   type DashboardId,
 } from './dashboard-data';
 import { AgentIdentity } from './identity';
 import { Choice, DataTable, download, EmptyState } from './ui';
 import AnalysisConditions from './conditions';
+import { ProductionChart, SupplierRanking } from './dashboard-charts';
 
 type Comparison = {
   name: string;
   value: number;
   comparison?: number;
   warning?: boolean;
+  comparisonWarning?: boolean;
 };
 function Panel({
   title,
@@ -63,14 +66,17 @@ function ComparisonChart({
   labels,
   unit,
   onSelect,
+  maxValue,
 }: {
   items: Comparison[];
   labels: string[];
   unit: string;
   onSelect: (name: string) => void;
+  maxValue?: number;
 }) {
   const max = Math.max(
     1,
+    maxValue ?? 0,
     ...items.flatMap((item) => [item.value, item.comparison ?? 0]),
   );
   return (
@@ -90,7 +96,7 @@ function ComparisonChart({
             key={i}
             className="dashboard-comparison"
             onClick={() => onSelect(item.name)}
-            aria-label={`查看${item.name}明细，${labels[0]} ${f(item.value, 2)} ${unit}${item.comparison === undefined ? '' : `，${labels[1]} ${f(item.comparison, 2)} ${unit}`}`}
+            aria-label={`查看${item.name}明细，${labels[0]} ${f(item.value, 2)} ${unit}${item.warning ? '，需关注' : ''}${item.comparison === undefined ? '' : `，${labels[1]} ${f(item.comparison, 2)} ${unit}${item.comparisonWarning ? '，需关注' : ''}`}`}
           >
             <span className="dashboard-comparison-name">
               {item.name}
@@ -106,7 +112,9 @@ function ComparisonChart({
               {item.comparison !== undefined && (
                 <span className="dashboard-comparison-track">
                   <i
-                    className="muted"
+                    className={
+                      'muted' + (item.comparisonWarning ? ' warning' : '')
+                    }
                     style={{ width: (item.comparison / max) * 100 + '%' }}
                   />
                 </span>
@@ -114,11 +122,11 @@ function ComparisonChart({
             </span>
             <span className="dashboard-comparison-values">
               <b>
-                {f(item.value, 2)} <small>{unit}</small>
+                {chartNumber(item.value, 2)} <small>{unit}</small>
               </b>
               {item.comparison !== undefined && (
                 <small>
-                  {f(item.comparison, 2)} {unit}
+                  {chartNumber(item.comparison, 2)} {unit}
                 </small>
               )}
             </span>
@@ -142,6 +150,7 @@ function Forecast({
   days: number;
   change: number;
 }) {
+  const gradientId = useId();
   const baseline = ((total / 1000) * days) / 7;
   const projected = baseline * (1 + change / 100);
   const max = Math.max(1, baseline, projected) * 1.14;
@@ -150,7 +159,7 @@ function Forecast({
     <>
       <div className="dashboard-forecast-value">
         <strong>
-          {f(projected)}
+          {chartNumber(projected)}
           <span>MWh</span>
         </strong>
         <p>未来 {days} 天累计用电估算</p>
@@ -161,48 +170,69 @@ function Forecast({
         role="img"
         aria-label={`未来 ${days} 天累计用电情景估算 ${f(projected)} MWh，产量不变时 ${f(baseline)} MWh；线性估算，不是实测趋势。`}
       >
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="0%"
+              stopColor="var(--dashboard-accent)"
+              stopOpacity=".3"
+            />
+            <stop
+              offset="100%"
+              stopColor="var(--dashboard-accent)"
+              stopOpacity=".02"
+            />
+          </linearGradient>
+        </defs>
         {[0, 1, 2, 3].map((i) => (
           <g key={i}>
             <line
-              x1="48"
+              x1="88"
               x2="580"
               y1={200 - i * 56}
               y2={200 - i * 56}
               stroke="var(--border)"
               strokeDasharray="3 5"
             />
-            <text x="36" y={204 - i * 56} textAnchor="end">
-              {f((max * i) / 3, 0)}
+            <text x="76" y={204 - i * 56} textAnchor="end">
+              {chartNumber((max * i) / 3, max < 10 ? 2 : 1)}
             </text>
           </g>
         ))}
         <polygon
-          points={`48,200 580,${y(projected)} 580,200`}
-          fill="var(--dashboard-tint)"
+          points={`88,200 580,${y(projected)} 580,200`}
+          fill={`url(#${gradientId})`}
         />
         <path
-          d={`M48 200 L580 ${y(baseline)}`}
+          d={`M88 200 L580 ${y(baseline)}`}
           stroke="#929da5"
           strokeWidth="2"
           strokeDasharray="6 5"
           fill="none"
         />
         <path
-          d={`M48 200 L580 ${y(projected)}`}
+          className="dashboard-forecast-line"
+          pathLength="1"
+          d={`M88 200 L580 ${y(projected)}`}
           stroke="var(--dashboard-accent)"
           strokeWidth="3"
           fill="none"
         />
         <circle
+          className="dashboard-forecast-endpoint"
           cx="580"
           cy={y(projected)}
           r="5"
           fill="var(--dashboard-accent)"
         />
-        <text x="48" y="230">
+        <text x="88" y="230">
           预测起点
         </text>
-        <text x="314" y="230" textAnchor="middle">
+        <text
+          x={88 + (492 * Math.round(days / 2)) / days}
+          y="230"
+          textAnchor="middle"
+        >
           第 {Math.round(days / 2)} 天
         </text>
         <text x="580" y="230" textAnchor="end">
@@ -471,15 +501,13 @@ export default function BusinessDashboard({
                   title="产线计划与实际"
                   description="产量对比 · 点击产线钻取"
                 >
-                  <ComparisonChart
+                  <ProductionChart
                     items={rows.map((r) => ({
                       name: String(r['产线']),
                       value: Number(r['实际产量(万只)']),
                       comparison: Number(r['计划产量(万只)']),
                       warning: issueNames.has(String(r['产线'])),
                     }))}
-                    labels={['实际产量', '计划产量']}
-                    unit="万只"
                     onSelect={drill}
                   />
                 </Panel>
@@ -509,14 +537,12 @@ export default function BusinessDashboard({
                   title="供应商综合评分"
                   description={`交付 ${input.deliveryWeight}% · 质量 ${input.qualityWeight}% · 响应 ${100 - Number(input.deliveryWeight) - Number(input.qualityWeight)}%`}
                 >
-                  <ComparisonChart
+                  <SupplierRanking
                     items={analysis.bars.map((b) => ({
                       name: b.label,
                       value: b.value,
                       warning: b.warning,
                     }))}
-                    labels={['综合评分']}
-                    unit="分"
                     onSelect={drill}
                   />
                 </Panel>
@@ -529,10 +555,16 @@ export default function BusinessDashboard({
                       name: String(r['供应商']),
                       value: Number(r['交付及时率(%)']),
                       comparison: Number(r['来料合格率(%)']),
-                      warning: issueNames.has(String(r['供应商'])),
+                      warning:
+                        Number(r['交付及时率(%)']) <
+                        Number(input.deliveryTarget),
+                      comparisonWarning:
+                        Number(r['来料合格率(%)']) <
+                        Number(input.qualityTarget),
                     }))}
                     labels={['交付及时率', '来料合格率']}
                     unit="%"
+                    maxValue={100}
                     onSelect={drill}
                   />
                 </Panel>

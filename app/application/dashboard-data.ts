@@ -10,6 +10,16 @@ export const hasDashboard = (id: ModuleId): id is DashboardId =>
   id === 'energy' || id === 'production' || id === 'supplier';
 export const numberLabel = (value: number, digits = 1) =>
   value.toLocaleString('zh-CN', { maximumFractionDigits: digits });
+const compactNumber = new Intl.NumberFormat('zh-CN', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+export const chartNumber = (value: number, digits = 1) =>
+  Math.abs(value) >= 1e12
+    ? value.toExponential(0)
+    : Math.abs(value) >= 10000
+      ? compactNumber.format(value)
+      : numberLabel(value, digits);
 const n = (r: Row, key: string) => Number(r[key]);
 const sum = (rows: Row[], key: string) =>
   rows.reduce((s, r) => s + n(r, key), 0);
