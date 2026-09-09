@@ -1395,6 +1395,55 @@ body {
   border-radius: 8px;
   font-size: 13px;
 }
+.conversation-history-search {
+  position: relative;
+  flex-shrink: 0;
+  margin: 0 18px 10px;
+}
+.conversation-history-search > svg {
+  position: absolute;
+  top: 12px;
+  left: 11px;
+  pointer-events: none;
+  color: var(--muted-foreground);
+}
+.conversation-history-search [data-slot='input'] {
+  height: 40px;
+  padding: 0 37px 0 33px;
+  background: var(--background);
+  font-size: 13px;
+  border-radius: 8px;
+}
+.conversation-history-search [type='search']::-webkit-search-cancel-button,
+.conversation-history-search [type='search']::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+.conversation-history-search-clear {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 34px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--muted-foreground);
+}
+.conversation-history-search-clear:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.conversation-search-empty strong {
+  color: var(--foreground);
+  font-weight: 500;
+}
+.conversation-search-empty p {
+  margin-top: 5px;
+}
+.conversation-search-empty [data-slot='button'] {
+  margin: 10px 0 0 -8px;
+  color: var(--primary);
+}
 .conversation-history-heading {
   display: flex;
   align-items: center;

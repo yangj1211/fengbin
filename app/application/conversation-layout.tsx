@@ -1,7 +1,15 @@
 'use client';
-import { useEffect, useState, type ReactNode } from 'react';
-import { Plus, MessageSquareText, Trash2, PanelLeft } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  Plus,
+  MessageSquareText,
+  Trash2,
+  PanelLeft,
+  Search,
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -20,6 +28,7 @@ import {
 } from '@/components/ui/sheet';
 import type { ModuleId, WorkspaceState } from './model';
 import { storageMessage } from './store';
+import { searchConversations } from './sessions';
 
 type HistoryProps = {
   state: WorkspaceState;
@@ -39,13 +48,22 @@ function ConversationHistory({
   onSelect,
   onDelete,
   onDone,
-}: HistoryProps) {
+  query,
+  onQueryChange,
+}: HistoryProps & { query: string; onQueryChange: (query: string) => void }) {
   const [remove, setRemove] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const searchInput = useRef<HTMLInputElement>(null);
   const sessions = (state.sessions ?? [])
     .filter((s) => s.module === moduleId)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   const target = sessions.find((s) => s.id === remove);
+  const matches = searchConversations(sessions, query);
+  const searching = Boolean(query.trim());
+  function clearSearch() {
+    onQueryChange('');
+    searchInput.current?.focus();
+  }
   function finish(ok: boolean) {
     if (ok) {
       setMessage('');
@@ -61,15 +79,63 @@ function ConversationHistory({
       <div className="conversation-history-start">
         <Button
           className="conversation-new-chat"
-          onClick={() => finish(onNew())}
+          onClick={() => {
+            const ok = onNew();
+            if (ok) onQueryChange('');
+            finish(ok);
+          }}
         >
           <Plus size={18} />
           新建对话
         </Button>
       </div>
+      <div className="conversation-history-search">
+        <Search size={15} aria-hidden="true" />
+        <Input
+          ref={searchInput}
+          type="search"
+          aria-label="搜索对话标题或内容"
+          placeholder="搜索对话"
+          value={query}
+          maxLength={200}
+          onChange={(event) => onQueryChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (
+              event.key === 'Escape' &&
+              query &&
+              !event.nativeEvent.isComposing
+            ) {
+              event.preventDefault();
+              event.stopPropagation();
+              clearSearch();
+            }
+          }}
+        />
+        {query && (
+          <button
+            className="conversation-history-search-clear"
+            aria-label="清空历史搜索"
+            title="清空搜索"
+            onClick={clearSearch}
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
       <div className="conversation-history-heading">
         <h2>对话历史</h2>
-        <span>{sessions.length}</span>
+        <span
+          role="status"
+          aria-label={
+            searching
+              ? `找到 ${matches.length} 段对话，共 ${sessions.length} 段`
+              : `共 ${sessions.length} 段对话`
+          }
+        >
+          {searching
+            ? `${matches.length} / ${sessions.length}`
+            : sessions.length}
+        </span>
       </div>
       {message && (
         <p className="conversation-history-feedback" role="status">
@@ -80,8 +146,8 @@ function ConversationHistory({
         className="conversation-history-list"
         aria-label="当前智能体的对话历史"
       >
-        {sessions.length ? (
-          sessions.map((session) => (
+        {matches.length ? (
+          matches.map((session) => (
             <div
               key={session.id}
               className={
@@ -124,6 +190,14 @@ function ConversationHistory({
               </button>
             </div>
           ))
+        ) : searching ? (
+          <div className="conversation-history-empty conversation-search-empty">
+            <strong>没有找到相关对话</strong>
+            <p>换个关键词，或清空搜索。</p>
+            <Button variant="ghost" size="sm" onClick={clearSearch}>
+              清空搜索
+            </Button>
+          </div>
         ) : (
           <p className="conversation-history-empty">
             开始提问后，对话会保存在这里。
@@ -177,6 +251,7 @@ export default function ConversationLayout({
   ...history
 }: HistoryProps & { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
   useEffect(() => {
     const desktop = window.matchMedia('(min-width: 1101px)');
     const closeOnDesktop = () => {
@@ -188,7 +263,11 @@ export default function ConversationLayout({
   return (
     <div className="conversation-layout">
       <aside className="conversation-history-rail" aria-label="智能体对话导航">
-        <ConversationHistory {...history} />
+        <ConversationHistory
+          {...history}
+          query={query}
+          onQueryChange={setQuery}
+        />
       </aside>
       <div className="conversation-pane">
         <div className="conversation-mobile-toolbar">
@@ -204,7 +283,12 @@ export default function ConversationLayout({
                   查看当前智能体的对话，或新建一段对话。
                 </SheetDescription>
               </SheetHeader>
-              <ConversationHistory {...history} onDone={() => setOpen(false)} />
+              <ConversationHistory
+                {...history}
+                query={query}
+                onQueryChange={setQuery}
+                onDone={() => setOpen(false)}
+              />
             </SheetContent>
           </Sheet>
           <span>当前智能体的独立对话</span>

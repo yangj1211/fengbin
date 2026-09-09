@@ -5,6 +5,38 @@ import {
   type WorkspaceState,
 } from './model';
 import type { ConversationSession, ConversationTurn } from './conversation';
+
+function searchableText(value: unknown): string {
+  if (typeof value === 'string' || typeof value === 'number')
+    return String(value);
+  if (value && typeof value === 'object')
+    return Object.values(value).map(searchableText).join(' ');
+  return '';
+}
+export function searchConversations(
+  sessions: ConversationSession[],
+  query: string,
+): ConversationSession[] {
+  const normalize = (text: string) => text.normalize('NFKC').toLowerCase();
+  const terms = normalize(query).trim().split(/\s+/u).filter(Boolean);
+  if (!terms.length) return sessions;
+  return sessions.filter((session) => {
+    const text = normalize(
+      searchableText([
+        session.title,
+        session.draft.question,
+        session.turns.map((turn) => [
+          turn.question,
+          turn.answer,
+          turn.sourceName,
+          turn.inputs,
+          turn.analysis,
+        ]),
+      ]),
+    );
+    return terms.every((term) => text.includes(term));
+  });
+}
 export function currentSession(
   state: WorkspaceState,
   module: ModuleId,
