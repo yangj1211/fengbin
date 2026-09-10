@@ -306,7 +306,7 @@ export default function ModuleWorkspace({
               {id === 'customer'
                 ? '为客户，找到更合适的产品。'
                 : id === 'maintenance'
-                  ? '一起找到设备问题的排查方向。'
+                  ? '把设备问题，变成具体维修方案。'
                   : id === 'energy'
                     ? '让每一度电，都有据可循。'
                     : id === 'production'
@@ -317,7 +317,7 @@ export default function ModuleWorkspace({
               {id === 'customer'
                 ? '描述应用、参数或替代型号。信息不完整时，我会先帮你补齐；每条建议都可以查看原文件。'
                 : id === 'maintenance'
-                  ? '说说设备型号、告警或故障现象，一起核对维修资料。'
+                  ? '描述设备、告警或现象，获取处理步骤、备件建议和修后验证方法。'
                   : m.description + '直接告诉我您想解决的问题。'}
             </p>
             <div

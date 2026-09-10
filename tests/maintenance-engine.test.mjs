@@ -54,6 +54,21 @@ try {
     assert.match(result.answer, /1\. /);
     assert.match(result.answer, /备件/);
     assert.match(result.answer, /工单/);
+    assert.match(result.answer, /修后验证/);
+    assert.match(result.answer, /清理|清洁|重新穿料|修复连接/);
+    assert.match(result.answer, /确认.*时/);
+    assert.match(result.answer, /手册|工艺既定/);
+    assert.match(result.answer, /停止验证|维持.*停机/);
+    const guide = resolveSource(
+      result.sources.find(
+        (source) => source.documentId === 'maintenance-guide',
+      ),
+    );
+    for (const instruction of [...example.repair, ...example.verification])
+      assert.ok(
+        guide.section.text.includes(instruction),
+        'Plan and verification must be grounded in the cited original page',
+      );
     assert.equal(result.analysis, undefined);
     assert.equal(result.sources.length, 3);
     for (const source of result.sources) assert.ok(resolveSource(source));
@@ -69,7 +84,7 @@ try {
   ]) {
     const result = reply(query, defaults);
     assert.equal(result.inputs.caseId, '', query);
-    assert.doesNotMatch(result.answer, /建议按以下顺序排查/, query);
+    assert.doesNotMatch(result.answer, /具体维修方案/, query);
   }
   const winding = reply('卷绕机 WND-100 张力波动并断箔', defaults);
   assert.equal(winding.inputs.caseId, cases[0].id);
@@ -85,7 +100,7 @@ try {
     if (query.includes('原因')) assert.match(result.answer, /可能的原因/);
   }
   const combined = reply(suggestions.maintenance[1].question, defaults);
-  assert.match(combined.answer, /建议按以下顺序排查/);
+  assert.match(combined.answer, /具体维修方案/);
   assert.match(combined.answer, /检查时请注意/);
   for (const query of [
     '含浸机',
@@ -97,6 +112,30 @@ try {
     const result = reply(query, winding.inputs);
     assert.notEqual(result.inputs.caseId, cases[0].id, query);
     assert.doesNotMatch(result.answer, /张力检测组件/, query);
+  }
+  for (const query of [
+    '给我具体维修方案',
+    '怎么修，给出步骤、备件和验证方法',
+    '请给出方案和引用来源',
+    '已检查穿料路径，请给出维修方案和备件',
+  ]) {
+    const result = reply(query, winding.inputs);
+    assert.equal(result.inputs.caseId, cases[0].id, query);
+    assert.match(result.answer, /具体维修方案/, query);
+    assert.match(result.answer, /修后验证/, query);
+    assert.match(result.answer, /备件/, query);
+  }
+  for (const query of [
+    '修完怎么验证',
+    '设备已恢复正常，如何验收',
+    '现在已经不再断箔，怎么验证维修好了',
+    '怎么确认修好了？',
+  ]) {
+    const result = reply(query, winding.inputs);
+    assert.equal(result.inputs.caseId, cases[0].id);
+    assert.match(result.answer, /修后验证/);
+    assert.doesNotMatch(result.answer, /具体维修方案/);
+    assert.match(result.answer, /张力读数趋势/);
   }
   const restoredSymptom = reply(
     'WND-100',
@@ -177,7 +216,7 @@ try {
     }
   }
   console.log(
-    'Maintenance: 5 faults, missing/conflicting inputs, multi-turn followups, legacy drafts, citations and original pages passed.',
+    'Maintenance: five concrete repair plans and verification, followups, conflicts, legacy drafts, source grounding and original pages passed.',
   );
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });

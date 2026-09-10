@@ -63,6 +63,13 @@ function hasSymptom(text: string, example: MaintenanceCase) {
 function partsText(example: MaintenanceCase) {
   return list(example.parts.map((part) => `${part.name}：${part.condition}`));
 }
+function repairPlanText(example: MaintenanceCase) {
+  return [
+    '维修前先记录当前告警和已检查结果，由授权人员按适用手册完成停机、隔离及检查条件确认。',
+    `具体维修方案：\n\n${list(example.repair, true)}`,
+    `修后验证：\n\n${list(example.verification, true)}`,
+  ].join('\n\n');
+}
 export function replyToMaintenance(
   question: string,
   current: Inputs,
@@ -86,7 +93,7 @@ export function replyToMaintenance(
     /能做什么|怎么用|如何使用/.test(q)
   )
     return reply(
-      '可以告诉我设备型号、告警代码或具体故障现象。我会结合示例手册、历史工单和备件资料，帮你整理排查方向；不清楚的信息会先向你确认。',
+      '可以告诉我设备型号、告警代码或具体故障现象。我会结合示例手册、历史工单和备件资料，给出具体维修方案，包括处理步骤、所需备件及修后验证；不清楚的信息会先向你确认。',
     );
 
   const labeledCode = q.match(
@@ -172,8 +179,10 @@ export function replyToMaintenance(
       '前面提到的告警代码与补充的设备型号不一致，请核对铭牌和告警原文后再继续。',
     );
   }
+  const asksVerification = /验证|验收|怎么确认|如何确认|怎样确认/.test(q);
   const followup =
-    /备件|配件|更换什么|换什么|历史|案例|工单|依据|原因|为什么|注意|步骤|详细|继续|仍|还是|已经|已检查|检查过|换料|校准|反馈|处理结果|恢复|解决/.test(
+    asksVerification ||
+    /备件|配件|更换什么|换什么|历史|案例|工单|依据|原因|为什么|注意|步骤|方案|维修|处理|怎么修|如何修|怎么做|详细|继续|仍|还是|已经|已检查|检查过|换料|校准|反馈|处理结果|恢复|解决/.test(
       q,
     );
   const negatedFault =
@@ -189,7 +198,7 @@ export function replyToMaintenance(
       );
   if (
     /无法启动|不能启动|异响|漏油|振动|冒烟|漏电|通信中断/.test(q) ||
-    negatedFault
+    (negatedFault && !(asksVerification && input.caseId))
   ) {
     input.symptom = q;
     input.caseId = '';
@@ -251,12 +260,19 @@ export function replyToMaintenance(
     );
 
   const scope = input.model
-    ? `根据你提供的 ${input.device} ${input.model}${input.code ? `、告警 ${input.code}` : ''}，可以参考示例手册中“${example.symptom}”的排查方法。`
+    ? `根据你提供的 ${input.device} ${input.model}${input.code ? `、告警 ${input.code}` : ''}，可以参考示例手册中“${example.symptom}”的维修方案。`
     : `你描述的是${input.device}的${example.symptom}。现有相似资料适用于示例型号 ${example.model}，请补充现场型号确认是否适用。`;
-  const cautious = '以下是排查建议，尚不能确认现场故障原因。';
+  const cautious =
+    '处理动作需根据检查结果选择，不能直接将可能原因当作已确认故障。';
+  const wantsPlan =
+    /排查|步骤|方案|怎么修|如何修|怎么处理|如何处理|怎么做/.test(q);
   const references = (kinds: string[]) =>
     example.sources.filter((source) => kinds.includes(source.documentId));
-  if (/已恢复|恢复正常|已解决|解决了|处理结果|反馈/.test(q)) {
+  if (
+    /已恢复|恢复正常|已解决|解决了|处理结果|反馈/.test(q) &&
+    !wantsPlan &&
+    !asksVerification
+  ) {
     input.observations = [input.observations, q]
       .filter(Boolean)
       .join('\n')
@@ -270,17 +286,25 @@ export function replyToMaintenance(
       .filter(Boolean)
       .join('\n')
       .slice(-3000);
-    return reply(
-      `已收到新的排查情况：“${q}”。仅凭这条反馈还不能确认根因，也不建议直接更换部件。\n\n请补充已检查的项目、实际发现和当前告警是否变化。接下来可对照示例手册逐项核对尚未检查的方向：\n\n${list(example.causes)}\n\n${example.precautions.join(' ')}\n\n现场型号、工况或报警若已变化，请一并说明。`,
-      [...references(['maintenance-guide']), ...intake],
-    );
+    if (!wantsPlan && !/备件|配件/.test(q) && !asksVerification)
+      return reply(
+        `已收到新的排查情况：“${q}”。请结合实际检查结果选择对应处理分支；已经确认正常的项目无需重复处置。\n\n${repairPlanText(example)}\n\n${example.precautions.join(' ')}\n\n请补充实际检查发现与复测结果，以便进一步调整方案。`,
+        [...references(['maintenance-guide']), ...intake],
+      );
   }
   const partsOnly = /备件|配件|更换什么|换什么/.test(q);
   const historyOnly = /历史|案例|工单/.test(q);
-  const wantsPlan = /排查|步骤|方案|怎么修|如何处理/.test(q);
   const causesOnly = /原因|为什么/.test(q);
   const precautionsOnly = /注意|安全/.test(q);
-  if ((partsOnly || historyOnly || causesOnly || precautionsOnly) && !wantsPlan)
+  const verificationOnly = asksVerification;
+  if (
+    (partsOnly ||
+      historyOnly ||
+      causesOnly ||
+      precautionsOnly ||
+      verificationOnly) &&
+    !wantsPlan
+  )
     return reply(
       [
         scope,
@@ -294,6 +318,9 @@ export function replyToMaintenance(
           ? `备件应在检查确认后再核对适配关系：\n\n${partsText(example)}\n\n备件适配以现场铭牌、手册版本和实际部件规格为准。`
           : '',
         precautionsOnly ? `检查时请注意：\n\n${list(example.precautions)}` : '',
+        verificationOnly
+          ? `修后验证：\n\n${list(example.verification, true)}`
+          : '',
       ]
         .filter(Boolean)
         .join('\n\n'),
@@ -303,7 +330,7 @@ export function replyToMaintenance(
         'maintenance-guide',
       ]),
     );
-  if (/依据|引用|来源/.test(q))
+  if (/依据|引用|来源/.test(q) && !wantsPlan)
     return reply(
       '本次建议参考了对应型号的维修手册、相似历史工单与备件说明。文件和页码列在文末，点击可核对原文；历史处理记录不能直接确定本次故障原因。',
       example.sources,
@@ -313,11 +340,11 @@ export function replyToMaintenance(
     [
       `${scope} ${cautious}`,
       `可能的原因包括：\n\n${list(example.causes)}`,
-      `建议按以下顺序排查：\n\n${list(example.steps, true)}`,
+      repairPlanText(example),
       `检查时请注意：${example.precautions.join(' ')}`,
       `如检查指向部件问题，再核对这些备件：\n\n${partsText(example)}`,
       `相似历史工单：${example.history} 该记录仅提供参考，不能据此确定本次根因。`,
-      '可以继续告诉我现场型号、当前告警或已经检查的结果，我会据此缩小排查范围。',
+      '可以继续补充检查发现和修后验证结果，我会据此调整维修方案。',
     ].join('\n\n'),
     example.sources,
   );

@@ -44,8 +44,9 @@ export const suggestions: Record<
   })),
   maintenance: [
     {
-      title: '按现象排查',
-      question: '卷绕机 WND-100 换料后张力波动并断箔，应该先查什么？',
+      title: '生成维修方案',
+      question:
+        '卷绕机 WND-100 换料后张力波动并断箔，请给出具体维修方案和修后验证方法。',
     },
     {
       title: '查询告警代码',

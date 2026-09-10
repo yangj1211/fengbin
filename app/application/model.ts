@@ -25,7 +25,7 @@ export const modules = [
     scene: '29',
     name: '设备维修助手',
     category: '设备管理',
-    description: '查阅维修知识，整理排查方向与备件建议。',
+    description: '结合维修资料，给出处理方案与修后验证方法。',
     action: '生成维修方案',
     inputTitle: '故障信息',
     resultTitle: '维修方案',

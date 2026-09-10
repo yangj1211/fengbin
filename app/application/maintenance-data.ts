@@ -11,6 +11,8 @@ export type MaintenanceCase = {
   keywords: string[];
   causes: string[];
   steps: string[];
+  repair: string[];
+  verification: string[];
   precautions: string[];
   parts: { name: string; condition: string }[];
   history: string;
