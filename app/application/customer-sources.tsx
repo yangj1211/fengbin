@@ -1,7 +1,21 @@
 'use client';
 import { useState } from 'react';
-import { ArrowLeft, ArrowUpRight, BookOpen, FileText } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -14,7 +28,59 @@ import {
   resolveSource,
   uniqueSources,
 } from './customer-data';
-import type { SourceReference } from './customer-types';
+import type { CustomerFixtures, SourceReference } from './customer-types';
+
+function OriginalPage({
+  document,
+  page,
+}: {
+  document: CustomerFixtures['documents'][number];
+  page: number;
+}) {
+  const [failed, setFailed] = useState(false);
+  const preview = document.pages.find((item) => item.page === page);
+  return (
+    <section
+      className="source-page-viewport"
+      tabIndex={0}
+      aria-label={`${document.fileName}，第 ${page} 页原文`}
+    >
+      {preview && !failed ? (
+        <>
+          <img
+            className="source-page-image"
+            src={preview.image}
+            width={preview.width}
+            height={preview.height}
+            alt={`${document.fileName}，第 ${page} 页`}
+            onError={() => setFailed(true)}
+          />
+          <div className="sr-only">
+            {document.sections
+              .filter((section) => section.page === page)
+              .map((section) => (
+                <section key={section.id}>
+                  <h3>{section.title}</h3>
+                  <p>{section.text}</p>
+                </section>
+              ))}
+          </div>
+        </>
+      ) : (
+        <div className="source-page-error">
+          <p>这一页暂时无法显示。</p>
+          <a
+            href={`${encodeURI(document.url)}#page=${page}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            查看原文件
+          </a>
+        </div>
+      )}
+    </section>
+  );
+}
 
 function SourceDrawer({
   selected,
@@ -28,6 +94,19 @@ function SourceDrawer({
   onSelect: (ref: SourceReference | null) => void;
 }) {
   const resolved = selected ? resolveSource(selected) : null;
+  const pages = resolved?.document.pages ?? [];
+  const pageIndex = pages.findIndex((page) => page.page === selected?.page);
+  function changePage(page: number) {
+    const section = resolved?.document.sections.find(
+      (item) => item.page === page,
+    );
+    if (resolved && section)
+      onSelect({
+        documentId: resolved.document.id,
+        sectionId: section.id,
+        page,
+      });
+  }
   return (
     <Sheet
       open={Boolean(selected) || Boolean(library)}
@@ -35,63 +114,85 @@ function SourceDrawer({
         if (!open) onClose();
       }}
     >
-      <SheetContent className="customer-source-sheet">
+      <SheetContent
+        className={`customer-source-sheet${resolved ? ' is-reading' : ''}`}
+      >
         <SheetHeader>
           <SheetTitle>
             {resolved ? resolved.document.fileName : '示例资料'}
           </SheetTitle>
-          <SheetDescription>
-            本场景专用示例资料，产品和参数均为虚构，仅用于演示。
+          <SheetDescription className={resolved ? 'sr-only' : undefined}>
+            示例资料。打开后定位到引用页，可切换页码查看原文。
           </SheetDescription>
         </SheetHeader>
-        <div className="source-sheet-body">
-          {resolved ? (
-            <>
+        {resolved ? (
+          <>
+            <div className="source-page-toolbar">
               {library && (
                 <Button variant="ghost" onClick={() => onSelect(null)}>
                   <ArrowLeft size={15} />
                   全部资料
                 </Button>
               )}
-              <div className="source-location">
-                <span>{resolved.document.kind}</span>
-                <span>第 {resolved.section.page} 页</span>
-              </div>
-              <h3>{resolved.section.title}</h3>
-              <p className="source-excerpt">{resolved.section.text}</p>
-              <a
-                className="source-original-link"
-                href={`${encodeURI(resolved.document.url)}#page=${resolved.section.page}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FileText size={17} />
-                打开原文件 PDF
-                <ArrowUpRight size={16} />
-              </a>
-              <details className="source-sections">
-                <summary>查看文件中的其他内容</summary>
-                {resolved.document.sections.map((section) => (
-                  <button
-                    key={section.id}
-                    className={
-                      section.id === selected?.sectionId ? 'is-current' : ''
-                    }
-                    onClick={() =>
-                      onSelect({
-                        documentId: resolved.document.id,
-                        sectionId: section.id,
-                        page: section.page,
-                      })
-                    }
-                  >
-                    <span>{section.title}</span>
-                    <small>第 {section.page} 页</small>
-                  </button>
-                ))}
-              </details>
-            </>
-          ) : (
+              <nav className="source-page-controls" aria-label="原文件翻页">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="上一页"
+                  title="上一页"
+                  disabled={pageIndex <= 0}
+                  onClick={() => {
+                    if (pageIndex > 0) changePage(pages[pageIndex - 1].page);
+                  }}
+                >
+                  <ChevronLeft size={17} />
+                </Button>
+                <Select
+                  value={selected!.page}
+                  items={pages.map((item) => ({
+                    value: item.page,
+                    label: `第 ${item.page} 页`,
+                  }))}
+                  onValueChange={(page) => {
+                    if (page !== null) changePage(page);
+                  }}
+                  disabled={pages.length < 2}
+                >
+                  <SelectTrigger aria-label="切换页码">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent alignItemWithTrigger={false}>
+                    {pages.map((item) => (
+                      <SelectItem key={item.page} value={item.page}>
+                        第 {item.page} 页
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="source-page-total">共 {pages.length} 页</span>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="下一页"
+                  title="下一页"
+                  disabled={pageIndex < 0 || pageIndex >= pages.length - 1}
+                  onClick={() => {
+                    if (pageIndex < pages.length - 1)
+                      changePage(pages[pageIndex + 1].page);
+                  }}
+                >
+                  <ChevronRight size={17} />
+                </Button>
+              </nav>
+            </div>
+            <OriginalPage
+              key={`${resolved.document.id}-${selected!.page}`}
+              document={resolved.document}
+              page={selected!.page}
+            />
+          </>
+        ) : (
+          <div className="source-sheet-body">
             <div className="source-library-list">
               {customerFixtures.documents.map((document) => (
                 <button
@@ -113,8 +214,8 @@ function SourceDrawer({
                 </button>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

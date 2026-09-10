@@ -198,6 +198,22 @@ try {
   for (const document of fixtures.documents) {
     assert.ok(fs.existsSync('public' + document.url), document.fileName);
     assert.ok(document.sections.length);
+    assert.deepEqual(
+      document.pages.map((page) => page.page),
+      Array.from({ length: document.pages.length }, (_, index) => index + 1),
+    );
+    for (const page of document.pages) {
+      assert.ok(fs.existsSync('public' + page.image), page.image);
+      assert.ok(page.width > 0 && page.height > 0);
+      assert.ok(
+        document.sections.some((section) => section.page === page.page),
+      );
+    }
+    for (const section of document.sections)
+      assert.ok(
+        document.pages.some((page) => page.page === section.page),
+        section.id,
+      );
   }
   console.log(
     'Customer flow checks passed: five examples, follow-ups, constraints, missing inputs, substitutions, no-match explanations, and original-file citations.',

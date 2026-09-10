@@ -34,6 +34,7 @@ export type CustomerFixtures = {
     url: string;
     kind: string;
     summary: string;
+    pages: { page: number; image: string; width: number; height: number }[];
     sections: { id: string; title: string; page: number; text: string }[];
   }[];
   products: CustomerProduct[];

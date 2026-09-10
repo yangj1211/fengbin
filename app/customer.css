@@ -126,8 +126,7 @@
 .customer-comparison {
   padding: 20px 0;
 }
-.customer-comparison > summary,
-.source-sections > summary {
+.customer-comparison > summary {
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
@@ -253,9 +252,17 @@
   max-width: none;
   gap: 0;
 }
+.customer-source-sheet.is-reading[data-slot='sheet-content'] {
+  width: min(880px, 100vw);
+}
 .customer-source-sheet [data-slot='sheet-header'] {
   padding: 28px 48px 22px 26px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.customer-source-sheet.is-reading [data-slot='sheet-header'] {
+  padding-top: 20px;
+  padding-bottom: 18px;
 }
 .customer-source-sheet [data-slot='sheet-title'] {
   font-size: 18px;
@@ -273,58 +280,55 @@
   min-height: 0;
   flex: 1;
 }
-.source-sheet-body h3 {
-  font-size: 17px;
-  font-weight: 600;
-  margin: 18px 0 14px;
-}
-.source-location {
+.source-page-toolbar {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 13px;
-  color: var(--muted-foreground);
-  margin-top: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
 }
-.source-excerpt {
-  font-size: 16px;
-  line-height: 1.95;
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-}
-.source-original-link {
-  display: inline-flex;
+.source-page-controls {
+  display: flex;
   gap: 8px;
   align-items: center;
-  margin: 24px 0;
-  color: var(--primary);
-  font-size: 14px;
+  margin-left: auto;
 }
-.source-original-link:hover {
-  text-decoration: underline;
-}
-.source-sections {
-  margin-top: 12px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border);
-}
-.source-sections button {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding: 10px;
-  gap: 15px;
-  font-size: 14px;
-  text-align: left;
-}
-.source-sections button small {
+.source-page-total {
+  font-size: 13px;
   white-space: nowrap;
-  font-size: 12px;
   color: var(--muted-foreground);
 }
-.source-sections button:hover,
-.source-sections button.is-current {
+.source-page-viewport {
+  flex: 1;
+  min-height: 0;
+  padding: 24px;
+  overflow: auto;
+  overscroll-behavior: contain;
   background: var(--muted);
+}
+.source-page-viewport:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+.source-page-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: white;
+  box-shadow: 0 1px 6px oklch(0.2 0.01 255 / 12%);
+}
+.source-page-error {
+  padding: 48px 20px;
+  text-align: center;
+  font-size: 14px;
+}
+.source-page-error a {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--primary);
+  text-decoration: underline;
 }
 .source-library-list > button {
   display: flex;
@@ -381,6 +385,16 @@
   .source-sheet-body {
     padding-left: 20px;
     padding-right: 20px;
+  }
+  .source-page-toolbar {
+    padding: 10px 12px;
+  }
+  .source-page-viewport {
+    padding: 12px;
+  }
+  .source-page-image {
+    min-width: 560px;
+    max-width: none;
   }
   .source-inline-link > span {
     max-width: 180px;
