@@ -235,207 +235,157 @@ body {
   gap: 8px;
   font-size: 13px;
 }
+/* Lightweight application entries with a shared, custom agent emblem system. */
 .agent-plaza-grid {
-  gap: 20px;
+  display: grid;
+  gap: 22px;
   padding-bottom: 20px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .plaza-agent-card {
-  padding: 24px 23px 0;
-  border-radius: 13px;
+  --plaza-signal: oklch(0.82 0.105 60);
+  padding: 0;
+  min-height: 312px;
+  border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--background);
   position: relative;
   transition:
-    border-color 0.18s,
-    background 0.18s;
+    border-color 180ms ease-out,
+    background 180ms ease-out;
   box-shadow: none;
   transform: none;
+}
+.plaza-agent-card.agent-tone-maintenance {
+  --plaza-signal: oklch(0.8 0.1 250);
+}
+.plaza-agent-card.agent-tone-energy {
+  --plaza-signal: oklch(0.82 0.115 171);
+}
+.plaza-agent-card.agent-tone-production {
+  --plaza-signal: oklch(0.82 0.105 286);
+}
+.plaza-agent-card.agent-tone-supplier {
+  --plaza-signal: oklch(0.85 0.11 85);
 }
 .plaza-agent-card:hover {
   border-color: var(--agent-ink);
+  background: var(--background);
   box-shadow: none;
   transform: none;
-  background: oklch(0.998 0.001 255);
 }
-.plaza-card-top {
-  margin-bottom: 18px;
-  gap: 12px;
-}
-.plaza-agent-category {
-  font-size: 12px;
-  margin-left: auto;
-  color: var(--muted-foreground);
-}
-.plaza-entry-arrow {
-  color: oklch(0.58 0.014 255);
-  transition: color 0.18s;
-}
-.plaza-agent-card:hover .plaza-entry-arrow {
-  color: var(--agent-ink);
-}
-.plaza-agent-card h3 {
-  font-size: 19px;
-  font-weight: 600;
-}
-.plaza-card-description {
-  font-size: 14px;
-  min-height: 50px;
-  line-height: 1.8;
-  margin-top: 8px;
-}
-.agent-preview {
-  height: 127px;
-  border-radius: 8px;
-  padding: 14px 13px;
-  background: var(--agent-surface);
-  margin: 20px 0 19px;
-  overflow: hidden;
-}
-.preview-caption {
-  display: block;
-  font-size: 12px;
-  color: var(--agent-ink);
-  line-height: 1.5;
-}
-.preview-caption small {
-  font-size: 12px;
-}
-.preview-match > div {
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
-  margin-top: 13px;
-}
-.preview-match > div > span {
-  display: grid;
-  grid-template-columns: 18px auto;
-  gap: 3px 7px;
-  align-items: center;
-  min-width: 0;
-}
-.preview-match b {
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.preview-match small {
-  font-size: 12px;
-  color: var(--agent-ink);
-  grid-column: 2;
-}
-.preview-product-mark {
-  display: flex;
-  gap: 2px;
-  height: 24px;
-  align-items: center;
-  grid-row: 1/3;
-}
-.preview-product-mark i {
-  height: 16px;
-  width: 3px;
-  background: var(--agent-ink);
-  opacity: 0.45;
-  border-radius: 2px;
-}
-.preview-product-mark i:nth-child(2) {
-  height: 25px;
-  opacity: 0.85;
-}
-.preview-process > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 5px;
-  margin-top: 16px;
-}
-.preview-process > div > span {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  gap: 8px;
-  position: relative;
-  flex: 1;
-}
-.preview-process i {
-  font-size: 12px;
-  font-style: normal;
+.plaza-agent-artwork {
   display: grid;
   place-items: center;
-  width: 25px;
-  height: 25px;
-  border: 1px solid var(--agent-line);
-  border-radius: 50%;
-  color: var(--agent-ink);
-  background: var(--background);
+  position: relative;
+  width: 100%;
+  height: 158px;
+  border-radius: 13px 13px 0 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--plaza-signal);
+  background:
+    radial-gradient(ellipse at 50% 80%, oklch(0.31 0.045 257), transparent 70%),
+    oklch(0.1961 0.03757 260.5);
 }
-.preview-process b {
-  font-size: 12px;
-  font-weight: 400;
-}
-.preview-process > div > span > svg {
+.plaza-agent-circuit {
   position: absolute;
-  right: -10px;
-  top: 6px;
-  color: var(--agent-ink);
-  opacity: 0.6;
-}
-.preview-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  margin-top: 10px;
-}
-.preview-chart > div {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  font-size: 12px;
-  line-height: 1.2;
-}
-.preview-chart > div > span {
-  width: 55px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.preview-chart i {
-  flex: 1;
-  height: 5px;
-  background: var(--agent-line);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.preview-chart em {
+  width: 100%;
   height: 100%;
-  display: block;
-  background: var(--agent-ink);
-  border-radius: 2px;
-  opacity: 0.7;
+  color: var(--plaza-signal);
 }
-.preview-chart b {
-  font-weight: 500;
-  min-width: 54px;
-  text-align: right;
-  color: var(--agent-ink);
-  font-variant-numeric: tabular-nums;
+.plaza-circuit-traces {
+  stroke: currentColor;
+  opacity: 0.19;
+}
+.plaza-circuit-nodes {
+  fill: oklch(0.23 0.035 257);
+  stroke: currentColor;
+  opacity: 0.65;
+}
+.plaza-circuit-signal {
+  stroke: currentColor;
+  opacity: 0.5;
+  transition: opacity 200ms ease-out;
+}
+.plaza-agent-emblem {
+  width: 96px;
+  height: 96px;
+  position: relative;
+}
+.plaza-emblem-edge {
+  fill: color-mix(in oklch, var(--plaza-signal) 22%, oklch(0.23 0.035 257));
+  stroke: var(--plaza-signal);
+  stroke-width: 0.8;
+  stroke-opacity: 0.5;
+}
+.plaza-emblem-face {
+  fill: oklch(0.24 0.04 257);
+  stroke: var(--plaza-signal);
+  stroke-width: 0.5;
+  stroke-opacity: 0.3;
+}
+.plaza-glyph-fill {
+  fill: oklch(0.24 0.04 257);
+}
+.plaza-glyph-accent {
+  fill: color-mix(in oklch, var(--plaza-signal) 17%, oklch(0.24 0.04 257));
+}
+.plaza-agent-card:hover .plaza-circuit-signal,
+.plaza-agent-card:focus-visible .plaza-circuit-signal {
+  opacity: 1;
+}
+.plaza-card-copy {
+  padding: 23px 25px 0;
+}
+.plaza-agent-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.plaza-card-description {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  min-height: 0;
+  max-width: none;
+  line-height: 1.7;
+  margin-top: 7px;
 }
 .plaza-card-bottom {
-  padding: 17px 0;
-  border-top: 1px solid var(--border);
-}
-.plaza-card-bottom > span {
-  font-size: 12px;
+  margin-top: auto;
+  padding: 20px 25px 22px;
+  border: 0;
+  gap: 16px;
 }
 .plaza-card-bottom > strong {
-  font-size: 13px;
-  gap: 7px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--agent-ink);
 }
-.plaza-record-count {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  padding-bottom: 13px;
-  margin-top: -3px;
+.plaza-entry-arrow {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  color: var(--agent-ink);
+  background: var(--agent-surface);
+  transition:
+    background 180ms ease-out,
+    color 180ms ease-out;
+}
+.plaza-entry-arrow svg {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.plaza-agent-card:hover .plaza-entry-arrow,
+.plaza-agent-card:focus-visible .plaza-entry-arrow {
+  color: white;
+  background: var(--agent-ink);
+}
+.plaza-agent-card:hover .plaza-entry-arrow svg {
+  transform: translate(1px, -1px);
 }
 .application-footer {
   font-size: 12px;
@@ -501,15 +451,23 @@ body {
     min-height: 0;
   }
   .plaza-agent-card {
-    padding: 22px 22px 0;
+    padding: 0;
   }
-  .agent-preview {
-    height: 124px;
+  .plaza-agent-artwork {
+    height: 146px;
+  }
+  .plaza-card-copy {
+    padding: 21px 22px 0;
+  }
+  .plaza-card-bottom {
+    padding: 18px 22px 21px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .plaza-agent-card,
   .plaza-entry-arrow,
+  .plaza-entry-arrow svg,
+  .plaza-circuit-signal,
   .application-sidebar .agent-nav {
     transition: none;
   }

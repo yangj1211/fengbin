@@ -174,7 +174,7 @@ export default function Workspace({
             </output>
           )}
           {path === '/' ? (
-            <AgentPlaza state={state} navigate={navigate} />
+            <AgentPlaza navigate={navigate} />
           ) : activeModule ? (
             hasDashboard(activeModule.id) ? (
               <Tabs
