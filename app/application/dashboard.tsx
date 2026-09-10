@@ -1,6 +1,13 @@
 'use client';
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- Inline SVG charts need an image role; replacing the SVG with an img would remove its content. */
-import { useId, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useState,
+  type ReactNode,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import {
   ArrowUpRight,
   SlidersHorizontal,
@@ -29,7 +36,7 @@ import {
   type DashboardId,
 } from './dashboard-data';
 import { AgentIdentity } from './identity';
-import { Choice, DataTable, download, EmptyState } from './ui';
+import { Choice, Field, DataTable, download, EmptyState } from './ui';
 import AnalysisConditions from './conditions';
 import { ProductionChart, SupplierRanking } from './dashboard-charts';
 
@@ -71,9 +78,10 @@ function ComparisonChart({
   items: Comparison[];
   labels: string[];
   unit: string;
-  onSelect: (name: string) => void;
+  onSelect?: (name: string) => void;
   maxValue?: number;
 }) {
+  const Item = onSelect ? 'button' : 'div';
   const max = Math.max(
     1,
     maxValue ?? 0,
@@ -88,19 +96,19 @@ function ComparisonChart({
             {label}
           </span>
         ))}
-        <small>点击查看明细</small>
+        {onSelect && <small>点击查看明细</small>}
       </div>
       <div className="dashboard-comparisons">
         {items.slice(0, 8).map((item, i) => (
-          <button
+          <Item
             key={i}
             className="dashboard-comparison"
-            onClick={() => onSelect(item.name)}
-            aria-label={`查看${item.name}明细，${labels[0]} ${f(item.value, 2)} ${unit}${item.warning ? '，需关注' : ''}${item.comparison === undefined ? '' : `，${labels[1]} ${f(item.comparison, 2)} ${unit}${item.comparisonWarning ? '，需关注' : ''}`}`}
+            onClick={onSelect ? () => onSelect(item.name) : undefined}
+            aria-label={`${onSelect ? '查看' : ''}${item.name}${onSelect ? '明细' : ''}，${labels[0]} ${f(item.value, 2)} ${unit}${item.warning ? '，需关注' : ''}${item.comparison === undefined ? '' : `，${labels[1]} ${f(item.comparison, 2)} ${unit}${item.comparisonWarning ? '，需关注' : ''}`}`}
           >
             <span className="dashboard-comparison-name">
               {item.name}
-              <ArrowUpRight size={13} />
+              {onSelect && <ArrowUpRight size={13} />}
             </span>
             <span className="dashboard-comparison-bars">
               <span className="dashboard-comparison-track">
@@ -130,7 +138,7 @@ function ComparisonChart({
                 </small>
               )}
             </span>
-          </button>
+          </Item>
         ))}
       </div>
       {items.length > 8 && (
@@ -260,20 +268,41 @@ export default function BusinessDashboard({
   state,
   onAsk,
   navigate,
+  energyInput,
+  onEnergyInputChange,
 }: {
   id: DashboardId;
   state: WorkspaceState;
   onAsk: (input: Inputs) => boolean;
   navigate: (path: string) => boolean;
+  energyInput?: Inputs;
+  onEnergyInputChange?: Dispatch<SetStateAction<Inputs>>;
 }) {
   const agent = modules.find((m) => m.id === id)!;
   const dataset = state.datasets.find((d) => d.module === id)!;
-  const [input, setInput] = useState<Inputs>({ ...defaultInputs[id] });
+  const [localInput, setLocalInput] = useState<Inputs>({
+    ...defaultInputs[id],
+  });
+  const input = id === 'energy' && energyInput ? energyInput : localInput;
+  const setInput =
+    id === 'energy' && onEnergyInputChange
+      ? onEnergyInputChange
+      : setLocalInput;
   const [draft, setDraft] = useState<Inputs>(input);
   const [settings, setSettings] = useState(false);
   const [error, setError] = useState('');
+  useEffect(() => {
+    if (id === 'energy' && energyInput) {
+      setDraft(energyInput);
+      setError('');
+    }
+  }, [id, energyInput]);
   const board = buildDashboard(id, dataset, input);
-  const { rows, issues, metrics, analysis, all, field, scopeKey } = board;
+  const { rows, issues, analysis, all, field, scopeKey } = board;
+  const metrics =
+    id === 'energy'
+      ? board.metrics.filter((metric) => metric.label !== '基准以上电耗')
+      : board.metrics;
   const scopeOptions = Array.from(
     new Set([all, ...dataset.rows.map((r) => String(r[field]))]),
   );
@@ -304,24 +333,29 @@ export default function BusinessDashboard({
             <p>{descriptions[id]}</p>
           </div>
         </div>
-        <Button
-          onClick={() =>
-            ask(
-              input,
-              id === 'energy'
-                ? '请分析当前工序能耗，给出优化建议。'
-                : id === 'production'
+        {id !== 'energy' && (
+          <Button
+            onClick={() =>
+              ask(
+                input,
+                id === 'production'
                   ? '请分析当前产线表现，找出需要关注的异常。'
                   : '请评估供应商绩效，找出交付和质量风险。',
-            )
-          }
-        >
-          <MessageSquareText size={16} />
-          问问助手
-          <ArrowUpRight size={15} />
-        </Button>
+              )
+            }
+          >
+            <MessageSquareText size={16} />
+            问问助手
+            <ArrowUpRight size={15} />
+          </Button>
+        )}
       </div>
-      <div className="dashboard-toolbar">
+      <div
+        className={
+          'dashboard-toolbar' +
+          (id === 'energy' ? ' energy-simple-toolbar' : '')
+        }
+      >
         <Choice
           label={
             id === 'energy'
@@ -335,42 +369,80 @@ export default function BusinessDashboard({
           options={scopeOptions}
           onChange={drill}
         />
+        {id === 'energy' && (
+          <>
+            <Choice
+              label="估算未来"
+              name="energy-period"
+              value={input.period + ' 天'}
+              options={['7 天', '14 天', '30 天']}
+              onChange={(value) =>
+                setInput((old) => ({ ...old, period: value.split(' ')[0] }))
+              }
+            />
+            <Field
+              label="产量变化"
+              name="energy-change"
+              type="number"
+              suffix="%"
+              value={draft.change}
+              onChange={(value) => {
+                setDraft((old) => ({ ...old, change: value }));
+                const next = { ...input, change: value };
+                const problem = validateInputs('energy', next);
+                setError(
+                  problem ? `${problem} 当前仍按 ${input.change}% 估算。` : '',
+                );
+                if (!problem) setInput(next);
+              }}
+            />
+          </>
+        )}
         <div className="dashboard-toolbar-actions">
           <span className="dashboard-source">
             <i />
             {dataset.origin === 'sample' ? '示例数据' : '本地数据'} ·{' '}
             {dataset.rows.length} 条记录
           </span>
-          <Button
-            variant="outline"
-            aria-expanded={settings}
-            aria-controls="dashboard-settings"
-            onClick={() => {
-              setDraft(input);
-              setSettings(!settings);
-              setError('');
-            }}
-          >
-            <SlidersHorizontal size={15} />
-            {id === 'energy' ? '预测条件' : '指标规则'}
-          </Button>
-          <Button
-            variant="outline"
-            disabled={!rows.length}
-            onClick={() =>
-              download(
-                `${agent.name}-看板明细.csv`,
-                csvExport(analysis.columns, tableRows),
-                'text/csv;charset=utf-8',
-              )
-            }
-          >
-            <Download size={15} />
-            导出
-          </Button>
+          {id !== 'energy' && (
+            <>
+              <Button
+                variant="outline"
+                aria-expanded={settings}
+                aria-controls="dashboard-settings"
+                onClick={() => {
+                  setDraft(input);
+                  setSettings(!settings);
+                  setError('');
+                }}
+              >
+                <SlidersHorizontal size={15} />
+                指标规则
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!rows.length}
+                onClick={() =>
+                  download(
+                    `${agent.name}-看板明细.csv`,
+                    csvExport(analysis.columns, tableRows),
+                    'text/csv;charset=utf-8',
+                  )
+                }
+              >
+                <Download size={15} />
+                导出
+              </Button>
+            </>
+          )}
         </div>
       </div>
-      {settings && (
+      {id === 'energy' && error && (
+        <p className="energy-input-error" role="alert">
+          {error}
+        </p>
+      )}
+      {id !== 'energy' && settings && (
         <form
           id="dashboard-settings"
           className="dashboard-settings"
@@ -386,7 +458,7 @@ export default function BusinessDashboard({
             setError('');
           }}
         >
-          <h2>{id === 'energy' ? '调整预测条件' : '调整评估规则'}</h2>
+          <h2>调整评估规则</h2>
           <AnalysisConditions
             id={id}
             dataset={dataset}
@@ -407,7 +479,7 @@ export default function BusinessDashboard({
           </div>
         </form>
       )}
-      {scoped && (
+      {id !== 'energy' && scoped && (
         <button className="dashboard-reset-scope" onClick={() => drill(all)}>
           <ArrowLeft size={14} />
           返回{all} · 当前查看 {input[scopeKey]}
@@ -449,8 +521,8 @@ export default function BusinessDashboard({
             {id === 'energy' ? (
               <>
                 <Panel
-                  title="用电情景预测"
-                  description="累计电量 · MWh"
+                  title="用电估算"
+                  description="按产量变化估算 · MWh"
                   className="dashboard-forecast-panel"
                 >
                   <Forecast
@@ -475,7 +547,6 @@ export default function BusinessDashboard({
                     }))}
                     labels={['统计用电', '基准电量']}
                     unit="MWh"
-                    onSelect={drill}
                   />
                 </Panel>
                 <Panel
@@ -491,7 +562,6 @@ export default function BusinessDashboard({
                     }))}
                     labels={['实际单耗', '基准单耗']}
                     unit="kWh/千只"
-                    onSelect={drill}
                   />
                 </Panel>
               </>
@@ -571,97 +641,119 @@ export default function BusinessDashboard({
               </>
             )}
           </div>
-          <section className="dashboard-detail-panel">
-            <Tabs defaultValue="issues">
-              <div className="dashboard-detail-heading">
-                <TabsList variant="line">
-                  <TabsTrigger value="issues">
-                    {id === 'supplier' ? '风险明细' : '异常明细'}
-                    <span className="dashboard-count">{issues.length}</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="all">
-                    全部明细
-                    <span className="dashboard-count">{rows.length}</span>
-                  </TabsTrigger>
-                </TabsList>
-                <span>基于当前筛选与规则</span>
-              </div>
-              <TabsContent value="issues">
-                {issues.length ? (
-                  <div className="dashboard-issues">
-                    {issues.map((issue) => (
-                      <div className="dashboard-issue" key={issue.name}>
-                        <span className="dashboard-issue-icon">
-                          <AlertTriangle size={19} />
-                        </span>
-                        <div>
-                          <h3>
-                            {issue.name}
-                            <span>需关注</span>
-                          </h3>
-                          <p>{issue.detail}</p>
+          {id === 'energy' ? (
+            <section className="dashboard-detail-panel energy-simple-issues">
+              <h2>需要关注的问题</h2>
+              {issues.length ? (
+                issues.map((issue) => (
+                  <div key={issue.name}>
+                    <h3>
+                      {issue.name} · {issue.detail}
+                    </h3>
+                    <p>
+                      先核对产量统计，再结合空载时长、批次装载率和设备运行记录，确认偏差原因。
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p>当前工序的单位电耗未超过基准 5%。</p>
+              )}
+            </section>
+          ) : (
+            <section className="dashboard-detail-panel">
+              <Tabs defaultValue="issues">
+                <div className="dashboard-detail-heading">
+                  <TabsList variant="line">
+                    <TabsTrigger value="issues">
+                      {id === 'supplier' ? '风险明细' : '异常明细'}
+                      <span className="dashboard-count">{issues.length}</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="all">
+                      全部明细
+                      <span className="dashboard-count">{rows.length}</span>
+                    </TabsTrigger>
+                  </TabsList>
+                  <span>基于当前筛选与规则</span>
+                </div>
+                <TabsContent value="issues">
+                  {issues.length ? (
+                    <div className="dashboard-issues">
+                      {issues.map((issue) => (
+                        <div className="dashboard-issue" key={issue.name}>
+                          <span className="dashboard-issue-icon">
+                            <AlertTriangle size={19} />
+                          </span>
+                          <div>
+                            <h3>
+                              {issue.name}
+                              <span>需关注</span>
+                            </h3>
+                            <p>{issue.detail}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            onClick={() => ask(issue.inputs, issue.question)}
+                          >
+                            分析原因
+                            <ArrowRight size={15} />
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          onClick={() => ask(issue.inputs, issue.question)}
-                        >
-                          分析原因
-                          <ArrowRight size={15} />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="dashboard-no-issues">
-                    <CheckCircle2 size={25} />
-                    <strong>当前范围未发现指标异常</strong>
-                    <p>可在“指标规则”中调整阈值，或查看全部明细。</p>
-                  </div>
-                )}
-              </TabsContent>
-              <TabsContent value="all">
-                <DataTable
-                  columns={analysis.columns}
-                  rows={tableRows}
-                  actions={(i) => (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => drill(tableRows[i][0])}
-                    >
-                      查看
-                      <ArrowUpRight size={14} />
-                    </Button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="dashboard-no-issues">
+                      <CheckCircle2 size={25} />
+                      <strong>当前范围未发现指标异常</strong>
+                      <p>可在“指标规则”中调整阈值，或查看全部明细。</p>
+                    </div>
                   )}
-                />
-              </TabsContent>
-            </Tabs>
-          </section>
+                </TabsContent>
+                <TabsContent value="all">
+                  <DataTable
+                    columns={analysis.columns}
+                    rows={tableRows}
+                    actions={(i) => (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => drill(tableRows[i][0])}
+                      >
+                        查看
+                        <ArrowUpRight size={14} />
+                      </Button>
+                    )}
+                  />
+                </TabsContent>
+              </Tabs>
+            </section>
+          )}
         </>
       )}
-      <div className="dashboard-data-coverage">
-        <Database size={18} />
-        <div>
-          <strong>
-            {id === 'production'
-              ? '节拍 —　·　在制品 WIP —　·　班次对比 —'
-              : id === 'energy'
-                ? '日用电趋势 / 班次对比：待补充明细'
+      {id === 'energy' ? (
+        <p className="energy-coverage-note">
+          当前为工序用电汇总，按 7 天口径估算；尚无日、班次及设备时段明细。
+        </p>
+      ) : (
+        <div className="dashboard-data-coverage">
+          <Database size={18} />
+          <div>
+            <strong>
+              {id === 'production'
+                ? '节拍 —　·　在制品 WIP —　·　班次对比 —'
                 : '价格稳定性 / 订单批次：待补充明细'}
-          </strong>
-          <p>
-            {id === 'production'
-              ? '当前日报未提供节拍、在制品和班次字段；已有指标随产线数据更新。'
-              : id === 'energy'
-                ? '当前使用工序汇总数据，情景预测按 7 天统计周期估算。实测趋势需要日期和班次记录。'
+            </strong>
+            <p>
+              {id === 'production'
+                ? '当前日报未提供节拍、在制品和班次字段；已有指标随产线数据更新。'
                 : '当前使用供应商汇总指标，风险明细展示指标偏差；价格和订单分析需要对应记录。'}
-          </p>
+            </p>
+          </div>
+          <Button variant="ghost" onClick={() => navigate('/data')}>
+            查看数据
+            <ArrowUpRight size={15} />
+          </Button>
         </div>
-        <Button variant="ghost" onClick={() => navigate('/data')}>
-          查看数据
-          <ArrowUpRight size={15} />
-        </Button>
-      </div>
+      )}
       <footer className="dashboard-footer">
         <span>
           {dataset.name} ·{' '}

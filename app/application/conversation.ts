@@ -9,6 +9,7 @@ import {
 } from './model';
 import { replyToCustomer, customerConditions } from './customer-engine';
 import { customerExamples } from './customer-data';
+import { energyAnswer } from './energy-answer';
 import { replyToMaintenance } from './maintenance-engine';
 import type { SourceReference, CustomerDecision } from './customer-types';
 export type ConversationTurn = {
@@ -151,7 +152,7 @@ export function replyToQuestion(
   if (/(能做什么|怎么用|如何使用|什么功能)/.test(q))
     return {
       inputs: input,
-      answer: `我可以${m.description}您可以参考“${suggestions[id][0].question}”来提问，也可以展开“分析条件”精确设置参数。当前根据本地资料与规则回答。`,
+      answer: `我可以${m.description}您可以参考“${suggestions[id][0].question}”来提问，${id === 'energy' ? '也可以直接在问题里说明工序、天数和产量变化。' : '也可以展开“分析条件”精确设置参数。'}当前根据本地资料与规则回答。`,
     };
   const compact = (value: string) => value.replace(/\s/g, '').toLowerCase();
   const scopeColumn = {
@@ -170,7 +171,8 @@ export function replyToQuestion(
     customer:
       /电容|产品|型号|选型|推荐|规格|容量|电压|温度|寿命|工业|消费|小时|[vVμu]F?/,
     maintenance: /维修|设备|故障|排查|卷绕|含浸|老化|温度|真空|张力|断箔/,
-    energy: /用电|电量|能耗|能源|工序|产量|预测|增长|减少/,
+    energy:
+      /用电|电量|能耗|能源|工序|产量|预测|增长|减少|趋势|班次|产线|设备|夜间|用水|水耗|用气|气耗|空压|空调|计算|公式|怎么算/,
     production: /生产|产线|产量|达成|完成率|不良|质量|预警/,
     supplier: /供应商|交付|来料|绩效|评分|权重|合格率/,
   };
@@ -182,7 +184,7 @@ export function replyToQuestion(
   )
     return {
       inputs: input,
-      answer: `这条问题暂时无法转换为${m.name}的分析条件。请描述具体的${id === 'energy' ? '工序、预测周期或产量变化' : id === 'production' ? '产线、完成率或不良率阈值' : '供应商、目标或评分权重'}；也可展开“分析条件”后按条件分析。`,
+      answer: `这条问题暂时无法转换为${m.name}的分析条件。请描述具体的${id === 'energy' ? '工序、预测周期或产量变化' : id === 'production' ? '产线、完成率或不良率阈值' : '供应商、目标或评分权重'}${id === 'energy' ? '，例如：产量增长5%，预测下周用电。' : '；也可展开“分析条件”后按条件分析。'}`,
     };
   const capture = (key: string, pattern: RegExp) => {
     const hit = q.match(pattern);
@@ -197,6 +199,7 @@ export function replyToQuestion(
     return Boolean(match);
   };
   if (id === 'energy') {
+    if (/产量不变|产量持平/.test(q)) input.change = '0';
     capture('period', /(\d+)\s*天/);
     if (/下周|未来一周/.test(q)) input.period = '7';
     capture(
@@ -233,8 +236,10 @@ export function replyToQuestion(
   if (error)
     return {
       inputs: input,
-      answer: `还需要调整一个条件：${error}修改问题中的数值，或在“分析条件”里调整后再试。`,
+      answer: `还需要调整一个条件：${error}${id === 'energy' ? '请在问题里修改数值后再试。' : '修改问题中的数值，或在“分析条件”里调整后再试。'}`,
     };
+  if (id === 'energy')
+    return { inputs: input, answer: energyAnswer(question, input, dataset) };
   const analysis = analyze(id, input, dataset);
   return {
     inputs: input,

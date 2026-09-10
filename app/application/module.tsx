@@ -69,10 +69,12 @@ export default function ModuleWorkspace({
   registerLeaveGuard: (guard: ((discard?: boolean) => boolean) | null) => void;
 }) {
   const m = modules.find((m) => m.id === id)!;
-  const plainReply = id === 'customer' || id === 'maintenance';
+  const plainReply =
+    id === 'customer' || id === 'maintenance' || id === 'energy';
+  const sampleLibrary = id === 'customer' || id === 'maintenance';
   const welcomeSuggestions =
     id === 'customer' ? suggestions[id].slice(0, 3) : suggestions[id];
-  const dataset = (plainReply ? initialDatasets : state.datasets).find(
+  const dataset = (sampleLibrary ? initialDatasets : state.datasets).find(
     (d) => d.id === m.dataset,
   )!;
   const [edited, setEdited] = useState<Inputs | null>(null);
@@ -370,7 +372,7 @@ export default function ModuleWorkspace({
                         {m.name}
                         {!plainReply && <span>资料分析</span>}
                       </div>
-                      {id === 'maintenance' ? (
+                      {id === 'maintenance' || id === 'energy' ? (
                         <MessageContent
                           content={[
                             turn.answer,
@@ -397,49 +399,61 @@ export default function ModuleWorkspace({
                           待补充：{turn.missing.join('、')}
                         </p>
                       ) : null}
-                      {turn.analysis && id !== 'maintenance' && (
-                        <>
-                          {!plainReply && (
-                            <div className="answer-conditions">
-                              {conditionSummary(id, turn.inputs).map((v, i) => (
-                                <span key={i}>{v}</span>
-                              ))}
+                      {turn.analysis &&
+                        id !== 'maintenance' &&
+                        id !== 'energy' && (
+                          <>
+                            {!plainReply && (
+                              <div className="answer-conditions">
+                                {conditionSummary(id, turn.inputs).map(
+                                  (v, i) => (
+                                    <span key={i}>{v}</span>
+                                  ),
+                                )}
+                              </div>
+                            )}
+                            <div className="chat-analysis-panel">
+                              <AnalysisResult
+                                analysis={turn.analysis}
+                                module={id}
+                                inputs={turn.inputs}
+                              />
                             </div>
-                          )}
-                          <div className="chat-analysis-panel">
-                            <AnalysisResult
-                              analysis={turn.analysis}
-                              module={id}
-                              inputs={turn.inputs}
-                            />
-                          </div>
-                          {!plainReply && (
-                            <div className="answer-actions">
-                              <span>
-                                <FileText size={14} />
-                                {turn.sourceName}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                onClick={() => {
-                                  if (saved)
-                                    navigate('/records/' + turn.savedRecordId);
-                                  else {
-                                    setSaveTarget(turn);
-                                    setRecordName(turn.question.slice(0, 55));
-                                  }
-                                }}
-                              >
-                                {saved ? (
-                                  <Check size={15} />
-                                ) : (
-                                  <Save size={15} />
-                                )}{' '}
-                                {saved ? '已保存 · 打开记录' : '保存分析'}
-                              </Button>
-                            </div>
-                          )}
-                        </>
+                            {!plainReply && (
+                              <div className="answer-actions">
+                                <span>
+                                  <FileText size={14} />
+                                  {turn.sourceName}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => {
+                                    if (saved)
+                                      navigate(
+                                        '/records/' + turn.savedRecordId,
+                                      );
+                                    else {
+                                      setSaveTarget(turn);
+                                      setRecordName(turn.question.slice(0, 55));
+                                    }
+                                  }}
+                                >
+                                  {saved ? (
+                                    <Check size={15} />
+                                  ) : (
+                                    <Save size={15} />
+                                  )}{' '}
+                                  {saved ? '已保存 · 打开记录' : '保存分析'}
+                                </Button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      {id === 'energy' && turn.analysis && (
+                        <p className="source-unavailable">
+                          参考数据：{turn.sourceName}
+                          （历史汇总记录，按当时条件作线性估算）。
+                        </p>
                       )}
                       {(id === 'maintenance' ||
                         (id === 'customer' && !turn.analysis)) && (
@@ -560,7 +574,9 @@ export default function ModuleWorkspace({
                   ? '描述客户需求，例如：工业电源用，450V、470μF，推荐哪些型号？'
                   : id === 'maintenance'
                     ? '描述设备、告警或现象，也可以补充已检查的结果…'
-                    : '输入您的问题，也可以继续追问或调整分析条件…'
+                    : id === 'energy'
+                      ? '问问用电、异常或优化建议，例如：产量增长5%，下周用电多少？'
+                      : '输入您的问题，也可以继续追问或调整分析条件…'
               }
               maxLength={2000}
               disabled={Boolean(pending)}
@@ -568,9 +584,9 @@ export default function ModuleWorkspace({
             />
             <div className="composer-toolbar">
               <div>
-                {plainReply ? (
+                {sampleLibrary ? (
                   <SourceLibrary module={id as 'customer' | 'maintenance'} />
-                ) : (
+                ) : id === 'energy' ? null : (
                   <Button
                     type="button"
                     variant="ghost"
@@ -582,7 +598,7 @@ export default function ModuleWorkspace({
                     <span>资料</span>
                   </Button>
                 )}
-                {id !== 'maintenance' && (
+                {id !== 'maintenance' && id !== 'energy' && (
                   <>
                     <Button
                       type="button"

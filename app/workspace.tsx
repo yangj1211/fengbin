@@ -4,7 +4,12 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, MessageSquareText } from 'lucide-react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { modules, type Inputs } from './application/model';
+import {
+  modules,
+  defaultInputs,
+  validateInputs,
+  type Inputs,
+} from './application/model';
 import { hasDashboard } from './application/dashboard-data';
 import BusinessDashboard from './application/dashboard';
 import {
@@ -17,6 +22,8 @@ import {
   startConversation,
   selectConversation,
   removeConversation,
+  applyEnergyDashboardConditions,
+  energyConditions,
 } from './application/sessions';
 import Navigation from './application/navigation';
 import AgentPlaza from './application/home';
@@ -38,6 +45,9 @@ export default function Workspace({
   const state = useWorkspace();
   const [message, setMessage] = useState('');
   const [loggingOut, setLoggingOut] = useState(false);
+  const [energyInput, setEnergyInput] = useState<Inputs>({
+    ...defaultInputs.energy,
+  });
   const leaveGuard = useRef<((discard?: boolean) => boolean) | null>(null);
   const registerLeaveGuard = useCallback(
     (guard: ((discard?: boolean) => boolean) | null) => {
@@ -85,7 +95,14 @@ export default function Workspace({
   function newConversation(input?: Inputs) {
     if (!activeModule || !canLeave()) return false;
     const ok = updateWorkspace((s) =>
-      startConversation(s, activeModule.id, input),
+      startConversation(
+        s,
+        activeModule.id,
+        input ??
+          (activeModule.id === 'energy'
+            ? energyConditions(energyInput)
+            : undefined),
+      ),
     );
     if (!ok) setMessage(storageMessage());
     else setMessage('');
@@ -108,6 +125,30 @@ export default function Workspace({
   }
   function changeView(value: 'chat' | 'dashboard') {
     if (!activeModule || value === view || !canLeave()) return;
+    if (activeModule.id === 'energy') {
+      let nextConditions: Inputs | undefined;
+      let invalidConditions = false;
+      const ok = updateWorkspace((s) => {
+        if (value === 'chat')
+          return applyEnergyDashboardConditions(s, energyInput);
+        const draft = currentSession(s, 'energy')?.draft;
+        if (draft) {
+          invalidConditions = Boolean(validateInputs('energy', draft));
+          if (!invalidConditions) nextConditions = energyConditions(draft);
+        }
+        return { ...s, moduleViews: { ...s.moduleViews, energy: 'dashboard' } };
+      });
+      if (ok && nextConditions)
+        setEnergyInput((old) => ({ ...old, ...nextConditions }));
+      setMessage(
+        ok
+          ? invalidConditions
+            ? '问答中的估算条件尚未有效，当前沿用看板原条件。'
+            : ''
+          : storageMessage(),
+      );
+      return;
+    }
     if (
       !updateWorkspace((s) => ({
         ...s,
@@ -205,6 +246,8 @@ export default function Workspace({
                     state={state}
                     onAsk={newConversation}
                     navigate={navigate}
+                    energyInput={energyInput}
+                    onEnergyInputChange={setEnergyInput}
                   />
                 </TabsContent>
                 <TabsContent value="chat">{conversation}</TabsContent>

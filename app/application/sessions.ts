@@ -49,6 +49,26 @@ export function currentSession(
     sessions[0]
   );
 }
+export function energyConditions(input: Inputs): Inputs {
+  return { process: input.process, period: input.period, change: input.change };
+}
+export function applyEnergyDashboardConditions(
+  state: WorkspaceState,
+  input: Inputs,
+): WorkspaceState {
+  const current = currentSession(state, 'energy');
+  const conditions = energyConditions(input);
+  if (!current) return startConversation(state, 'energy', conditions);
+  return {
+    ...state,
+    moduleViews: { ...state.moduleViews, energy: 'chat' },
+    sessions: (state.sessions ?? []).map((session) =>
+      session.id === current.id
+        ? { ...session, draft: { ...session.draft, ...conditions } }
+        : session,
+    ),
+  };
+}
 export function startConversation(
   state: WorkspaceState,
   module: ModuleId,
