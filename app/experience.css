@@ -238,14 +238,15 @@ body {
 /* Lightweight application entries with a shared, custom agent emblem system. */
 .agent-plaza-grid {
   display: grid;
-  gap: 22px;
+  max-width: 1200px;
+  gap: 36px 32px;
   padding-bottom: 20px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .plaza-agent-card {
   --plaza-signal: oklch(0.82 0.105 60);
   padding: 0;
-  min-height: 312px;
+  min-height: 260px;
   border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--background);
@@ -279,7 +280,7 @@ body {
   place-items: center;
   position: relative;
   width: 100%;
-  height: 158px;
+  height: 120px;
   border-radius: 13px 13px 0 0;
   overflow: hidden;
   pointer-events: none;
@@ -309,8 +310,8 @@ body {
   transition: opacity 200ms ease-out;
 }
 .plaza-agent-emblem {
-  width: 96px;
-  height: 96px;
+  width: 78px;
+  height: 78px;
   position: relative;
 }
 .plaza-emblem-edge {
@@ -336,10 +337,10 @@ body {
   opacity: 1;
 }
 .plaza-card-copy {
-  padding: 23px 25px 0;
+  padding: 18px 22px 0;
 }
 .plaza-agent-card h3 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   line-height: 1.5;
   letter-spacing: -0.02em;
@@ -355,7 +356,7 @@ body {
 }
 .plaza-card-bottom {
   margin-top: auto;
-  padding: 20px 25px 22px;
+  padding: 14px 22px 18px;
   border: 0;
   gap: 16px;
 }
@@ -367,8 +368,8 @@ body {
 .plaza-entry-arrow {
   display: grid;
   place-items: center;
-  height: 32px;
-  width: 32px;
+  height: 28px;
+  width: 28px;
   border-radius: 50%;
   color: var(--agent-ink);
   background: var(--agent-surface);
@@ -445,7 +446,7 @@ body {
   }
   .agent-plaza-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 24px;
   }
   .plaza-card-description {
     min-height: 0;
@@ -454,13 +455,13 @@ body {
     padding: 0;
   }
   .plaza-agent-artwork {
-    height: 146px;
+    height: 112px;
   }
   .plaza-card-copy {
-    padding: 21px 22px 0;
+    padding: 18px 20px 0;
   }
   .plaza-card-bottom {
-    padding: 18px 22px 21px;
+    padding: 14px 20px 18px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

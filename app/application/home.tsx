@@ -10,7 +10,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { modules, type ModuleId } from './model';
 import AgentArtwork from './agent-artwork';
-import { hasDashboard } from './dashboard-data';
 const descriptions: Record<ModuleId, string> = {
   customer: '理解需求，匹配产品',
   maintenance: '定位故障，辅助排查',
@@ -76,7 +75,7 @@ export default function AgentPlaza({
               key={m.id}
               className={'plaza-agent-card agent-tone-' + m.id}
               onClick={() => navigate('/apps/' + m.id)}
-              aria-label={`${m.name}，${hasDashboard(m.id) ? '进入应用' : '开始对话'}`}
+              aria-label={`${m.name}，开始使用`}
             >
               <AgentArtwork id={m.id} />
               <div className="plaza-card-copy">
@@ -84,7 +83,7 @@ export default function AgentPlaza({
                 <p className="plaza-card-description">{descriptions[m.id]}</p>
               </div>
               <div className="plaza-card-bottom">
-                <strong>{hasDashboard(m.id) ? '进入应用' : '开始对话'}</strong>
+                <strong>开始使用</strong>
                 <span className="plaza-entry-arrow">
                   <ArrowUpRight size={18} />
                 </span>
