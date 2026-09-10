@@ -48,11 +48,12 @@ export default function AnalysisConditions({
             value={input.customer}
             onChange={(v) => change('customer', v)}
           />
-          {choice(
-            'application',
-            '应用场景',
-            Array.from(new Set(dataset.rows.map((r) => String(r['应用'])))),
-          )}
+          <Field
+            name="customer-application"
+            label="应用场景"
+            value={input.application ?? ''}
+            onChange={(v) => change('application', v)}
+          />
           <div className="field-pair">
             {numeric('voltage', '最低额定电压', 'V')}
             {numeric('capacity', '标称容量', 'μF')}
@@ -61,6 +62,25 @@ export default function AnalysisConditions({
             {numeric('temperature', '工作温度', '℃')}
             {numeric('life', '最低寿命', 'h')}
           </div>
+          <div className="field-pair">
+            {numeric('diameter', '最大直径（选填）', 'mm')}
+            {numeric('height', '最大高度（选填）', 'mm')}
+          </div>
+          <div className="field-pair">
+            {numeric('leadDays', '示例交期上限（选填）', '天')}
+            {choice('priority', '优先考虑', [
+              '综合匹配',
+              '小型化优先',
+              '交期优先',
+              '寿命优先',
+            ])}
+          </div>
+          <Field
+            name="customer-replacement"
+            label="需替代的型号（选填）"
+            value={input.replacement ?? ''}
+            onChange={(v) => change('replacement', v.toUpperCase())}
+          />
         </>
       )}
       {id === 'maintenance' && (

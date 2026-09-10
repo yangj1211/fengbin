@@ -1,0 +1,477 @@
+{
+  "version": "1.0.0-demo",
+  "documents": [
+    {
+      "id": "catalog",
+      "fileName": "示例产品目录.pdf",
+      "url": "/sample-data/customer/示例产品目录.pdf",
+      "kind": "产品目录",
+      "summary": "10个虚构电容型号及应用、电气、尺寸和示例交期参数。",
+      "sections": [
+        {
+          "id": "catalog-fb-lh470",
+          "title": "FB-LH470 / 工业电源",
+          "page": 1,
+          "text": "型号：FB-LH470；应用：工业电源；额定电压：450 V；标称容量：470 μF；温度：105℃；寿命：5000 h；直径：35 mm；高度：50 mm；纹波电流：2.6 A；示例交期：14天。"
+        },
+        {
+          "id": "catalog-fb-ls470",
+          "title": "FB-LS470 / 工业电源",
+          "page": 1,
+          "text": "型号：FB-LS470；应用：工业电源；额定电压：450 V；标称容量：470 μF；温度：105℃；寿命：3000 h；直径：30 mm；高度：45 mm；纹波电流：2.2 A；示例交期：7天。"
+        },
+        {
+          "id": "catalog-fb-hv470",
+          "title": "FB-HV470 / 工业电源",
+          "page": 1,
+          "text": "型号：FB-HV470；应用：工业电源；额定电压：400 V；标称容量：470 μF；温度：105℃；寿命：5000 h；直径：30 mm；高度：45 mm；纹波电流：2.3 A；示例交期：10天。"
+        },
+        {
+          "id": "catalog-fb-lv470",
+          "title": "FB-LV470 / 消费电子",
+          "page": 1,
+          "text": "型号：FB-LV470；应用：消费电子；额定电压：50 V；标称容量：470 μF；温度：105℃；寿命：2000 h；直径：10 mm；高度：20 mm；纹波电流：0.8 A；示例交期：7天。"
+        },
+        {
+          "id": "catalog-fb-ht330",
+          "title": "FB-HT330 / 工业电源",
+          "page": 1,
+          "text": "型号：FB-HT330；应用：工业电源；额定电压：450 V；标称容量：330 μF；温度：125℃；寿命：10000 h；直径：35 mm；高度：50 mm；纹波电流：2.0 A；示例交期：28天。"
+        },
+        {
+          "id": "catalog-fb-lh220",
+          "title": "FB-LH220 / 工业电源",
+          "page": 2,
+          "text": "型号：FB-LH220；应用：工业电源；额定电压：450 V；标称容量：220 μF；温度：105℃；寿命：5000 h；直径：22 mm；高度：40 mm；纹波电流：1.7 A；示例交期：14天。"
+        },
+        {
+          "id": "catalog-fb-sm220",
+          "title": "FB-SM220 / 工业电源",
+          "page": 2,
+          "text": "型号：FB-SM220；应用：工业电源；额定电压：450 V；标称容量：220 μF；温度：105℃；寿命：3000 h；直径：20 mm；高度：35 mm；纹波电流：1.4 A；示例交期：7天。"
+        },
+        {
+          "id": "catalog-fb-ht220",
+          "title": "FB-HT220 / 工业电源",
+          "page": 2,
+          "text": "型号：FB-HT220；应用：工业电源；额定电压：450 V；标称容量：220 μF；温度：125℃；寿命：10000 h；直径：25 mm；高度：45 mm；纹波电流：1.9 A；示例交期：28天。"
+        },
+        {
+          "id": "catalog-fb-cx1000",
+          "title": "FB-CX1000 / 消费电子",
+          "page": 2,
+          "text": "型号：FB-CX1000；应用：消费电子；额定电压：25 V；标称容量：1000 μF；温度：105℃；寿命：3000 h；直径：10 mm；高度：20 mm；纹波电流：1.1 A；示例交期：10天。"
+        },
+        {
+          "id": "catalog-fb-au470",
+          "title": "FB-AU470 / 汽车电子",
+          "page": 2,
+          "text": "型号：FB-AU470；应用：汽车电子；额定电压：50 V；标称容量：470 μF；温度：125℃；寿命：5000 h；直径：12.5 mm；高度：25 mm；纹波电流：1.2 A；示例交期：21天。"
+        }
+      ]
+    },
+    {
+      "id": "rules",
+      "fileName": "示例选型规则.pdf",
+      "url": "/sample-data/customer/示例选型规则.pdf",
+      "kind": "选型规则",
+      "summary": "必要信息、硬条件筛选、可选限制、无结果处理和人工核对要求。",
+      "sections": [
+        {
+          "id": "rules-required-fields",
+          "title": "01 先确认五项必要需求",
+          "page": 1,
+          "text": "必要需求为应用、额定电压、标称容量、温度和寿命。缺少任意一项时，应明确询问缺失信息，不暗中默认参数，不直接给出确定推荐。"
+        },
+        {
+          "id": "rules-core-match",
+          "title": "02 逐项进行硬条件筛选",
+          "page": 1,
+          "text": "产品应用必须与需求匹配；标称容量必须精确匹配；额定电压、温度和寿命必须分别不低于要求。任意硬条件不满足即排除；不得用其他优势抵消不符合项。"
+        },
+        {
+          "id": "rules-optional-constraints",
+          "title": "03 尺寸与交期作为可选条件",
+          "page": 1,
+          "text": "客户给出最大直径或最大高度时，产品对应尺寸不得超过上限。客户给出最长可接受交期时，按示例交期上限筛选；客户要求最短交期时，在满足全部条件的候选中按示例交期从短到长排序。未提供可选条件时不暗中加入限制。"
+        },
+        {
+          "id": "rules-no-result",
+          "title": "04 如实说明不足与无结果",
+          "page": 1,
+          "text": "仅返回满足全部已确认条件的候选。候选不足时不硬凑 Top N；没有产品满足条件时明确说明无结果，并逐项解释冲突条件。不得编造匹配率、推荐准确率或真实业务成效。"
+        },
+        {
+          "id": "rules-manual-check",
+          "title": "05 推荐后必须人工核对",
+          "page": 1,
+          "text": "进入实际选型前，必须人工核对纹波电流对应的频率和温度条件、安装方式与引脚、真实规格书以及项目认证要求。汽车电子样例不宣称通过 AEC 认证；参数筛选通过不等于适用性验证或无条件替代。"
+        },
+        {
+          "id": "rules-data-scope",
+          "title": "06 正确认识示例数据",
+          "page": 1,
+          "text": "本套资料的型号、产品参数、替代关系与需求案例均为虚构。交期仅为示例假设，不代表实际库存或交期；资料未提供真实价格、库存、认证或供应承诺。所有结论仅用于界面演示。"
+        }
+      ]
+    },
+    {
+      "id": "replacements",
+      "fileName": "示例替代型号说明.pdf",
+      "url": "/sample-data/customer/示例替代型号说明.pdf",
+      "kind": "替代型号说明",
+      "summary": "两组虚构外部型号的原始需求及有条件候选关系。",
+      "sections": [
+        {
+          "id": "replacement-old-450-220",
+          "title": "OLD-450-220 / 有条件候选",
+          "page": 1,
+          "text": "虚构外部型号：OLD-450-220；原型号应用：工业电源；额定电压：450 V；标称容量：220 μF；温度：105℃；寿命：3000 h。示例候选型号：FB-LH220、FB-SM220、FB-HT220。仅作为基于示例应用与核心参数的候选关系，不构成无条件替代。尺寸、纹波频率和温度条件、安装方式与引脚、真实规格书及认证要求必须人工核对；若客户补充限制，必须重新筛选。交期仅为示例假设，不代表实际库存或交期。"
+        },
+        {
+          "id": "replacement-old-450-470",
+          "title": "OLD-450-470 / 有条件候选",
+          "page": 1,
+          "text": "虚构外部型号：OLD-450-470；原型号应用：工业电源；额定电压：450 V；标称容量：470 μF；温度：105℃；寿命：3000 h。示例候选型号：FB-LH470、FB-LS470。仅作为基于示例应用与核心参数的候选关系，不构成无条件替代。尺寸、纹波频率和温度条件、安装方式与引脚、真实规格书及认证要求必须人工核对；若客户补充限制，必须重新筛选。交期仅为示例假设，不代表实际库存或交期。"
+        }
+      ]
+    },
+    {
+      "id": "cases",
+      "fileName": "示例历史需求案例.pdf",
+      "url": "/sample-data/customer/示例历史需求案例.pdf",
+      "kind": "历史需求案例",
+      "summary": "五类完整客户问题及示例筛选结论，均为虚构场景。",
+      "sections": [
+        {
+          "id": "case-industrial-470",
+          "title": "工业电源 / 450 V、470 μF",
+          "page": 1,
+          "text": "客户问题：我们要为工业电源选择电容，要求额定电压不低于450 V、标称容量470 μF、温度不低于105℃、寿命不低于3000 h，尺寸暂无限制。请给出符合条件的候选，并按示例交期从短到长展示。示例候选：FB-LS470、FB-LH470。判定说明：两款产品均满足已给定条件；示例交期分别为7天和14天。FB-HV470的额定电压400 V低于要求，应排除。"
+        },
+        {
+          "id": "case-compact-220",
+          "title": "小型化工业电源 / 尺寸上限",
+          "page": 1,
+          "text": "客户问题：我们在做小型化工业电源，需要额定电压不低于450 V、标称容量220 μF、温度不低于105℃、寿命不低于3000 h的电容，最大直径22 mm、最大高度40 mm。有哪些候选？示例候选：FB-LH220、FB-SM220。判定说明：两款产品满足核心参数及尺寸上限；FB-HT220的直径25 mm、高度45 mm超过上限，应排除。"
+        },
+        {
+          "id": "case-replace-220",
+          "title": "外部型号替代 / OLD-450-220",
+          "page": 1,
+          "text": "客户问题：我们要替换工业电源上的OLD-450-220，原型号额定电压450 V、标称容量220 μF、温度105℃、寿命3000 h，尺寸暂未限定。请列出有依据的替代候选，并说明还需要人工核对哪些条件。示例候选：FB-LH220、FB-SM220、FB-HT220。判定说明：示例替代说明列出这三款候选。仍须人工核对纹波频率和温度条件、安装方式与引脚、真实规格书及认证要求，不能直接确认无条件替代。"
+        },
+        {
+          "id": "case-high-temperature-330",
+          "title": "工业电源 / 高温长寿命",
+          "page": 2,
+          "text": "客户问题：我们需要工业电源用电容，额定电压不低于450 V、标称容量330 μF、温度不低于125℃、寿命不低于10000 h，尺寸和交期暂不限。请推荐满足这些要求的型号。示例候选：FB-HT330。判定说明：本示例目录中仅FB-HT330满足全部要求，只返回这一款，不补足其他型号。"
+        },
+        {
+          "id": "case-consumer-470",
+          "title": "消费电子 / 50 V、470 μF",
+          "page": 2,
+          "text": "客户问题：我们开发消费电子产品，需要额定电压不低于50 V、标称容量470 μF、温度不低于105℃、寿命不低于2000 h的电容，尺寸和交期暂无限制。请给出符合条件的候选。示例候选：FB-LV470。判定说明：本示例目录中仅FB-LV470同时满足应用与核心参数要求。工业电源或汽车电子应用的型号不能因其他参数符合而自动纳入。"
+        }
+      ]
+    },
+    {
+      "id": "faq",
+      "fileName": "示例销售FAQ.pdf",
+      "url": "/sample-data/customer/示例销售FAQ.pdf",
+      "kind": "销售FAQ",
+      "summary": "使用方法、来源边界、资料不足以及价格库存问题。",
+      "sections": [
+        {
+          "id": "faq-how-to-use",
+          "title": "如何使用这个推荐示例？",
+          "page": 1,
+          "text": "先描述应用、额定电压、标称容量、温度和寿命，再按需要补充尺寸与交期限制。系统依据示例目录逐项筛选，并提供对应资料、段落与页码。阅读候选参数后，再由专业人员完成真实选型核对。"
+        },
+        {
+          "id": "faq-source-meaning",
+          "title": "来源引用应该如何理解？",
+          "page": 1,
+          "text": "来源引用指向本套虚构示例资料中的具体段落和页码，只用于说明界面结论与示例内容之间的对应关系。它不是真实厂商规格书、检测报告或客户记录；示例案例不证明匹配率、准确率或业务成效。"
+        },
+        {
+          "id": "faq-missing-data",
+          "title": "资料不足或没有符合的型号怎么办？",
+          "page": 1,
+          "text": "必要需求缺失时应先询问；资料未覆盖的产品事实应明确标注未知。没有候选满足全部条件时应说明无结果，不补造参数、不暗中放宽条件、不硬凑推荐数量。新增限制须重新筛选；最终必须核对真实规格书和项目要求。"
+        },
+        {
+          "id": "faq-price-stock",
+          "title": "能否查询价格、库存或保证交期？",
+          "page": 1,
+          "text": "本示例未接入真实价格、库存或供应系统，不能提供报价或库存承诺。目录中的交期只是演示假设，不代表实际库存或交期。真实价格、供货情况及交付安排应由销售人员依据有效业务资料确认。"
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "model": "FB-LH470",
+      "application": "工业电源",
+      "voltage": 450,
+      "capacity": 470,
+      "temperature": 105,
+      "life": 5000,
+      "diameter": 35,
+      "height": 50,
+      "ripple": 2.6,
+      "leadDays": 14,
+      "source": {
+        "documentId": "catalog",
+        "sectionId": "catalog-fb-lh470",
+        "page": 1
+      }
+    },
+    {
+      "model": "FB-LS470",
+      "application": "工业电源",
+      "voltage": 450,
+      "capacity": 470,
+      "temperature": 105,
+      "life": 3000,
+      "diameter": 30,
+      "height": 45,
+      "ripple": 2.2,
+      "leadDays": 7,
+      "source": {
+        "documentId": "catalog",
+        "sectionId": "catalog-fb-ls470",
+        "page": 1
+      }
+    },
+    {
+      "model": "FB-HV470",
+      "application": "工业电源",
+      "voltage": 400,
+      "capacity": 470,
+      "temperature": 105,
+      "life": 5000,
+      "diameter": 30,
+      "height": 45,
+      "ripple": 2.3,
+      "leadDays": 10,
+      "source": {
+        "documentId": "catalog",
+        "sectionId": "catalog-fb-hv470",
+        "page": 1
+      }
+    },
+    {
+      "model": "FB-LV470",
+      "application": "消费电子",
+      "voltage": 50,
+      "capacity": 470,
+      "temperature": 105,
+      "life": 2000,
+      "diameter": 10,
+      "height": 20,
+      "ripple": 0.8,
+      "leadDays": 7,
+      "source": {
+        "documentId": "catalog",
+        "sectionId": "catalog-fb-lv470",
+        "page": 1
+      }
+    },
+    {
+      "model": "FB-HT330",
+      "application": "工业电源",
+      "voltage": 450,
+      "capacity": 330,
+      "temperature": 125,
+      "life": 10000,
+      "diameter": 35,
+      "height": 50,
+      "ripple": 2.0,
+      "leadDays": 28,
+      "source": {
+        "documentId": "catalog",
+        "sectionId": "catalog-fb-ht330",
+        "page": 1
+      }
+    },
+    {
+      "model": "FB-LH220",
+      "application": "工业电源",
+      "voltage": 450,
+      "capacity": 220,
+      "temperature": 105,
+      "life": 5000,
+      "diameter": 22,
+      "height": 40,
+      "ripple": 1.7,
+      "leadDays": 14,
+      "source": {
+        "documentId": "catalog",
+        "sectionId": "catalog-fb-lh220",
+        "page": 2
+      }
+    },
+    {
+      "model": "FB-SM220",
+      "application": "工业电源",
+      "voltage": 450,
+      "capacity": 220,
+      "temperature": 105,
+      "life": 3000,
+      "diameter": 20,
+      "height": 35,
+      "ripple": 1.4,
+      "leadDays": 7,
+      "source": {
+        "documentId": "catalog",
+        "sectionId": "catalog-fb-sm220",
+        "page": 2
+      }
+    },
+    {
+      "model": "FB-HT220",
+      "application": "工业电源",
+      "voltage": 450,
+      "capacity": 220,
+      "temperature": 125,
+      "life": 10000,
+      "diameter": 25,
+      "height": 45,
+      "ripple": 1.9,
+      "leadDays": 28,
+      "source": {
+        "documentId": "catalog",
+        "sectionId": "catalog-fb-ht220",
+        "page": 2
+      }
+    },
+    {
+      "model": "FB-CX1000",
+      "application": "消费电子",
+      "voltage": 25,
+      "capacity": 1000,
+      "temperature": 105,
+      "life": 3000,
+      "diameter": 10,
+      "height": 20,
+      "ripple": 1.1,
+      "leadDays": 10,
+      "source": {
+        "documentId": "catalog",
+        "sectionId": "catalog-fb-cx1000",
+        "page": 2
+      }
+    },
+    {
+      "model": "FB-AU470",
+      "application": "汽车电子",
+      "voltage": 50,
+      "capacity": 470,
+      "temperature": 125,
+      "life": 5000,
+      "diameter": 12.5,
+      "height": 25,
+      "ripple": 1.2,
+      "leadDays": 21,
+      "source": {
+        "documentId": "catalog",
+        "sectionId": "catalog-fb-au470",
+        "page": 2
+      }
+    }
+  ],
+  "replacements": [
+    {
+      "from": "OLD-450-220",
+      "to": ["FB-LH220", "FB-SM220", "FB-HT220"],
+      "requirements": {
+        "application": "工业电源",
+        "voltage": 450,
+        "capacity": 220,
+        "temperature": 105,
+        "life": 3000
+      },
+      "caveat": "仅作为基于示例应用与核心参数的候选关系，不构成无条件替代。尺寸、纹波频率和温度条件、安装方式与引脚、真实规格书及认证要求必须人工核对；若客户补充限制，必须重新筛选。交期仅为示例假设，不代表实际库存或交期。",
+      "source": {
+        "documentId": "replacements",
+        "sectionId": "replacement-old-450-220",
+        "page": 1
+      }
+    },
+    {
+      "from": "OLD-450-470",
+      "to": ["FB-LH470", "FB-LS470"],
+      "requirements": {
+        "application": "工业电源",
+        "voltage": 450,
+        "capacity": 470,
+        "temperature": 105,
+        "life": 3000
+      },
+      "caveat": "仅作为基于示例应用与核心参数的候选关系，不构成无条件替代。尺寸、纹波频率和温度条件、安装方式与引脚、真实规格书及认证要求必须人工核对；若客户补充限制，必须重新筛选。交期仅为示例假设，不代表实际库存或交期。",
+      "source": {
+        "documentId": "replacements",
+        "sectionId": "replacement-old-450-470",
+        "page": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "case-industrial-470",
+      "title": "工业电源 / 450 V、470 μF",
+      "question": "我们要为工业电源选择电容，要求额定电压不低于450 V、标称容量470 μF、温度不低于105℃、寿命不低于3000 h，尺寸暂无限制。请给出符合条件的候选，并按示例交期从短到长展示。",
+      "recommendedModels": ["FB-LS470", "FB-LH470"],
+      "source": {
+        "documentId": "cases",
+        "sectionId": "case-industrial-470",
+        "page": 1
+      }
+    },
+    {
+      "id": "case-compact-220",
+      "title": "小型化工业电源 / 尺寸上限",
+      "question": "我们在做小型化工业电源，需要额定电压不低于450 V、标称容量220 μF、温度不低于105℃、寿命不低于3000 h的电容，最大直径22 mm、最大高度40 mm。有哪些候选？",
+      "recommendedModels": ["FB-LH220", "FB-SM220"],
+      "source": {
+        "documentId": "cases",
+        "sectionId": "case-compact-220",
+        "page": 1
+      }
+    },
+    {
+      "id": "case-replace-220",
+      "title": "外部型号替代 / OLD-450-220",
+      "question": "我们要替换工业电源上的OLD-450-220，原型号额定电压450 V、标称容量220 μF、温度105℃、寿命3000 h，尺寸暂未限定。请列出有依据的替代候选，并说明还需要人工核对哪些条件。",
+      "recommendedModels": ["FB-LH220", "FB-SM220", "FB-HT220"],
+      "source": {
+        "documentId": "cases",
+        "sectionId": "case-replace-220",
+        "page": 1
+      }
+    },
+    {
+      "id": "case-high-temperature-330",
+      "title": "工业电源 / 高温长寿命",
+      "question": "我们需要工业电源用电容，额定电压不低于450 V、标称容量330 μF、温度不低于125℃、寿命不低于10000 h，尺寸和交期暂不限。请推荐满足这些要求的型号。",
+      "recommendedModels": ["FB-HT330"],
+      "source": {
+        "documentId": "cases",
+        "sectionId": "case-high-temperature-330",
+        "page": 2
+      }
+    },
+    {
+      "id": "case-consumer-470",
+      "title": "消费电子 / 50 V、470 μF",
+      "question": "我们开发消费电子产品，需要额定电压不低于50 V、标称容量470 μF、温度不低于105℃、寿命不低于2000 h的电容，尺寸和交期暂无限制。请给出符合条件的候选。",
+      "recommendedModels": ["FB-LV470"],
+      "source": {
+        "documentId": "cases",
+        "sectionId": "case-consumer-470",
+        "page": 2
+      }
+    }
+  ]
+}

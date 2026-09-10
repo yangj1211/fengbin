@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './experience.css';
 import './dashboard.css';
+import './customer.css';
 export const metadata: Metadata = {
   title: '丰宾电子 · 智能制造平台',
   description:

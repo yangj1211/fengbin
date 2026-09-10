@@ -7,6 +7,9 @@ import {
   type Dataset,
   type Analysis,
 } from './model';
+import { replyToCustomer, customerConditions } from './customer-engine';
+import { customerExamples } from './customer-data';
+import type { SourceReference, CustomerDecision } from './customer-types';
 export type ConversationTurn = {
   id: string;
   question: string;
@@ -17,6 +20,9 @@ export type ConversationTurn = {
   sourceName: string;
   sourceOrigin: 'sample' | 'local';
   savedRecordId?: string;
+  sources?: SourceReference[];
+  missing?: string[];
+  customerDecision?: CustomerDecision;
 };
 export type ConversationSession = {
   id: string;
@@ -31,21 +37,10 @@ export const suggestions: Record<
   ModuleId,
   { title: string; question: string }[]
 > = {
-  customer: [
-    {
-      title: '推荐合适的产品',
-      question: '帮我推荐工业电源用电容，450V、470μF、105℃，寿命至少3000小时。',
-    },
-    {
-      title: '提高寿命要求',
-      question: '如果寿命要求提高到5000小时，还有哪些产品可选？',
-    },
-    {
-      title: '查看高温产品',
-      question:
-        '工业电源需要450V、330μF、125℃、10000小时的电容，有合适的型号吗？',
-    },
-  ],
+  customer: customerExamples.map(({ title, question }) => ({
+    title,
+    question,
+  })),
   maintenance: [
     {
       title: '卷绕机异常排查',
@@ -101,14 +96,7 @@ export const suggestions: Record<
   ],
 };
 export function conditionSummary(id: ModuleId, input: Inputs): string[] {
-  if (id === 'customer')
-    return [
-      input.application,
-      input.voltage + ' V',
-      input.capacity + ' μF',
-      input.temperature + '℃',
-      input.life + ' h',
-    ];
+  if (id === 'customer') return customerConditions(input);
   if (id === 'maintenance')
     return [input.device, input.symptom, input.priority + '处理'];
   if (id === 'energy')
@@ -135,7 +123,14 @@ export function replyToQuestion(
   question: string,
   current: Inputs,
   dataset: Dataset,
-): { answer: string; inputs: Inputs; analysis?: Analysis } {
+): {
+  answer: string;
+  inputs: Inputs;
+  analysis?: Analysis;
+  sources?: SourceReference[];
+  missing?: string[];
+} {
+  if (id === 'customer') return replyToCustomer(question, current);
   const input: Inputs = { ...current, question };
   const q = question.replace(/％/g, '%');
   const m = modules.find((m) => m.id === id)!;
@@ -178,7 +173,7 @@ export function replyToQuestion(
   )
     return {
       inputs: input,
-      answer: `这条问题暂时无法转换为${m.name}的分析条件。请描述具体的${id === 'customer' ? '应用、电压、容量或寿命' : id === 'maintenance' ? '设备和故障现象' : id === 'energy' ? '工序、预测周期或产量变化' : id === 'production' ? '产线、完成率或不良率阈值' : '供应商、目标或评分权重'}；也可展开“分析条件”后按条件分析。`,
+      answer: `这条问题暂时无法转换为${m.name}的分析条件。请描述具体的${id === 'maintenance' ? '设备和故障现象' : id === 'energy' ? '工序、预测周期或产量变化' : id === 'production' ? '产线、完成率或不良率阈值' : '供应商、目标或评分权重'}；也可展开“分析条件”后按条件分析。`,
     };
   const capture = (key: string, pattern: RegExp) => {
     const hit = q.match(pattern);
@@ -192,13 +187,7 @@ export function replyToQuestion(
     if (match) input[key] = match;
     return Boolean(match);
   };
-  if (id === 'customer') {
-    capture('voltage', /(-?\d+(?:\.\d+)?)\s*(?:V|伏)/i);
-    capture('capacity', /(-?\d+(?:\.\d+)?)\s*(?:μF|µF|uF|微法)/i);
-    capture('temperature', /(-?\d+(?:\.\d+)?)\s*(?:℃|°C|摄氏度|度)/i);
-    capture('life', /(-?\d+(?:\.\d+)?)\s*(?:小时|[hH]\b)/);
-    choose('application', '应用');
-  } else if (id === 'maintenance') {
+  if (id === 'maintenance') {
     const knownDevice = choose('device', '设备类型');
     const rows = dataset.rows.filter(
       (r) => !knownDevice || r['设备类型'] === input.device,

@@ -5,6 +5,7 @@ import {
   type WorkspaceState,
 } from './model';
 import type { ConversationSession, ConversationTurn } from './conversation';
+import { normalizeCustomerInputs } from './customer-engine';
 
 function searchableText(value: unknown): string {
   if (typeof value === 'string' || typeof value === 'number')
@@ -75,11 +76,14 @@ export function startConversation(
     createdAt: now,
     updatedAt: now,
     turns: [],
-    draft: {
-      ...defaultInputs[module],
-      ...draft,
-      question: draft?.question ?? '',
-    },
+    draft:
+      module === 'customer' && draft
+        ? normalizeCustomerInputs(draft)
+        : {
+            ...defaultInputs[module],
+            ...draft,
+            question: draft?.question ?? '',
+          },
   };
   return {
     ...state,

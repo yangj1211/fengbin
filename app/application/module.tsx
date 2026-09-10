@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import {
   defaultInputs,
+  initialDatasets,
   modules,
   type ModuleId,
   type Inputs,
@@ -44,6 +45,9 @@ import { mergeConversationTurns } from './sessions';
 import { AgentIdentity } from './identity';
 import AnalysisConditions from './conditions';
 import AnalysisResult from './result';
+import { AnswerSources, CustomerSourceLibrary } from './customer-sources';
+import type { CustomerDecision } from './customer-types';
+import { normalizeCustomerInputs } from './customer-engine';
 export default function ModuleWorkspace({
   id,
   state,
@@ -58,9 +62,12 @@ export default function ModuleWorkspace({
   registerLeaveGuard: (guard: ((discard?: boolean) => boolean) | null) => void;
 }) {
   const m = modules.find((m) => m.id === id)!;
-  const dataset = state.datasets.find((d) => d.id === m.dataset)!;
+  const dataset = (id === 'customer' ? initialDatasets : state.datasets).find(
+    (d) => d.id === m.dataset,
+  )!;
   const [edited, setEdited] = useState<Inputs | null>(null);
-  const input = edited ?? session?.draft ?? defaultInputs[id];
+  const draft = edited ?? session?.draft ?? defaultInputs[id];
+  const input = id === 'customer' ? normalizeCustomerInputs(draft) : draft;
   const [question, setQuestion] = useState<string | null>(null);
   const text = question ?? input.question ?? '';
   const [localTurns, setLocalTurns] = useState<ConversationTurn[] | null>(null);
@@ -129,6 +136,36 @@ export default function ModuleWorkspace({
   function change(key: string, value: string) {
     setEdited({ ...input, [key]: value });
     setMessage('');
+  }
+  function recordDecision(
+    turn: ConversationTurn,
+    customerDecision: CustomerDecision,
+  ) {
+    const next = turns.map((t) =>
+      t.id === turn.id ? { ...t, customerDecision } : t,
+    );
+    const ok = updateWorkspace((s) => ({
+      ...s,
+      sessions: (s.sessions ?? []).map((item) =>
+        item.id === session?.id
+          ? {
+              ...item,
+              turns: mergeConversationTurns(item.turns, next),
+              updatedAt: customerDecision.updatedAt,
+            }
+          : item,
+      ),
+      records: s.records.map((record) =>
+        record.id === turn.savedRecordId
+          ? { ...record, customerDecision }
+          : record,
+      ),
+    }));
+    if (ok) setLocalTurns(null);
+    else {
+      setLocalTurns(next);
+      setMessage(storageMessage());
+    }
   }
   function send(value = text) {
     const query = value.trim();
@@ -244,6 +281,9 @@ export default function ModuleWorkspace({
       sourceOrigin: target.sourceOrigin,
       state: '待跟进' as const,
       note: '',
+      ...(target.customerDecision
+        ? { customerDecision: target.customerDecision }
+        : {}),
     };
     if (
       updateWorkspace((s) => ({
@@ -288,16 +328,28 @@ export default function ModuleWorkspace({
                       ? '看见产线表现，及时发现偏差。'
                       : '让供应商表现，清晰可见。'}
             </h2>
-            <p>{m.description}直接告诉我您想解决的问题。</p>
-            <div className="chat-prompt-grid">
+            <p>
+              {id === 'customer'
+                ? '描述应用、参数或替代型号。信息不完整时，我会先帮你补齐；每条建议都可以查看原文件。'
+                : m.description + '直接告诉我您想解决的问题。'}
+            </p>
+            <div
+              className={
+                id === 'customer' ? 'customer-example-list' : 'chat-prompt-grid'
+              }
+            >
               {suggestions[id].map((p) => (
-                <button key={p.title} onClick={() => send(p.question)}>
+                <button
+                  key={p.title}
+                  onClick={() => send(p.question)}
+                  title={p.question}
+                >
                   <span className="prompt-number">
                     <MessageSquareText size={17} />
                     <ArrowUpRight size={15} />
                   </span>
                   <strong>{p.title}</strong>
-                  <span>{p.question}</span>
+                  {id !== 'customer' && <span>{p.question}</span>}
                 </button>
               ))}
             </div>
@@ -322,6 +374,20 @@ export default function ModuleWorkspace({
                         <span>资料分析</span>
                       </div>
                       <p className="assistant-answer">{turn.answer}</p>
+                      {id === 'customer' &&
+                        !turn.analysis &&
+                        conditionSummary(id, turn.inputs).length > 0 && (
+                          <div className="answer-conditions">
+                            {conditionSummary(id, turn.inputs).map((v) => (
+                              <span key={v}>{v}</span>
+                            ))}
+                          </div>
+                        )}
+                      {id === 'customer' && turn.missing?.length ? (
+                        <p className="customer-missing">
+                          待补充：{turn.missing.join('、')}
+                        </p>
+                      ) : null}
                       {turn.analysis && (
                         <>
                           <div className="answer-conditions">
@@ -333,13 +399,21 @@ export default function ModuleWorkspace({
                             <AnalysisResult
                               analysis={turn.analysis}
                               module={id}
+                              decision={turn.customerDecision}
+                              onDecision={
+                                id === 'customer'
+                                  ? (value) => recordDecision(turn, value)
+                                  : undefined
+                              }
                             />
                           </div>
                           <div className="answer-actions">
-                            <span>
-                              <FileText size={14} />
-                              {turn.sourceName}
-                            </span>
+                            {id !== 'customer' && (
+                              <span>
+                                <FileText size={14} />
+                                {turn.sourceName}
+                              </span>
+                            )}
                             <Button
                               variant="ghost"
                               onClick={() => {
@@ -357,6 +431,13 @@ export default function ModuleWorkspace({
                           </div>
                         </>
                       )}
+                      {id === 'customer' &&
+                        !turn.analysis?.customerCandidates && (
+                          <AnswerSources
+                            sources={turn.sources}
+                            legacy={!turn.sources}
+                          />
+                        )}
                     </div>
                   </div>
                 </div>
@@ -392,7 +473,17 @@ export default function ModuleWorkspace({
         {message && <output className="chat-feedback">{message}</output>}
         {turns.length > 0 && !pending && (
           <div className="chat-followups">
-            {suggestions[id].slice(1).map((p) => (
+            {(id === 'customer'
+              ? [
+                  { title: '推荐依据', question: '为什么推荐这些型号？' },
+                  {
+                    title: '优先小型化',
+                    question: '尺寸再小一点，有哪些候选？',
+                  },
+                  { title: '缩短交期', question: '交期7天以内，有哪些候选？' },
+                ]
+              : suggestions[id].slice(1)
+            ).map((p) => (
               <button key={p.title} onClick={() => send(p.question)}>
                 {p.title}
                 <ArrowUpRight size={13} />
@@ -406,7 +497,11 @@ export default function ModuleWorkspace({
               <div className="conditions-panel-heading">
                 <div>
                   <h2>分析条件</h2>
-                  <p>问题中明确的参数会更新这些条件，其余沿用当前值。</p>
+                  <p>
+                    {id === 'customer'
+                      ? '已识别的需求在这里核对；必需信息为空时会先询问。'
+                      : '问题中明确的参数会更新这些条件，其余沿用当前值。'}
+                  </p>
                 </div>
                 <Button
                   variant="ghost"
@@ -471,16 +566,20 @@ export default function ModuleWorkspace({
             />
             <div className="composer-toolbar">
               <div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  aria-label="管理资料与导入文件"
-                  title="管理资料与导入文件"
-                  onClick={() => navigate('/data')}
-                >
-                  <Paperclip size={17} />
-                  <span>资料</span>
-                </Button>
+                {id === 'customer' ? (
+                  <CustomerSourceLibrary />
+                ) : (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    aria-label="管理资料与导入文件"
+                    title="管理资料与导入文件"
+                    onClick={() => navigate('/data')}
+                  >
+                    <Paperclip size={17} />
+                    <span>资料</span>
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="ghost"
@@ -552,7 +651,7 @@ export default function ModuleWorkspace({
           <DialogHeader>
             <DialogTitle>保存分析记录</DialogTitle>
             <DialogDescription>
-              保留本次问题、条件与分析结果，方便后续跟进或导出。
+              保留本次问题、条件、引用资料与分析结果，方便后续跟进。
             </DialogDescription>
           </DialogHeader>
           <div className="app-field">

@@ -37,6 +37,7 @@ import {
   formatDate,
 } from './ui';
 import { startConversation } from './sessions';
+import { resolveSource } from './customer-data';
 export default function Records({
   state,
   recordId,
@@ -102,13 +103,22 @@ export default function Records({
     else setMessage(storageMessage());
   }
   function exportRecord(r: AnalysisRecord) {
+    const sourceNotes = (r.analysis.sources ?? [])
+      .map((ref) => {
+        const source = resolveSource(ref);
+        return source
+          ? `${source.document.fileName}，第 ${ref.page} 页，${source.section.title}\n${source.section.text}`
+          : '';
+      })
+      .filter(Boolean)
+      .join('\n\n');
     const text = `# ${r.name}\n\n记录编号：${r.id}\n创建时间：${new Date(r.createdAt).toLocaleString('zh-CN')}\n来源：${r.sourceName}（${r.sourceOrigin === 'sample' ? '示例数据' : '本地导入'}）\n状态：${r.state}\n\n## 分析结论\n${r.analysis.title}\n\n${r.analysis.summary}\n\n## 输入参数\n${Object.entries(
       r.inputs,
     )
       .map(([k, v]) => `${k}: ${v}`)
       .join(
         '\n',
-      )}\n\n## 详细结果\n${r.analysis.columns.join(' | ')}\n${r.analysis.rows.map((row) => row.join(' | ')).join('\n')}\n\n## 建议\n${r.analysis.recommendation}\n\n## 依据\n${r.analysis.basis.join('\n')}\n\n## 跟进说明\n${r.note || '尚未填写'}\n`;
+      )}\n\n## 详细结果\n${r.analysis.columns.join(' | ')}\n${r.analysis.rows.map((row) => row.join(' | ')).join('\n')}\n\n## 建议\n${r.analysis.recommendation}\n\n## 依据\n${r.analysis.basis.join('\n')}${sourceNotes ? '\n\n## 引用原文件\n' + sourceNotes : ''}${r.customerDecision ? '\n\n采用记录：' + r.customerDecision.model + (r.customerDecision.action === 'adopt' ? ' 已采用' : ' 已撤回') : ''}\n\n## 跟进说明\n${r.note || '尚未填写'}\n`;
     download(
       r.name.replace(/[\\/:*?"<>|]/g, '_') + '.md',
       text,
@@ -188,7 +198,11 @@ export default function Records({
         {message && <output className="app-message">{message}</output>}
         <div className="record-detail-grid">
           <section className="app-section">
-            <AnalysisResult analysis={record.analysis} module={record.module} />
+            <AnalysisResult
+              analysis={record.analysis}
+              module={record.module}
+              decision={record.customerDecision}
+            />
           </section>
           <aside className="record-followup">
             <h2>处理与跟进</h2>

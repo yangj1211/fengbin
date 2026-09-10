@@ -10,6 +10,36 @@ import {
   type Analysis,
 } from './model';
 import type { ConversationTurn } from './conversation';
+import { resolveSource } from './customer-data';
+import type { SourceReference } from './customer-types';
+import type { CustomerDecision } from './customer-types';
+import { normalizeCustomerInputs } from './customer-engine';
+function validSources(sources: unknown): boolean {
+  return (
+    sources === undefined ||
+    (Array.isArray(sources) &&
+      sources.length <= 30 &&
+      sources.every(
+        (s) =>
+          s &&
+          typeof s.documentId === 'string' &&
+          typeof s.sectionId === 'string' &&
+          Number.isInteger(s.page) &&
+          resolveSource(s as SourceReference),
+      ))
+  );
+}
+function validDecision(value: CustomerDecision | undefined) {
+  return (
+    value === undefined ||
+    Boolean(
+      value &&
+      typeof value.model === 'string' &&
+      (value.action === 'adopt' || value.action === 'hold') &&
+      typeof value.updatedAt === 'string',
+    )
+  );
+}
 const initial: WorkspaceState = {
   version: 1,
   records: [],
@@ -30,6 +60,40 @@ function validAnalysis(value: unknown): boolean {
   return Boolean(
     a &&
     typeof a.title === 'string' &&
+    validSources(a.sources) &&
+    (a.customerCandidates === undefined ||
+      (Array.isArray(a.customerCandidates) &&
+        a.customerCandidates.every(
+          (c) =>
+            c &&
+            c.product &&
+            typeof c.product.model === 'string' &&
+            [
+              'voltage',
+              'capacity',
+              'temperature',
+              'life',
+              'diameter',
+              'height',
+              'leadDays',
+              'ripple',
+            ].every((k) =>
+              Number.isFinite(c.product[k as keyof typeof c.product]),
+            ) &&
+            typeof c.product.application === 'string' &&
+            Array.isArray(c.reasons) &&
+            c.reasons.every((r) => typeof r === 'string') &&
+            validSources(c.sources),
+        ))) &&
+    (a.customerExclusions === undefined ||
+      (Array.isArray(a.customerExclusions) &&
+        a.customerExclusions.every(
+          (c) =>
+            c &&
+            typeof c.model === 'string' &&
+            typeof c.reason === 'string' &&
+            validSources([c.source]),
+        ))) &&
     typeof a.summary === 'string' &&
     typeof a.recommendation === 'string' &&
     typeof a.chartTitle === 'string' &&
@@ -69,6 +133,11 @@ function validTurn(t: ConversationTurn): boolean {
     typeof t.id === 'string' &&
     typeof t.question === 'string' &&
     typeof t.answer === 'string' &&
+    validSources(t.sources) &&
+    validDecision(t.customerDecision) &&
+    (t.missing === undefined ||
+      (Array.isArray(t.missing) &&
+        t.missing.every((m) => typeof m === 'string'))) &&
     typeof t.createdAt === 'string' &&
     typeof t.sourceName === 'string' &&
     (t.sourceOrigin === 'sample' || t.sourceOrigin === 'local') &&
@@ -110,6 +179,7 @@ function hydrate() {
         modules.some((m) => m.id === r.module) &&
         (r.state === '待跟进' || r.state === '已完成') &&
         typeof r.note === 'string' &&
+        validDecision(r.customerDecision) &&
         typeof r.sourceName === 'string' &&
         Object.values(r.inputs ?? {}).every((v) => typeof v === 'string') &&
         typeof r.name === 'string' &&
@@ -153,12 +223,19 @@ function hydrate() {
             createdAt,
             updatedAt: turns.at(-1)?.createdAt ?? createdAt,
             turns,
-            draft: {
-              ...defaultInputs[m.id],
-              ...turns.at(-1)?.inputs,
-              question: '',
-              ...draft,
-            },
+            draft:
+              m.id === 'customer'
+                ? normalizeCustomerInputs({
+                    ...turns.at(-1)?.inputs,
+                    question: '',
+                    ...draft,
+                  })
+                : {
+                    ...defaultInputs[m.id],
+                    ...turns.at(-1)?.inputs,
+                    question: '',
+                    ...draft,
+                  },
           },
         ];
       });
@@ -183,7 +260,10 @@ function hydrate() {
           return false;
         seen.add(session.id);
         session.turns = session.turns.filter(validTurn).slice(-20);
-        session.draft = { ...defaultInputs[session.module], ...session.draft };
+        session.draft =
+          session.module === 'customer'
+            ? normalizeCustomerInputs(session.draft)
+            : { ...defaultInputs[session.module], ...session.draft };
         return true;
       });
     }
@@ -204,6 +284,11 @@ function hydrate() {
       }),
     );
     parsed.drafts = {};
+    parsed.datasets = parsed.datasets.map((d) =>
+      d.id === 'products' && d.origin === 'sample'
+        ? initialDatasets.find((item) => item.id === 'products')!
+        : d,
+    );
     snapshot = parsed;
     error = '';
   } catch {

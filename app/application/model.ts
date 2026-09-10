@@ -1,4 +1,11 @@
 import type { ConversationTurn, ConversationSession } from './conversation';
+import type {
+  CustomerCandidate,
+  SourceReference,
+  CustomerDecision,
+} from './customer-types';
+import { customerProducts } from './customer-data';
+import { buildCustomerAnalysis, customerDefaults } from './customer-engine';
 export const modules = [
   {
     id: 'customer',
@@ -92,13 +99,14 @@ export const initialDatasets: Dataset[] = [
     '电容器产品目录',
     'customer',
     ['产品型号', '额定电压(V)', '容量(μF)', '温度(℃)', '寿命(h)', '应用'],
-    [
-      ['FB-LH470', 450, 470, 105, 5000, '工业电源'],
-      ['FB-LS470', 450, 470, 105, 3000, '工业电源'],
-      ['FB-HV470', 400, 470, 105, 5000, '工业电源'],
-      ['FB-LV470', 50, 470, 105, 2000, '消费电子'],
-      ['FB-HT330', 450, 330, 125, 10000, '工业电源'],
-    ],
+    customerProducts.map((p) => [
+      p.model,
+      p.voltage,
+      p.capacity,
+      p.temperature,
+      p.life,
+      p.application,
+    ]),
   ),
   data(
     'maintenance',
@@ -187,15 +195,7 @@ export const initialDatasets: Dataset[] = [
 ];
 export type Inputs = Record<string, string>;
 export const defaultInputs: Record<ModuleId, Inputs> = {
-  customer: {
-    customer: '新客户',
-    application: '工业电源',
-    voltage: '450',
-    capacity: '470',
-    temperature: '105',
-    life: '3000',
-    notes: '',
-  },
+  customer: customerDefaults,
   maintenance: {
     device: '卷绕机 W-03',
     symptom: '张力波动 / 断箔',
@@ -225,6 +225,13 @@ export type Analysis = {
   recommendation: string;
   basis: string[];
   empty?: boolean;
+  sources?: SourceReference[];
+  customerCandidates?: CustomerCandidate[];
+  customerExclusions?: {
+    model: string;
+    reason: string;
+    source: SourceReference;
+  }[];
 };
 export type AnalysisRecord = {
   id: string;
@@ -237,6 +244,7 @@ export type AnalysisRecord = {
   sourceOrigin: 'sample' | 'local';
   state: '待跟进' | '已完成';
   note: string;
+  customerDecision?: CustomerDecision;
 };
 export type WorkspaceState = {
   version: 1;
@@ -339,68 +347,7 @@ export function analyze(
     ],
     steps: [] as Analysis['steps'],
   };
-  if (id === 'customer') {
-    const matches = dataset.rows
-      .filter(
-        (r) =>
-          n(r, '额定电压(V)') >= Number(input.voltage) &&
-          n(r, '容量(μF)') === Number(input.capacity) &&
-          n(r, '温度(℃)') >= Number(input.temperature) &&
-          n(r, '寿命(h)') >= Number(input.life) &&
-          String(r['应用']) === input.application,
-      )
-      .sort((a, b) => n(b, '寿命(h)') - n(a, '寿命(h)'));
-    return {
-      ...common,
-      title: matches.length
-        ? `找到 ${matches.length} 款满足条件的候选产品`
-        : '当前目录中没有满足全部条件的产品',
-      summary: matches.length
-        ? `${input.customer || '客户'}的${input.application}需求已完成筛选。优先比较 ${matches[0]['产品型号']}，最终选型仍需确认尺寸、纹波电流和规格书。`
-        : '请检查输入规格，或调整条件后重新筛选。系统不会推荐不符合硬性参数的型号。',
-      empty: !matches.length,
-      metrics: [
-        {
-          label: '电压要求',
-          value: input.voltage + ' V',
-          detail: '候选额定电压不低于此值',
-        },
-        {
-          label: '容量要求',
-          value: input.capacity + ' μF',
-          detail: '按相同标称容量匹配',
-        },
-        {
-          label: '最低寿命',
-          value: f(Number(input.life), 0) + ' h',
-          detail: input.temperature + '℃ 温度条件',
-        },
-      ],
-      columns: ['候选型号', '额定电压', '容量', '温度', '寿命'],
-      rows: matches.map((r) => [
-        String(r['产品型号']),
-        r['额定电压(V)'] + ' V',
-        r['容量(μF)'] + ' μF',
-        r['温度(℃)'] + '℃',
-        f(n(r, '寿命(h)'), 0) + ' h',
-      ]),
-      bars: matches.map((r) => ({
-        label: String(r['产品型号']),
-        value:
-          (n(r, '寿命(h)') / Math.max(...matches.map((v) => n(v, '寿命(h)')))) *
-          100,
-        display: f(n(r, '寿命(h)'), 0) + ' h',
-      })),
-      chartTitle: '候选产品寿命对比',
-      recommendation:
-        '与产品工程师确认外形尺寸、安装方式及纹波电流，完成规格书复核后安排送样。',
-      basis: [
-        ...common.basis,
-        '电压、温度、寿命按最低要求筛选；容量与应用按精确值匹配。',
-        '候选产品按标称寿命从高到低排列，不代表最终选型结论。',
-      ],
-    };
-  }
+  if (id === 'customer') return buildCustomerAnalysis(input);
   if (id === 'maintenance') {
     const type = input.device.replace(/\s+(?:W-03|I-02|A-06)$/, '');
     const matches = dataset.rows.filter(
