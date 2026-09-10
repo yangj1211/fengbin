@@ -47,6 +47,11 @@ import AnalysisConditions from './conditions';
 import AnalysisResult from './result';
 import { AnswerSources, CustomerSourceLibrary } from './customer-sources';
 import { normalizeCustomerInputs } from './customer-engine';
+const customerWelcomeCards = [
+  { title: '工业电源选型', description: '450 V、470 μF，比较符合条件的型号。' },
+  { title: '小型化选型', description: '限定直径与高度，寻找合适的电容。' },
+  { title: '型号替代', description: '查找 OLD-450-220 的替代候选。' },
+];
 export default function ModuleWorkspace({
   id,
   state,
@@ -61,6 +66,8 @@ export default function ModuleWorkspace({
   registerLeaveGuard: (guard: ((discard?: boolean) => boolean) | null) => void;
 }) {
   const m = modules.find((m) => m.id === id)!;
+  const welcomeSuggestions =
+    id === 'customer' ? suggestions[id].slice(0, 3) : suggestions[id];
   const dataset = (id === 'customer' ? initialDatasets : state.datasets).find(
     (d) => d.id === m.dataset,
   )!;
@@ -304,10 +311,12 @@ export default function ModuleWorkspace({
             </p>
             <div
               className={
-                id === 'customer' ? 'customer-example-list' : 'chat-prompt-grid'
+                id === 'customer'
+                  ? 'chat-prompt-grid customer-example-cards'
+                  : 'chat-prompt-grid'
               }
             >
-              {suggestions[id].map((p) => (
+              {welcomeSuggestions.map((p, index) => (
                 <button
                   key={p.title}
                   onClick={() => send(p.question)}
@@ -317,8 +326,16 @@ export default function ModuleWorkspace({
                     <MessageSquareText size={17} />
                     <ArrowUpRight size={15} />
                   </span>
-                  <strong>{p.title}</strong>
-                  {id !== 'customer' && <span>{p.question}</span>}
+                  <strong>
+                    {id === 'customer'
+                      ? customerWelcomeCards[index].title
+                      : p.title}
+                  </strong>
+                  <span>
+                    {id === 'customer'
+                      ? customerWelcomeCards[index].description
+                      : p.question}
+                  </span>
                 </button>
               ))}
             </div>

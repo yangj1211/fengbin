@@ -1,36 +1,16 @@
-.customer-example-list {
-  max-width: 640px;
+.chat-prompt-grid.customer-example-cards {
+  max-width: 900px;
   margin: 28px auto 0;
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  border-top: 1px solid var(--border);
+  gap: 20px;
 }
-.customer-example-list > button {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 14px 10px;
-  border-bottom: 1px solid var(--border);
-  transition: background 150ms ease-out;
+.customer-example-cards > button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
 }
-.customer-example-list > button:hover {
-  background: var(--agent-surface);
-}
-.customer-example-list .prompt-number {
-  display: contents;
-}
-.customer-example-list .prompt-number > svg:last-child {
-  order: 3;
-  margin-left: auto;
-  color: var(--muted-foreground);
-}
-.customer-example-list strong {
-  font-size: 14px;
-  font-weight: 500;
-}
-.customer-example-list .prompt-number > svg:first-child {
-  color: var(--agent-ink);
+@media (min-width: 768px) {
+  .customer-example-cards > button {
+    min-height: 136px;
+  }
 }
 .agent-tone-customer .chat-analysis-panel {
   margin-top: 12px;
@@ -241,7 +221,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .customer-example-list > button,
+  .customer-example-cards > button,
   .customer-source-sheet {
     transition: none;
   }
