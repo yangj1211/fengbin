@@ -2,28 +2,19 @@
 import { Check, Lightbulb, FileCheck2, BarChart3 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable, EmptyState } from './ui';
-import type { Analysis, ModuleId } from './model';
-import type { CustomerDecision } from './customer-types';
+import type { Analysis, Inputs, ModuleId } from './model';
 import CustomerResult from './customer-result';
 export default function AnalysisResult({
   analysis,
   module,
-  decision,
-  onDecision,
+  inputs,
 }: {
   analysis: Analysis;
   module: ModuleId;
-  decision?: CustomerDecision;
-  onDecision?: (value: CustomerDecision) => void;
+  inputs: Inputs;
 }) {
-  if (module === 'customer' && analysis.customerCandidates)
-    return (
-      <CustomerResult
-        analysis={analysis}
-        decision={decision}
-        onDecision={onDecision}
-      />
-    );
+  if (module === 'customer')
+    return <CustomerResult analysis={analysis} inputs={inputs} />;
   return (
     <div className={'analysis-result result-' + module}>
       <div className="analysis-conclusion">

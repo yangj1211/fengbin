@@ -7,7 +7,12 @@ import ts from 'typescript';
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'fengbin-customer-test-'));
 try {
-  for (const name of ['customer-engine', 'customer-data', 'customer-types']) {
+  for (const name of [
+    'customer-engine',
+    'customer-data',
+    'customer-types',
+    'customer-comparison',
+  ]) {
     const source = fs.readFileSync(`app/application/${name}.ts`, 'utf8');
     fs.writeFileSync(
       path.join(temp, `${name}.js`),
@@ -34,6 +39,48 @@ try {
     customerFixtures: fixtures,
     resolveSource,
   } = require('./customer-data.js');
+  const {
+    customerParameterComparison: compare,
+  } = require('./customer-comparison.js');
+  const sample = fixtures.products.find(
+    (product) => product.model === 'FB-LH470',
+  );
+  const textComparison = compare(
+    {
+      application: '工业电源',
+      voltage: '450',
+      capacity: '470',
+      temperature: '105',
+      life: '3000',
+    },
+    sample,
+  );
+  assert.equal(textComparison.length, 5);
+  assert.ok(textComparison.every((line) => line.endsWith('，符合。')));
+  assert.match(textComparison.at(-1), /3,000 h.*5,000 h/);
+  const conflictComparison = compare(
+    {
+      voltage: '500',
+      capacity: '330',
+      temperature: '125',
+      life: '10000',
+      diameter: '30',
+      height: '40',
+      leadDays: '7',
+    },
+    sample,
+  );
+  assert.equal(conflictComparison.length, 7);
+  assert.ok(conflictComparison.every((line) => line.endsWith('，不符合。')));
+  assert.match(
+    conflictComparison.at(-1),
+    /交期要求不超过 7 天，产品示例交期为 14 天/,
+  );
+  assert.equal(
+    compare({ voltage: '450', capacity: '', life: '' }, sample).length,
+    1,
+    'Do not invent unstated requirements',
+  );
   const checkReferences = (result) => {
     assert.ok(result.sources.length > 0, 'Every reply needs a real source');
     for (const ref of result.sources)

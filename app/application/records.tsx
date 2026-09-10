@@ -201,7 +201,7 @@ export default function Records({
             <AnalysisResult
               analysis={record.analysis}
               module={record.module}
-              decision={record.customerDecision}
+              inputs={record.inputs}
             />
           </section>
           <aside className="record-followup">

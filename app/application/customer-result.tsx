@@ -1,120 +1,76 @@
 'use client';
-import { Check, CircleAlert } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { Analysis } from './model';
-import type { CustomerDecision } from './customer-types';
-import { DataTable } from './ui';
-import { SourceLink, AnswerSources } from './customer-sources';
+import type { Analysis, Inputs } from './model';
+import { AnswerSources } from './customer-sources';
+import { customerParameterComparison } from './customer-comparison';
 
 export default function CustomerResult({
   analysis,
-  decision,
-  onDecision,
+  inputs,
 }: {
   analysis: Analysis;
-  decision?: CustomerDecision;
-  onDecision?: (value: CustomerDecision) => void;
+  inputs: Inputs;
 }) {
+  const lookup = analysis.title === '产品规格查询';
   return (
     <div className="customer-result">
-      <div className="customer-result-heading">
-        <h2>{analysis.title}</h2>
-        <p>{analysis.summary}</p>
-      </div>
-      <div className="customer-candidates">
-        {analysis.customerCandidates?.map((candidate, index) => (
-          <article className="customer-candidate" key={candidate.product.model}>
-            <div className="candidate-heading">
-              <span className="candidate-rank">{index + 1}</span>
-              <div>
-                <h3>{candidate.product.model}</h3>
-                <p>
-                  {candidate.product.application} · {candidate.product.voltage}{' '}
-                  V / {candidate.product.capacity} μF /{' '}
-                  {candidate.product.temperature}℃
-                </p>
-              </div>
-              {onDecision && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={
-                    decision?.model === candidate.product.model &&
-                    decision.action === 'adopt'
-                      ? 'candidate-adopted'
-                      : ''
-                  }
-                  onClick={() =>
-                    onDecision({
-                      model: candidate.product.model,
-                      action:
-                        decision?.model === candidate.product.model &&
-                        decision.action === 'adopt'
-                          ? 'hold'
-                          : 'adopt',
-                      updatedAt: new Date().toISOString(),
-                    })
-                  }
-                >
-                  {decision?.model === candidate.product.model &&
-                  decision.action === 'adopt' ? (
-                    <>
-                      <Check size={14} />
-                      已采用
-                    </>
-                  ) : (
-                    '采用建议'
-                  )}
-                </Button>
-              )}
-            </div>
-            <ul className="candidate-reasons">
-              {candidate.reasons.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
-            <div className="candidate-sources">
-              {candidate.sources.map((source) => (
-                <SourceLink key={source.sectionId} source={source} />
-              ))}
-            </div>
-          </article>
+      <p>{analysis.summary}</p>
+      {!analysis.customerCandidates &&
+        analysis.rows.map((row, index) => (
+          <section className="customer-candidate" key={index}>
+            <h3>
+              {index + 1}. {row[0]}
+            </h3>
+            <p>
+              {analysis.columns
+                .slice(1)
+                .map(
+                  (label, column) => `${label}：${row[column + 1] ?? '未记录'}`,
+                )
+                .join('，')}
+              。
+            </p>
+          </section>
         ))}
-      </div>
+      {analysis.customerCandidates?.map((candidate, index) => {
+        const product = candidate.product;
+        const comparison = lookup
+          ? []
+          : customerParameterComparison(inputs, product);
+        return (
+          <section className="customer-candidate" key={product.model}>
+            <h3>
+              {index + 1}. {product.model}
+            </h3>
+            {comparison.length ? (
+              <p>{comparison.join('')}</p>
+            ) : (
+              <p>
+                这款产品适用于{product.application}，额定电压 {product.voltage}{' '}
+                V，容量 {product.capacity} μF， 目录温度 {product.temperature}
+                ℃，寿命 {product.life.toLocaleString('zh-CN')} h， 外形尺寸 Φ
+                {product.diameter} × {product.height} mm，示例交期{' '}
+                {product.leadDays} 天。
+              </p>
+            )}
+            {candidate.reasons.slice(lookup ? 0 : 2).map((reason) => (
+              <p key={reason}>{reason}</p>
+            ))}
+          </section>
+        );
+      })}
       {Boolean(analysis.customerExclusions?.length) && (
-        <div className="customer-exclusions">
+        <section className="customer-exclusions">
           <h3>未入选原因</h3>
           {analysis.customerExclusions!.map((item) => (
-            <div key={item.model}>
-              <strong>{item.model}</strong>
-              <p>{item.reason}</p>
-              <SourceLink source={item.source} />
-            </div>
+            <p key={item.model}>
+              <strong>{item.model}：</strong>
+              {item.reason}。
+            </p>
           ))}
-        </div>
+        </section>
       )}
-      {analysis.rows.length > 0 && (
-        <details
-          className="customer-comparison"
-          open={analysis.rows.length > 1}
-        >
-          <summary>关键参数对比</summary>
-          <DataTable columns={analysis.columns} rows={analysis.rows} />
-        </details>
-      )}
-      <div className="customer-manual-check">
-        <CircleAlert size={18} />
-        <p>{analysis.recommendation}</p>
-      </div>
-      {decision && (
-        <output className="customer-decision">
-          {decision.action === 'adopt'
-            ? `已采用 ${decision.model} 的建议，仍需人工完成规格复核。`
-            : `已撤回对 ${decision.model} 的采用。`}
-          处理记录保留在本次对话中。
-        </output>
-      )}
-      <AnswerSources sources={analysis.sources} />
+      <p className="customer-manual-check">{analysis.recommendation}</p>
+      <AnswerSources sources={analysis.sources} legacy={!analysis.sources} />
     </div>
   );
 }

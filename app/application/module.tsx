@@ -46,7 +46,6 @@ import { AgentIdentity } from './identity';
 import AnalysisConditions from './conditions';
 import AnalysisResult from './result';
 import { AnswerSources, CustomerSourceLibrary } from './customer-sources';
-import type { CustomerDecision } from './customer-types';
 import { normalizeCustomerInputs } from './customer-engine';
 export default function ModuleWorkspace({
   id,
@@ -136,36 +135,6 @@ export default function ModuleWorkspace({
   function change(key: string, value: string) {
     setEdited({ ...input, [key]: value });
     setMessage('');
-  }
-  function recordDecision(
-    turn: ConversationTurn,
-    customerDecision: CustomerDecision,
-  ) {
-    const next = turns.map((t) =>
-      t.id === turn.id ? { ...t, customerDecision } : t,
-    );
-    const ok = updateWorkspace((s) => ({
-      ...s,
-      sessions: (s.sessions ?? []).map((item) =>
-        item.id === session?.id
-          ? {
-              ...item,
-              turns: mergeConversationTurns(item.turns, next),
-              updatedAt: customerDecision.updatedAt,
-            }
-          : item,
-      ),
-      records: s.records.map((record) =>
-        record.id === turn.savedRecordId
-          ? { ...record, customerDecision }
-          : record,
-      ),
-    }));
-    if (ok) setLocalTurns(null);
-    else {
-      setLocalTurns(next);
-      setMessage(storageMessage());
-    }
   }
   function send(value = text) {
     const query = value.trim();
@@ -371,17 +340,16 @@ export default function ModuleWorkspace({
                     <div className="assistant-message-body">
                       <div className="assistant-name">
                         {m.name}
-                        <span>资料分析</span>
+                        {id !== 'customer' && <span>资料分析</span>}
                       </div>
                       <p className="assistant-answer">{turn.answer}</p>
                       {id === 'customer' &&
                         !turn.analysis &&
                         conditionSummary(id, turn.inputs).length > 0 && (
-                          <div className="answer-conditions">
-                            {conditionSummary(id, turn.inputs).map((v) => (
-                              <span key={v}>{v}</span>
-                            ))}
-                          </div>
+                          <p className="customer-known-conditions">
+                            已识别的条件：
+                            {conditionSummary(id, turn.inputs).join('，')}。
+                          </p>
                         )}
                       {id === 'customer' && turn.missing?.length ? (
                         <p className="customer-missing">
@@ -390,54 +358,54 @@ export default function ModuleWorkspace({
                       ) : null}
                       {turn.analysis && (
                         <>
-                          <div className="answer-conditions">
-                            {conditionSummary(id, turn.inputs).map((v, i) => (
-                              <span key={i}>{v}</span>
-                            ))}
-                          </div>
+                          {id !== 'customer' && (
+                            <div className="answer-conditions">
+                              {conditionSummary(id, turn.inputs).map((v, i) => (
+                                <span key={i}>{v}</span>
+                              ))}
+                            </div>
+                          )}
                           <div className="chat-analysis-panel">
                             <AnalysisResult
                               analysis={turn.analysis}
                               module={id}
-                              decision={turn.customerDecision}
-                              onDecision={
-                                id === 'customer'
-                                  ? (value) => recordDecision(turn, value)
-                                  : undefined
-                              }
+                              inputs={turn.inputs}
                             />
                           </div>
-                          <div className="answer-actions">
-                            {id !== 'customer' && (
+                          {id !== 'customer' && (
+                            <div className="answer-actions">
                               <span>
                                 <FileText size={14} />
                                 {turn.sourceName}
                               </span>
-                            )}
-                            <Button
-                              variant="ghost"
-                              onClick={() => {
-                                if (saved)
-                                  navigate('/records/' + turn.savedRecordId);
-                                else {
-                                  setSaveTarget(turn);
-                                  setRecordName(turn.question.slice(0, 55));
-                                }
-                              }}
-                            >
-                              {saved ? <Check size={15} /> : <Save size={15} />}{' '}
-                              {saved ? '已保存 · 打开记录' : '保存分析'}
-                            </Button>
-                          </div>
+                              <Button
+                                variant="ghost"
+                                onClick={() => {
+                                  if (saved)
+                                    navigate('/records/' + turn.savedRecordId);
+                                  else {
+                                    setSaveTarget(turn);
+                                    setRecordName(turn.question.slice(0, 55));
+                                  }
+                                }}
+                              >
+                                {saved ? (
+                                  <Check size={15} />
+                                ) : (
+                                  <Save size={15} />
+                                )}{' '}
+                                {saved ? '已保存 · 打开记录' : '保存分析'}
+                              </Button>
+                            </div>
+                          )}
                         </>
                       )}
-                      {id === 'customer' &&
-                        !turn.analysis?.customerCandidates && (
-                          <AnswerSources
-                            sources={turn.sources}
-                            legacy={!turn.sources}
-                          />
-                        )}
+                      {id === 'customer' && !turn.analysis && (
+                        <AnswerSources
+                          sources={turn.sources}
+                          legacy={!turn.sources}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -471,19 +439,9 @@ export default function ModuleWorkspace({
       </div>
       <div className="chat-composer-region">
         {message && <output className="chat-feedback">{message}</output>}
-        {turns.length > 0 && !pending && (
+        {id !== 'customer' && turns.length > 0 && !pending && (
           <div className="chat-followups">
-            {(id === 'customer'
-              ? [
-                  { title: '推荐依据', question: '为什么推荐这些型号？' },
-                  {
-                    title: '优先小型化',
-                    question: '尺寸再小一点，有哪些候选？',
-                  },
-                  { title: '缩短交期', question: '交期7天以内，有哪些候选？' },
-                ]
-              : suggestions[id].slice(1)
-            ).map((p) => (
+            {suggestions[id].slice(1).map((p) => (
               <button key={p.title} onClick={() => send(p.question)}>
                 {p.title}
                 <ArrowUpRight size={13} />

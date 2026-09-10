@@ -32,215 +32,77 @@
 .customer-example-list .prompt-number > svg:first-child {
   color: var(--agent-ink);
 }
+.agent-tone-customer .chat-analysis-panel {
+  margin-top: 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
 .customer-result {
-  padding: 26px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1.9;
 }
-.customer-result-heading h2 {
-  font-size: 20px;
-  line-height: 1.5;
+.record-detail-grid .customer-result {
+  padding: 24px;
+}
+.customer-result p + p {
+  margin-top: 10px;
+}
+.customer-candidate,
+.customer-exclusions {
+  margin-top: 24px;
+}
+.customer-candidate h3,
+.customer-exclusions h3 {
+  margin-bottom: 8px;
+  font-size: 16px;
   font-weight: 600;
+  line-height: 1.8;
 }
-.customer-result-heading > p {
-  font-size: 14px;
-  color: var(--muted-foreground);
-  margin-top: 8px;
-}
-.customer-candidate {
-  padding: 24px 0;
-  border-bottom: 1px solid var(--border);
-}
-.candidate-heading {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-.candidate-rank {
-  display: grid;
-  place-items: center;
-  width: 27px;
-  height: 27px;
-  flex-shrink: 0;
-  border-radius: 7px;
-  font-size: 13px;
-  background: var(--muted);
-}
-.candidate-heading > div {
-  flex: 1;
-  min-width: 0;
-}
-.candidate-heading h3 {
-  font-size: 17px;
-  font-weight: 600;
+.customer-result p {
   overflow-wrap: anywhere;
 }
-.candidate-heading p {
-  font-size: 14px;
-  color: var(--muted-foreground);
-  margin-top: 4px;
-}
-.candidate-heading [data-slot='button'] {
-  font-size: 13px;
-}
-.candidate-heading .candidate-adopted {
-  background: var(--accent);
-  color: var(--primary);
-  border-color: var(--primary);
-}
-.candidate-reasons {
-  padding: 0 0 0 18px;
-  margin: 15px 0 13px 38px;
-  font-size: 14px;
-  line-height: 1.8;
-}
-.candidate-reasons li + li {
-  margin-top: 4px;
-}
-.candidate-sources {
-  margin-left: 39px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-}
-.source-inline-link {
-  display: inline-flex;
-  max-width: 100%;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--primary);
-  text-align: left;
-}
-.source-inline-link > span {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  max-width: 240px;
-}
-.source-inline-link > small {
-  font-size: 12px;
-  white-space: nowrap;
-}
-.source-inline-link:hover > span {
-  text-decoration: underline;
-}
-.customer-comparison {
-  padding: 20px 0;
-}
-.customer-comparison > summary {
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 4px 0 12px;
-}
-.customer-comparison .app-table {
-  font-size: 13px;
-}
-.customer-comparison th,
-.customer-comparison td {
-  white-space: nowrap;
-}
-.customer-manual-check {
-  display: flex;
-  gap: 10px;
-  margin: 20px 0 0;
-  color: var(--muted-foreground);
-  align-items: flex-start;
-}
-.customer-manual-check svg {
-  margin-top: 3px;
-  color: var(--primary);
-}
-.customer-manual-check p {
-  font-size: 14px;
-  line-height: 1.8;
-}
-.customer-missing {
-  color: var(--primary);
-  font-size: 14px;
-  margin: 12px 0;
-}
-.customer-decision {
-  display: block;
-  margin-top: 16px;
-  font-size: 14px;
-  color: var(--positive);
-}
-.customer-exclusions {
+.customer-result .customer-manual-check {
   margin-top: 22px;
 }
-.customer-exclusions h3 {
-  font-size: 15px;
-  font-weight: 600;
-}
-.customer-exclusions > div {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-}
-.customer-exclusions > div > strong {
-  font-size: 14px;
-}
-.customer-exclusions p {
-  font-size: 14px;
-  margin: 5px 0;
-  color: var(--muted-foreground);
+.customer-missing,
+.customer-known-conditions {
+  font-size: 16px;
+  line-height: 1.9;
+  margin-top: 12px;
 }
 .answer-source-section {
-  border-top: 1px solid var(--border);
   margin-top: 24px;
-  padding-top: 16px;
 }
 .answer-source-heading {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 7px;
   font-size: 14px;
-  margin-bottom: 10px;
-}
-.answer-source-heading strong {
   font-weight: 500;
 }
-.answer-source-heading > span {
-  color: var(--muted-foreground);
-  font-size: 12px;
-  margin-left: auto;
-}
 .answer-source-files {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.answer-source-files > button {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-align: left;
-  border-radius: 6px;
-  padding: 8px;
+  margin-top: 6px;
+  padding-left: 1.5em;
+  list-style: decimal;
   font-size: 14px;
-  transition: background 150ms ease-out;
+  line-height: 1.9;
 }
-.answer-source-files > button:hover {
-  background: var(--muted);
+.answer-source-files li + li {
+  margin-top: 4px;
 }
-.source-index {
-  color: var(--muted-foreground);
-  font-size: 12px;
-  width: 16px;
-  flex-shrink: 0;
+.answer-source-files button {
+  color: var(--primary);
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
 }
-.source-file-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.answer-source-files button:hover {
+  text-decoration-thickness: 2px;
 }
-.answer-source-files small {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  white-space: nowrap;
+.answer-source-files button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
 }
 .source-unavailable {
   font-size: 13px;
@@ -359,26 +221,7 @@
 .source-library-list button:hover strong {
   color: var(--primary);
 }
-.agent-tone-customer .answer-actions {
-  justify-content: flex-end;
-}
 @media (max-width: 600px) {
-  .customer-result {
-    padding: 18px 14px;
-  }
-  .candidate-heading {
-    flex-wrap: wrap;
-  }
-  .candidate-heading > div {
-    min-width: 160px;
-  }
-  .candidate-heading > button {
-    margin-left: 39px;
-  }
-  .candidate-reasons,
-  .candidate-sources {
-    margin-left: 0;
-  }
   .customer-source-sheet [data-slot='sheet-header'] {
     padding-left: 20px;
   }
@@ -396,13 +239,9 @@
     min-width: 560px;
     max-width: none;
   }
-  .source-inline-link > span {
-    max-width: 180px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .customer-example-list > button,
-  .answer-source-files > button,
   .customer-source-sheet {
     transition: none;
   }

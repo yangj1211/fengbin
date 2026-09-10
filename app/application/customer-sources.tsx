@@ -221,30 +221,6 @@ function SourceDrawer({
   );
 }
 
-export function SourceLink({ source }: { source: SourceReference }) {
-  const [selected, setSelected] = useState<SourceReference | null>(null);
-  const resolved = resolveSource(source);
-  if (!resolved) return null;
-  return (
-    <>
-      <button
-        className="source-inline-link"
-        title={resolved.document.fileName}
-        onClick={() => setSelected(source)}
-      >
-        <FileText size={14} />
-        <span>{resolved.document.fileName}</span>
-        <small>第 {source.page} 页</small>
-      </button>
-      <SourceDrawer
-        selected={selected}
-        onSelect={setSelected}
-        onClose={() => setSelected(null)}
-      />
-    </>
-  );
-}
-
 export function AnswerSources({
   sources,
   legacy = false,
@@ -270,28 +246,23 @@ export function AnswerSources({
     );
   return (
     <section className="answer-source-section" aria-label="回答引用的原文件">
-      <div className="answer-source-heading">
-        <BookOpen size={15} />
-        <strong>引用原文件</strong>
-        <span>{groups.length} 份 · 示例资料</span>
-      </div>
-      <div className="answer-source-files">
-        {groups.map(({ document, refs }, i) => (
-          <button
-            key={document.id}
-            onClick={() => setSelected(refs[0])}
-            title={document.fileName}
-          >
-            <span className="source-index">{i + 1}</span>
-            <FileText size={16} />
-            <span className="source-file-name">{document.fileName}</span>
-            <small>
-              第 {Array.from(new Set(refs.map((r) => r.page))).join('、')} 页
-            </small>
-            <ArrowUpRight size={14} />
-          </button>
+      <p className="answer-source-heading">参考资料</p>
+      <ol className="answer-source-files">
+        {groups.map(({ document, refs }) => (
+          <li key={document.id}>
+            <button
+              onClick={() => setSelected(refs[0])}
+              title={document.fileName}
+            >
+              {document.fileName}（第{' '}
+              {Array.from(new Set(refs.map((r) => r.page)))
+                .sort((a, b) => a - b)
+                .join('、')}{' '}
+              页）
+            </button>
+          </li>
         ))}
-      </div>
+      </ol>
       <SourceDrawer
         selected={selected}
         onSelect={setSelected}
