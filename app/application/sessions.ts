@@ -6,6 +6,7 @@ import {
 } from './model';
 import type { ConversationSession, ConversationTurn } from './conversation';
 import { normalizeCustomerInputs } from './customer-engine';
+import { normalizeMaintenanceInputs } from './maintenance-engine';
 
 function searchableText(value: unknown): string {
   if (typeof value === 'string' || typeof value === 'number')
@@ -79,11 +80,13 @@ export function startConversation(
     draft:
       module === 'customer' && draft
         ? normalizeCustomerInputs(draft)
-        : {
-            ...defaultInputs[module],
-            ...draft,
-            question: draft?.question ?? '',
-          },
+        : module === 'maintenance'
+          ? normalizeMaintenanceInputs(draft ?? {})
+          : {
+              ...defaultInputs[module],
+              ...draft,
+              question: draft?.question ?? '',
+            },
   };
   return {
     ...state,

@@ -10,10 +10,11 @@ import {
   type Analysis,
 } from './model';
 import type { ConversationTurn } from './conversation';
-import { resolveSource } from './customer-data';
+import { resolveSource } from './knowledge-sources';
 import type { SourceReference } from './customer-types';
 import type { CustomerDecision } from './customer-types';
 import { normalizeCustomerInputs } from './customer-engine';
+import { normalizeMaintenanceInputs } from './maintenance-engine';
 function validSources(sources: unknown): boolean {
   return (
     sources === undefined ||
@@ -197,7 +198,9 @@ function hydrate() {
         )
         .map(([id, draft]) => [
           id,
-          { ...defaultInputs[id as keyof typeof defaultInputs], ...draft },
+          id === 'maintenance'
+            ? normalizeMaintenanceInputs(draft)
+            : { ...defaultInputs[id as keyof typeof defaultInputs], ...draft },
         ]),
     );
     if (!Array.isArray(parsed.sessions)) {
@@ -230,12 +233,18 @@ function hydrate() {
                     question: '',
                     ...draft,
                   })
-                : {
-                    ...defaultInputs[m.id],
-                    ...turns.at(-1)?.inputs,
-                    question: '',
-                    ...draft,
-                  },
+                : m.id === 'maintenance'
+                  ? normalizeMaintenanceInputs({
+                      ...turns.at(-1)?.inputs,
+                      question: '',
+                      ...draft,
+                    })
+                  : {
+                      ...defaultInputs[m.id],
+                      ...turns.at(-1)?.inputs,
+                      question: '',
+                      ...draft,
+                    },
           },
         ];
       });
@@ -263,7 +272,9 @@ function hydrate() {
         session.draft =
           session.module === 'customer'
             ? normalizeCustomerInputs(session.draft)
-            : { ...defaultInputs[session.module], ...session.draft };
+            : session.module === 'maintenance'
+              ? normalizeMaintenanceInputs(session.draft)
+              : { ...defaultInputs[session.module], ...session.draft };
         return true;
       });
     }
@@ -285,8 +296,8 @@ function hydrate() {
     );
     parsed.drafts = {};
     parsed.datasets = parsed.datasets.map((d) =>
-      d.id === 'products' && d.origin === 'sample'
-        ? initialDatasets.find((item) => item.id === 'products')!
+      (d.id === 'products' || d.id === 'maintenance') && d.origin === 'sample'
+        ? initialDatasets.find((item) => item.id === d.id)!
         : d,
     );
     snapshot = parsed;

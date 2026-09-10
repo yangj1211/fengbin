@@ -9,6 +9,7 @@ import {
 } from './model';
 import { replyToCustomer, customerConditions } from './customer-engine';
 import { customerExamples } from './customer-data';
+import { replyToMaintenance } from './maintenance-engine';
 import type { SourceReference, CustomerDecision } from './customer-types';
 export type ConversationTurn = {
   id: string;
@@ -43,14 +44,18 @@ export const suggestions: Record<
   })),
   maintenance: [
     {
-      title: '卷绕机异常排查',
-      question: '卷绕机出现张力波动和断箔，应该从哪里开始排查？',
+      title: '按现象排查',
+      question: '卷绕机 WND-100 换料后张力波动并断箔，应该先查什么？',
     },
     {
-      title: '含浸机真空不足',
-      question: '含浸机真空度不足，请帮我整理排查方案。',
+      title: '查询告警代码',
+      question: '老化柜 AGE-300 出现 A-T03 告警，请说明排查步骤和注意事项。',
     },
-    { title: '老化柜温度偏高', question: '老化柜温度偏高，需要检查哪些部位？' },
+    {
+      title: '查看备件与案例',
+      question:
+        '含浸机 IMP-200 真空度不足，有什么相似维修案例，需要先核对哪些备件？',
+    },
   ],
   energy: [
     {
@@ -98,7 +103,9 @@ export const suggestions: Record<
 export function conditionSummary(id: ModuleId, input: Inputs): string[] {
   if (id === 'customer') return customerConditions(input);
   if (id === 'maintenance')
-    return [input.device, input.symptom, input.priority + '处理'];
+    return [input.device, input.model, input.code, input.symptom].filter(
+      Boolean,
+    );
   if (id === 'energy')
     return [
       input.process,
@@ -131,6 +138,7 @@ export function replyToQuestion(
   missing?: string[];
 } {
   if (id === 'customer') return replyToCustomer(question, current);
+  if (id === 'maintenance') return replyToMaintenance(question, current);
   const input: Inputs = { ...current, question };
   const q = question.replace(/％/g, '%');
   const m = modules.find((m) => m.id === id)!;
@@ -173,7 +181,7 @@ export function replyToQuestion(
   )
     return {
       inputs: input,
-      answer: `这条问题暂时无法转换为${m.name}的分析条件。请描述具体的${id === 'maintenance' ? '设备和故障现象' : id === 'energy' ? '工序、预测周期或产量变化' : id === 'production' ? '产线、完成率或不良率阈值' : '供应商、目标或评分权重'}；也可展开“分析条件”后按条件分析。`,
+      answer: `这条问题暂时无法转换为${m.name}的分析条件。请描述具体的${id === 'energy' ? '工序、预测周期或产量变化' : id === 'production' ? '产线、完成率或不良率阈值' : '供应商、目标或评分权重'}；也可展开“分析条件”后按条件分析。`,
     };
   const capture = (key: string, pattern: RegExp) => {
     const hit = q.match(pattern);
@@ -187,30 +195,7 @@ export function replyToQuestion(
     if (match) input[key] = match;
     return Boolean(match);
   };
-  if (id === 'maintenance') {
-    const knownDevice = choose('device', '设备类型');
-    const rows = dataset.rows.filter(
-      (r) => !knownDevice || r['设备类型'] === input.device,
-    );
-    const symptom = rows.find((r) =>
-      String(r['故障现象'])
-        .split(/\s*[/、]\s*/)
-        .some((s) => q.includes(s)),
-    );
-    if (symptom) input.symptom = String(symptom['故障现象']);
-    else if (knownDevice && rows.length)
-      input.symptom = String(rows[0]['故障现象']);
-    input.device =
-      (
-        {
-          卷绕机: '卷绕机 W-03',
-          含浸机: '含浸机 I-02',
-          老化柜: '老化柜 A-06',
-        } as Record<string, string>
-      )[input.device] ?? input.device;
-    if (/紧急/.test(q)) input.priority = '紧急';
-    if (/优先/.test(q)) input.priority = '优先';
-  } else if (id === 'energy') {
+  if (id === 'energy') {
     capture('period', /(\d+)\s*天/);
     if (/下周|未来一周/.test(q)) input.period = '7';
     capture(

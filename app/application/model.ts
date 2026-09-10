@@ -5,6 +5,8 @@ import type {
   CustomerDecision,
 } from './customer-types';
 import { customerProducts } from './customer-data';
+import { maintenanceCases } from './maintenance-data';
+import { maintenanceDefaults } from './maintenance-engine';
 import { buildCustomerAnalysis, customerDefaults } from './customer-engine';
 export const modules = [
   {
@@ -23,7 +25,7 @@ export const modules = [
     scene: '29',
     name: '设备维修助手',
     category: '设备管理',
-    description: '关联设备与故障知识，形成可执行的排查方案。',
+    description: '查阅维修知识，整理排查方向与备件建议。',
     action: '生成维修方案',
     inputTitle: '故障信息',
     resultTitle: '维修方案',
@@ -113,43 +115,13 @@ export const initialDatasets: Dataset[] = [
     '设备故障知识库',
     'maintenance',
     ['案例编号', '设备类型', '故障现象', '排查方向', '处理建议'],
-    [
-      [
-        'M-014',
-        '卷绕机',
-        '张力波动 / 断箔',
-        '张力传感器信号偏移',
-        '按维修规程检查传感器与校准记录',
-      ],
-      [
-        'M-008',
-        '卷绕机',
-        '张力波动 / 断箔',
-        '导向辊与走箔路径',
-        '检查导向辊转动、路径与异物',
-      ],
-      [
-        'M-026',
-        '含浸机',
-        '真空度不足',
-        '密封与真空系统',
-        '核对目标真空度并检查密封状态',
-      ],
-      [
-        'M-031',
-        '老化柜',
-        '温度偏高',
-        '通风与温度检测',
-        '核查散热风道及测温记录',
-      ],
-      [
-        'M-021',
-        '卷绕机',
-        '张力波动 / 断箔',
-        '材料接头异常',
-        '核对材料批次与接头记录',
-      ],
-    ],
+    maintenanceCases.map((item) => [
+      item.id,
+      item.device,
+      item.symptom,
+      item.causes.join('；'),
+      item.steps.join('；'),
+    ]),
   ),
   data(
     'energy',
@@ -196,12 +168,7 @@ export const initialDatasets: Dataset[] = [
 export type Inputs = Record<string, string>;
 export const defaultInputs: Record<ModuleId, Inputs> = {
   customer: customerDefaults,
-  maintenance: {
-    device: '卷绕机 W-03',
-    symptom: '张力波动 / 断箔',
-    priority: '正常',
-    notes: '',
-  },
+  maintenance: maintenanceDefaults,
   energy: { period: '7', change: '5', process: '全部工序', notes: '' },
   production: { line: '全部产线', completion: '95', defect: '2', notes: '' },
   supplier: {

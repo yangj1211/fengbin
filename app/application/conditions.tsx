@@ -83,35 +83,6 @@ export default function AnalysisConditions({
           />
         </>
       )}
-      {id === 'maintenance' && (
-        <>
-          {choice(
-            'device',
-            '故障设备',
-            Array.from(
-              new Set(dataset.rows.map((r) => String(r['设备类型']))),
-            ).map(
-              (type) =>
-                (
-                  ({
-                    卷绕机: '卷绕机 W-03',
-                    含浸机: '含浸机 I-02',
-                    老化柜: '老化柜 A-06',
-                  }) as Record<string, string>
-                )[type] ?? type,
-            ),
-          )}
-          {choice(
-            'symptom',
-            '故障现象',
-            Array.from(new Set(dataset.rows.map((r) => String(r['故障现象'])))),
-          )}
-          {choice('priority', '处理优先级', ['正常', '优先', '紧急'])}
-          <div className="form-inline-note">
-            排查方案由设备类型与故障分类关联知识条目。
-          </div>
-        </>
-      )}
       {id === 'energy' && (
         <>
           {choice('process', '工序范围', [
@@ -167,7 +138,7 @@ export default function AnalysisConditions({
       )}
       <div className="app-field">
         <Label htmlFor="business-notes">
-          {id === 'maintenance' ? '故障补充描述' : '业务备注'}
+          业务备注
           <span className="optional-label">选填</span>
         </Label>
         <Textarea

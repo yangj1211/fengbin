@@ -24,10 +24,11 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import {
-  customerFixtures,
+  sourceDocuments,
+  documentsFor,
   resolveSource,
   uniqueSources,
-} from './customer-data';
+} from './knowledge-sources';
 import type { CustomerFixtures, SourceReference } from './customer-types';
 
 function OriginalPage({
@@ -85,11 +86,13 @@ function OriginalPage({
 function SourceDrawer({
   selected,
   library,
+  module = 'customer',
   onClose,
   onSelect,
 }: {
   selected: SourceReference | null;
   library?: boolean;
+  module?: 'customer' | 'maintenance';
   onClose: () => void;
   onSelect: (ref: SourceReference | null) => void;
 }) {
@@ -194,7 +197,7 @@ function SourceDrawer({
         ) : (
           <div className="source-sheet-body">
             <div className="source-library-list">
-              {customerFixtures.documents.map((document) => (
+              {documentsFor(module).map((document) => (
                 <button
                   key={document.id}
                   onClick={() =>
@@ -232,7 +235,7 @@ export function AnswerSources({
   const valid = uniqueSources(sources ?? []).filter((source) =>
     resolveSource(source),
   );
-  const groups = customerFixtures.documents.flatMap((document) => {
+  const groups = sourceDocuments.flatMap((document) => {
     const refs = valid.filter((ref) => ref.documentId === document.id);
     return refs.length ? [{ document, refs }] : [];
   });
@@ -272,7 +275,11 @@ export function AnswerSources({
   );
 }
 
-export function CustomerSourceLibrary() {
+export function SourceLibrary({
+  module,
+}: {
+  module: 'customer' | 'maintenance';
+}) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<SourceReference | null>(null);
   return (
@@ -283,6 +290,7 @@ export function CustomerSourceLibrary() {
       </Button>
       <SourceDrawer
         library={open}
+        module={module}
         selected={selected}
         onSelect={setSelected}
         onClose={() => {

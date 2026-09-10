@@ -4,6 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable, EmptyState } from './ui';
 import type { Analysis, Inputs, ModuleId } from './model';
 import CustomerResult from './customer-result';
+import MessageContent from './message-content';
+import { legacyAnalysisText } from './legacy-answer';
+import { AnswerSources } from './customer-sources';
 export default function AnalysisResult({
   analysis,
   module,
@@ -15,6 +18,13 @@ export default function AnalysisResult({
 }) {
   if (module === 'customer')
     return <CustomerResult analysis={analysis} inputs={inputs} />;
+  if (module === 'maintenance')
+    return (
+      <div className="maintenance-legacy-result">
+        <MessageContent content={legacyAnalysisText(analysis)} />
+        <AnswerSources sources={analysis.sources} legacy={!analysis.sources} />
+      </div>
+    );
   return (
     <div className={'analysis-result result-' + module}>
       <div className="analysis-conclusion">
@@ -37,9 +47,7 @@ export default function AnalysisResult({
       </div>
       <Tabs defaultValue="result" className="business-tabs">
         <TabsList variant="line">
-          <TabsTrigger value="result">
-            {module === 'maintenance' ? '排查方案' : '分析明细'}
-          </TabsTrigger>
+          <TabsTrigger value="result">分析明细</TabsTrigger>
           <TabsTrigger value="basis">计算与判断依据</TabsTrigger>
         </TabsList>
         <TabsContent value="result">
@@ -88,19 +96,6 @@ export default function AnalysisResult({
                     </div>
                   )}
                 </section>
-              )}
-              {module === 'maintenance' && (
-                <ol className="repair-steps">
-                  {analysis.steps.map((s, i) => (
-                    <li key={s.title}>
-                      <span>{i + 1}</span>
-                      <div>
-                        <h3>{s.title}</h3>
-                        <p>{s.body}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
               )}
               <div className="business-detail-table">
                 <DataTable columns={analysis.columns} rows={analysis.rows} />

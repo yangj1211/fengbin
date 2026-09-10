@@ -45,7 +45,10 @@ import { mergeConversationTurns } from './sessions';
 import { AgentIdentity } from './identity';
 import AnalysisConditions from './conditions';
 import AnalysisResult from './result';
-import { AnswerSources, CustomerSourceLibrary } from './customer-sources';
+import { AnswerSources, SourceLibrary } from './customer-sources';
+import MessageContent from './message-content';
+import { legacyAnalysisText } from './legacy-answer';
+import { normalizeMaintenanceInputs } from './maintenance-engine';
 import { normalizeCustomerInputs } from './customer-engine';
 const customerWelcomeCards = [
   { title: '工业电源选型', description: '450 V、470 μF，比较符合条件的型号。' },
@@ -66,14 +69,20 @@ export default function ModuleWorkspace({
   registerLeaveGuard: (guard: ((discard?: boolean) => boolean) | null) => void;
 }) {
   const m = modules.find((m) => m.id === id)!;
+  const plainReply = id === 'customer' || id === 'maintenance';
   const welcomeSuggestions =
     id === 'customer' ? suggestions[id].slice(0, 3) : suggestions[id];
-  const dataset = (id === 'customer' ? initialDatasets : state.datasets).find(
+  const dataset = (plainReply ? initialDatasets : state.datasets).find(
     (d) => d.id === m.dataset,
   )!;
   const [edited, setEdited] = useState<Inputs | null>(null);
   const draft = edited ?? session?.draft ?? defaultInputs[id];
-  const input = id === 'customer' ? normalizeCustomerInputs(draft) : draft;
+  const input =
+    id === 'customer'
+      ? normalizeCustomerInputs(draft)
+      : id === 'maintenance'
+        ? normalizeMaintenanceInputs(draft)
+        : draft;
   const [question, setQuestion] = useState<string | null>(null);
   const text = question ?? input.question ?? '';
   const [localTurns, setLocalTurns] = useState<ConversationTurn[] | null>(null);
@@ -307,11 +316,13 @@ export default function ModuleWorkspace({
             <p>
               {id === 'customer'
                 ? '描述应用、参数或替代型号。信息不完整时，我会先帮你补齐；每条建议都可以查看原文件。'
-                : m.description + '直接告诉我您想解决的问题。'}
+                : id === 'maintenance'
+                  ? '说说设备型号、告警或故障现象，一起核对维修资料。'
+                  : m.description + '直接告诉我您想解决的问题。'}
             </p>
             <div
               className={
-                id === 'customer'
+                plainReply
                   ? 'chat-prompt-grid customer-example-cards'
                   : 'chat-prompt-grid'
               }
@@ -357,9 +368,22 @@ export default function ModuleWorkspace({
                     <div className="assistant-message-body">
                       <div className="assistant-name">
                         {m.name}
-                        {id !== 'customer' && <span>资料分析</span>}
+                        {!plainReply && <span>资料分析</span>}
                       </div>
-                      <p className="assistant-answer">{turn.answer}</p>
+                      {id === 'maintenance' ? (
+                        <MessageContent
+                          content={[
+                            turn.answer,
+                            turn.analysis
+                              ? legacyAnalysisText(turn.analysis)
+                              : '',
+                          ]
+                            .filter(Boolean)
+                            .join('\n\n')}
+                        />
+                      ) : (
+                        <p className="assistant-answer">{turn.answer}</p>
+                      )}
                       {id === 'customer' &&
                         !turn.analysis &&
                         conditionSummary(id, turn.inputs).length > 0 && (
@@ -373,9 +397,9 @@ export default function ModuleWorkspace({
                           待补充：{turn.missing.join('、')}
                         </p>
                       ) : null}
-                      {turn.analysis && (
+                      {turn.analysis && id !== 'maintenance' && (
                         <>
-                          {id !== 'customer' && (
+                          {!plainReply && (
                             <div className="answer-conditions">
                               {conditionSummary(id, turn.inputs).map((v, i) => (
                                 <span key={i}>{v}</span>
@@ -389,7 +413,7 @@ export default function ModuleWorkspace({
                               inputs={turn.inputs}
                             />
                           </div>
-                          {id !== 'customer' && (
+                          {!plainReply && (
                             <div className="answer-actions">
                               <span>
                                 <FileText size={14} />
@@ -417,7 +441,8 @@ export default function ModuleWorkspace({
                           )}
                         </>
                       )}
-                      {id === 'customer' && !turn.analysis && (
+                      {(id === 'maintenance' ||
+                        (id === 'customer' && !turn.analysis)) && (
                         <AnswerSources
                           sources={turn.sources}
                           legacy={!turn.sources}
@@ -456,7 +481,7 @@ export default function ModuleWorkspace({
       </div>
       <div className="chat-composer-region">
         {message && <output className="chat-feedback">{message}</output>}
-        {id !== 'customer' && turns.length > 0 && !pending && (
+        {!plainReply && turns.length > 0 && !pending && (
           <div className="chat-followups">
             {suggestions[id].slice(1).map((p) => (
               <button key={p.title} onClick={() => send(p.question)}>
@@ -533,7 +558,9 @@ export default function ModuleWorkspace({
               placeholder={
                 id === 'customer'
                   ? '描述客户需求，例如：工业电源用，450V、470μF，推荐哪些型号？'
-                  : '输入您的问题，也可以继续追问或调整分析条件…'
+                  : id === 'maintenance'
+                    ? '描述设备、告警或现象，也可以补充已检查的结果…'
+                    : '输入您的问题，也可以继续追问或调整分析条件…'
               }
               maxLength={2000}
               disabled={Boolean(pending)}
@@ -541,8 +568,8 @@ export default function ModuleWorkspace({
             />
             <div className="composer-toolbar">
               <div>
-                {id === 'customer' ? (
-                  <CustomerSourceLibrary />
+                {plainReply ? (
+                  <SourceLibrary module={id as 'customer' | 'maintenance'} />
                 ) : (
                   <Button
                     type="button"
@@ -555,29 +582,33 @@ export default function ModuleWorkspace({
                     <span>资料</span>
                   </Button>
                 )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  aria-expanded={conditionsOpen}
-                  onClick={() => setConditionsOpen(!conditionsOpen)}
-                >
-                  <SlidersHorizontal size={16} />
-                  <span>分析条件</span>
-                  <ChevronDown
-                    size={13}
-                    className={conditionsOpen ? 'rotated' : ''}
-                  />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  aria-label="保存当前问题和条件为草稿"
-                  title="保存草稿"
-                  onClick={saveDraft}
-                  disabled={Boolean(pending)}
-                >
-                  <Save size={16} />
-                </Button>
+                {id !== 'maintenance' && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      aria-expanded={conditionsOpen}
+                      onClick={() => setConditionsOpen(!conditionsOpen)}
+                    >
+                      <SlidersHorizontal size={16} />
+                      <span>分析条件</span>
+                      <ChevronDown
+                        size={13}
+                        className={conditionsOpen ? 'rotated' : ''}
+                      />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      aria-label="保存当前问题和条件为草稿"
+                      title="保存草稿"
+                      onClick={saveDraft}
+                      disabled={Boolean(pending)}
+                    >
+                      <Save size={16} />
+                    </Button>
+                  </>
+                )}
               </div>
               <div>
                 <span className="composer-shortcut">
