@@ -1,0 +1,758 @@
+[
+  {
+    "date": "2026-09-01",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 130.68,
+    "baseline": 7.5,
+    "kwh": 975.1
+  },
+  {
+    "date": "2026-09-01",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 130.68,
+    "baseline": 8.8,
+    "kwh": 1163.7
+  },
+  {
+    "date": "2026-09-01",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 130.68,
+    "baseline": 12,
+    "kwh": 1752.52
+  },
+  {
+    "date": "2026-09-01",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 166.32,
+    "baseline": 7.5,
+    "kwh": 1192.36
+  },
+  {
+    "date": "2026-09-01",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 166.32,
+    "baseline": 8.8,
+    "kwh": 1422.99
+  },
+  {
+    "date": "2026-09-01",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 166.32,
+    "baseline": 12,
+    "kwh": 2143.01
+  },
+  {
+    "date": "2026-09-01",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 106.92,
+    "baseline": 7.5,
+    "kwh": 782.01
+  },
+  {
+    "date": "2026-09-01",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 106.92,
+    "baseline": 8.8,
+    "kwh": 933.26
+  },
+  {
+    "date": "2026-09-01",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 106.92,
+    "baseline": 12,
+    "kwh": 1405.49
+  },
+  {
+    "date": "2026-09-01",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 136.08,
+    "baseline": 7.5,
+    "kwh": 956.25
+  },
+  {
+    "date": "2026-09-01",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 136.08,
+    "baseline": 8.8,
+    "kwh": 1141.21
+  },
+  {
+    "date": "2026-09-01",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 136.08,
+    "baseline": 12,
+    "kwh": 1718.65
+  },
+  {
+    "date": "2026-09-02",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 151.008,
+    "baseline": 7.5,
+    "kwh": 1161.27
+  },
+  {
+    "date": "2026-09-02",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 151.008,
+    "baseline": 8.8,
+    "kwh": 1385.88
+  },
+  {
+    "date": "2026-09-02",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 151.008,
+    "baseline": 12,
+    "kwh": 2087.13
+  },
+  {
+    "date": "2026-09-02",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 192.192,
+    "baseline": 7.5,
+    "kwh": 1420.02
+  },
+  {
+    "date": "2026-09-02",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 192.192,
+    "baseline": 8.8,
+    "kwh": 1694.68
+  },
+  {
+    "date": "2026-09-02",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 192.192,
+    "baseline": 12,
+    "kwh": 2552.18
+  },
+  {
+    "date": "2026-09-02",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 123.552,
+    "baseline": 7.5,
+    "kwh": 931.32
+  },
+  {
+    "date": "2026-09-02",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 123.552,
+    "baseline": 8.8,
+    "kwh": 1111.45
+  },
+  {
+    "date": "2026-09-02",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 123.552,
+    "baseline": 12,
+    "kwh": 1673.84
+  },
+  {
+    "date": "2026-09-02",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 157.248,
+    "baseline": 7.5,
+    "kwh": 1138.83
+  },
+  {
+    "date": "2026-09-02",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 157.248,
+    "baseline": 8.8,
+    "kwh": 1359.1
+  },
+  {
+    "date": "2026-09-02",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 157.248,
+    "baseline": 12,
+    "kwh": 2046.8
+  },
+  {
+    "date": "2026-09-03",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 142.296,
+    "baseline": 7.5,
+    "kwh": 1072.61
+  },
+  {
+    "date": "2026-09-03",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 142.296,
+    "baseline": 8.8,
+    "kwh": 1280.07
+  },
+  {
+    "date": "2026-09-03",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 142.296,
+    "baseline": 12,
+    "kwh": 1927.77
+  },
+  {
+    "date": "2026-09-03",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 181.104,
+    "baseline": 7.5,
+    "kwh": 1311.6
+  },
+  {
+    "date": "2026-09-03",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 181.104,
+    "baseline": 8.8,
+    "kwh": 1565.29
+  },
+  {
+    "date": "2026-09-03",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 181.104,
+    "baseline": 12,
+    "kwh": 2357.31
+  },
+  {
+    "date": "2026-09-03",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 116.424,
+    "baseline": 7.5,
+    "kwh": 860.21
+  },
+  {
+    "date": "2026-09-03",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 116.424,
+    "baseline": 8.8,
+    "kwh": 1026.59
+  },
+  {
+    "date": "2026-09-03",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 116.424,
+    "baseline": 12,
+    "kwh": 1546.04
+  },
+  {
+    "date": "2026-09-03",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 148.176,
+    "baseline": 7.5,
+    "kwh": 1051.88
+  },
+  {
+    "date": "2026-09-03",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 148.176,
+    "baseline": 8.8,
+    "kwh": 1255.33
+  },
+  {
+    "date": "2026-09-03",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 148.176,
+    "baseline": 12,
+    "kwh": 1890.52
+  },
+  {
+    "date": "2026-09-04",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 159.72,
+    "baseline": 7.5,
+    "kwh": 1246.51
+  },
+  {
+    "date": "2026-09-04",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 159.72,
+    "baseline": 8.8,
+    "kwh": 1487.61
+  },
+  {
+    "date": "2026-09-04",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 159.72,
+    "baseline": 12,
+    "kwh": 2240.33
+  },
+  {
+    "date": "2026-09-04",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 203.28,
+    "baseline": 7.5,
+    "kwh": 1524.25
+  },
+  {
+    "date": "2026-09-04",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 203.28,
+    "baseline": 8.8,
+    "kwh": 1819.07
+  },
+  {
+    "date": "2026-09-04",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 203.28,
+    "baseline": 12,
+    "kwh": 2739.51
+  },
+  {
+    "date": "2026-09-04",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 130.68,
+    "baseline": 7.5,
+    "kwh": 999.68
+  },
+  {
+    "date": "2026-09-04",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 130.68,
+    "baseline": 8.8,
+    "kwh": 1193.03
+  },
+  {
+    "date": "2026-09-04",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 130.68,
+    "baseline": 12,
+    "kwh": 2695.05
+  },
+  {
+    "date": "2026-09-04",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 166.32,
+    "baseline": 7.5,
+    "kwh": 1222.42
+  },
+  {
+    "date": "2026-09-04",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 166.32,
+    "baseline": 8.8,
+    "kwh": 1458.86
+  },
+  {
+    "date": "2026-09-04",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 166.32,
+    "baseline": 12,
+    "kwh": 2197.03
+  },
+  {
+    "date": "2026-09-05",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 148.104,
+    "baseline": 7.5,
+    "kwh": 1127.66
+  },
+  {
+    "date": "2026-09-05",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 148.104,
+    "baseline": 8.8,
+    "kwh": 1345.78
+  },
+  {
+    "date": "2026-09-05",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 148.104,
+    "baseline": 12,
+    "kwh": 2026.73
+  },
+  {
+    "date": "2026-09-05",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 188.496,
+    "baseline": 7.5,
+    "kwh": 1378.92
+  },
+  {
+    "date": "2026-09-05",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 188.496,
+    "baseline": 8.8,
+    "kwh": 1645.64
+  },
+  {
+    "date": "2026-09-05",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 188.496,
+    "baseline": 12,
+    "kwh": 2478.31
+  },
+  {
+    "date": "2026-09-05",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 121.176,
+    "baseline": 7.5,
+    "kwh": 1356.54
+  },
+  {
+    "date": "2026-09-05",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 121.176,
+    "baseline": 8.8,
+    "kwh": 1079.28
+  },
+  {
+    "date": "2026-09-05",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 121.176,
+    "baseline": 12,
+    "kwh": 1625.39
+  },
+  {
+    "date": "2026-09-05",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 154.224,
+    "baseline": 7.5,
+    "kwh": 1105.87
+  },
+  {
+    "date": "2026-09-05",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 154.224,
+    "baseline": 8.8,
+    "kwh": 1319.77
+  },
+  {
+    "date": "2026-09-05",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 154.224,
+    "baseline": 12,
+    "kwh": 1987.56
+  },
+  {
+    "date": "2026-09-06",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 136.488,
+    "baseline": 7.5,
+    "kwh": 1023.63
+  },
+  {
+    "date": "2026-09-06",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 136.488,
+    "baseline": 8.8,
+    "kwh": 1221.62
+  },
+  {
+    "date": "2026-09-06",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 136.488,
+    "baseline": 12,
+    "kwh": 1839.75
+  },
+  {
+    "date": "2026-09-06",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 173.712,
+    "baseline": 7.5,
+    "kwh": 1251.71
+  },
+  {
+    "date": "2026-09-06",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 173.712,
+    "baseline": 8.8,
+    "kwh": 2240.73
+  },
+  {
+    "date": "2026-09-06",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 173.712,
+    "baseline": 12,
+    "kwh": 2249.68
+  },
+  {
+    "date": "2026-09-06",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 111.672,
+    "baseline": 7.5,
+    "kwh": 820.93
+  },
+  {
+    "date": "2026-09-06",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 111.672,
+    "baseline": 8.8,
+    "kwh": 979.72
+  },
+  {
+    "date": "2026-09-06",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 111.672,
+    "baseline": 12,
+    "kwh": 1475.44
+  },
+  {
+    "date": "2026-09-06",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 142.128,
+    "baseline": 7.5,
+    "kwh": 1003.85
+  },
+  {
+    "date": "2026-09-06",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 142.128,
+    "baseline": 8.8,
+    "kwh": 1198.01
+  },
+  {
+    "date": "2026-09-06",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 142.128,
+    "baseline": 12,
+    "kwh": 1804.2
+  },
+  {
+    "date": "2026-09-07",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 148.104,
+    "baseline": 7.5,
+    "kwh": 1144.58
+  },
+  {
+    "date": "2026-09-07",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 148.104,
+    "baseline": 8.8,
+    "kwh": 1365.96
+  },
+  {
+    "date": "2026-09-07",
+    "line": "1号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 148.104,
+    "baseline": 12,
+    "kwh": 2057.13
+  },
+  {
+    "date": "2026-09-07",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 188.496,
+    "baseline": 7.5,
+    "kwh": 1399.61
+  },
+  {
+    "date": "2026-09-07",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 188.496,
+    "baseline": 8.8,
+    "kwh": 1670.32
+  },
+  {
+    "date": "2026-09-07",
+    "line": "1号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 188.496,
+    "baseline": 12,
+    "kwh": 2515.49
+  },
+  {
+    "date": "2026-09-07",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "其他",
+    "production": 121.176,
+    "baseline": 7.5,
+    "kwh": 917.92
+  },
+  {
+    "date": "2026-09-07",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "含浸",
+    "production": 121.176,
+    "baseline": 8.8,
+    "kwh": 1095.49
+  },
+  {
+    "date": "2026-09-07",
+    "line": "2号产线",
+    "shift": "夜班",
+    "process": "老化",
+    "production": 121.176,
+    "baseline": 12,
+    "kwh": 1649.77
+  },
+  {
+    "date": "2026-09-07",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "其他",
+    "production": 154.224,
+    "baseline": 7.5,
+    "kwh": 1122.46
+  },
+  {
+    "date": "2026-09-07",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "含浸",
+    "production": 154.224,
+    "baseline": 8.8,
+    "kwh": 1339.56
+  },
+  {
+    "date": "2026-09-07",
+    "line": "2号产线",
+    "shift": "白班",
+    "process": "老化",
+    "production": 154.224,
+    "baseline": 12,
+    "kwh": 2017.37
+  }
+]

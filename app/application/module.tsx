@@ -1,13 +1,12 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { presentAnswer } from './business-presentation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowUp,
   ArrowUpRight,
   SlidersHorizontal,
   Paperclip,
   Save,
-  Check,
-  FileText,
   ChevronDown,
   MessageSquareText,
   RotateCcw,
@@ -16,15 +15,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import {
   defaultInputs,
   initialDatasets,
@@ -36,18 +26,16 @@ import {
 import { updateWorkspace, storageMessage } from './store';
 import {
   replyToQuestion,
-  conditionSummary,
   suggestions,
   type ConversationTurn,
   type ConversationSession,
 } from './conversation';
-import { mergeConversationTurns } from './sessions';
+import { conversationTitle, mergeConversationTurns } from './sessions';
 import { AgentIdentity } from './identity';
 import AnalysisConditions from './conditions';
-import AnalysisResult from './result';
-import { AnswerSources, SourceLibrary } from './customer-sources';
-import MessageContent from './message-content';
-import { legacyAnalysisText } from './legacy-answer';
+import { SourceLibrary } from './customer-sources';
+import ConversationAnswer from './conversation-answer';
+import { answerText, processingSummary } from './answer-presentation';
 import { normalizeMaintenanceInputs } from './maintenance-engine';
 import { normalizeCustomerInputs } from './customer-engine';
 const customerWelcomeCards = [
@@ -55,6 +43,14 @@ const customerWelcomeCards = [
   { title: '小型化选型', description: '限定直径与高度，寻找合适的电容。' },
   { title: '型号替代', description: '查找 OLD-450-220 的替代候选。' },
 ];
+type StreamFrame = {
+  turn: ConversationTurn;
+  processing: string;
+  answer: string;
+  phase: 'thinking' | 'answer';
+};
+type AnswerRun = StreamFrame & { captured: Inputs };
+const emptyTurns: ConversationTurn[] = [];
 export default function ModuleWorkspace({
   id,
   state,
@@ -70,7 +66,11 @@ export default function ModuleWorkspace({
 }) {
   const m = modules.find((m) => m.id === id)!;
   const plainReply =
-    id === 'customer' || id === 'maintenance' || id === 'energy';
+    id === 'customer' ||
+    id === 'maintenance' ||
+    id === 'energy' ||
+    id === 'production' ||
+    id === 'supplier';
   const sampleLibrary = id === 'customer' || id === 'maintenance';
   const welcomeSuggestions =
     id === 'customer' ? suggestions[id].slice(0, 3) : suggestions[id];
@@ -88,19 +88,27 @@ export default function ModuleWorkspace({
   const [question, setQuestion] = useState<string | null>(null);
   const text = question ?? input.question ?? '';
   const [localTurns, setLocalTurns] = useState<ConversationTurn[] | null>(null);
-  const turns = localTurns ?? session?.turns ?? [];
+  const localTurnsRef = useRef(localTurns);
+  useEffect(() => {
+    localTurnsRef.current = localTurns;
+  }, [localTurns]);
+  const turns = localTurns ?? session?.turns ?? emptyTurns;
+  const displayedTurns = useMemo(() => turns.map(presentAnswer), [turns]);
   const [pending, setPending] = useState('');
+  const [stream, setStream] = useState<StreamFrame | null>(null);
+  const run = useRef<AnswerRun | null>(null);
   const [message, setMessage] = useState('');
   const [conditionsOpen, setConditionsOpen] = useState(false);
-  const [saveTarget, setSaveTarget] = useState<ConversationTurn | null>(null);
-  const [recordName, setRecordName] = useState('');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const end = useRef<HTMLDivElement>(null);
+  const chatBody = useRef<HTMLDivElement>(null);
+  const followOutput = useRef(true);
   const composer = useRef<HTMLTextAreaElement>(null);
   const scrollNext = useRef(false);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
+      run.current = null;
     },
     [],
   );
@@ -115,6 +123,10 @@ export default function ModuleWorkspace({
       scrollNext.current = false;
     }
   }, [turns.length, pending]);
+  useEffect(() => {
+    if (stream && followOutput.current && chatBody.current)
+      chatBody.current.scrollTop = chatBody.current.scrollHeight;
+  }, [stream]);
   useEffect(() => {
     registerLeaveGuard((discard = false) => {
       if (pending) {
@@ -138,9 +150,12 @@ export default function ModuleWorkspace({
                 turns: localTurns
                   ? mergeConversationTurns(item.turns, localTurns)
                   : item.turns,
-                title: item.turns.length
-                  ? item.title
-                  : text.trim().slice(0, 48) || '新对话',
+                title: conversationTitle(
+                  item,
+                  item.turns.length
+                    ? item.title
+                    : text.trim().slice(0, 48) || '新对话',
+                ),
               }
             : item,
         ),
@@ -154,9 +169,39 @@ export default function ModuleWorkspace({
     setEdited({ ...input, [key]: value });
     setMessage('');
   }
+  function persistTurn(turn: ConversationTurn, nextInput: Inputs) {
+    if (!session) return false;
+    const bufferedTurns = localTurnsRef.current;
+    let next = [...(bufferedTurns ?? turns), turn].slice(-20);
+    const saved = updateWorkspace((current) => ({
+      ...current,
+      sessions: (current.sessions ?? []).map((item) =>
+        item.id === session.id
+          ? {
+              ...item,
+              turns: (next = bufferedTurns
+                ? mergeConversationTurns(item.turns, next)
+                : [...item.turns, turn].slice(-20)),
+              draft: nextInput,
+              title: conversationTitle(
+                item,
+                item.turns[0]?.question.slice(0, 48) ||
+                  turn.question.slice(0, 48),
+              ),
+              updatedAt: turn.createdAt,
+            }
+          : item,
+      ),
+    }));
+    setEdited(nextInput);
+    localTurnsRef.current = saved ? null : next;
+    setLocalTurns(localTurnsRef.current);
+    if (!saved) setMessage(storageMessage());
+    return saved;
+  }
   function send(value = text) {
     const query = value.trim();
-    if (!query || pending) return;
+    if (!query || run.current) return;
     if (!session) {
       setMessage('对话尚未准备好，请稍后重试。');
       return;
@@ -165,69 +210,159 @@ export default function ModuleWorkspace({
       setMessage('问题请控制在 2000 字以内。');
       return;
     }
+    const active: AnswerRun = {
+      turn: {
+        id: crypto.randomUUID(),
+        question: query,
+        answer: '',
+        createdAt: new Date().toISOString(),
+        inputs: { ...input },
+        sourceName: dataset.name,
+        sourceOrigin: dataset.origin,
+      },
+      captured: { ...input },
+      processing: '',
+      answer: '',
+      phase: 'thinking',
+    };
+    run.current = active;
     setMessage('');
     setPending(query);
+    setStream({ ...active });
     setQuestion('');
     setConditionsOpen(false);
+    followOutput.current = true;
     scrollNext.current = true;
-    const captured = { ...input };
-    timer.current = setTimeout(() => {
+
+    const showFrame = () => {
+      if (run.current === active) setStream({ ...active });
+    };
+    const schedule = (callback: () => void, delay = 24) => {
+      timer.current = setTimeout(() => {
+        if (run.current === active) callback();
+      }, delay);
+    };
+    schedule(() => {
       try {
-        const reply = replyToQuestion(id, query, captured, dataset);
-        const turn: ConversationTurn = {
+        const reply = replyToQuestion(id, query, active.captured, dataset);
+        active.turn = presentAnswer({
+          ...active.turn,
           ...reply,
-          id: crypto.randomUUID(),
-          question: query,
-          createdAt: new Date().toISOString(),
-          sourceName: dataset.name,
-          sourceOrigin: dataset.origin,
+          status: 'complete',
+        });
+        active.turn.processingSummary = processingSummary(id, active.turn);
+        const thinkingCharacters = Array.from(active.turn.processingSummary);
+        const answerCharacters = Array.from(answerText(id, active.turn));
+        const answerChunk = Math.max(
+          4,
+          Math.ceil(answerCharacters.length / 150),
+        );
+        let thinkingPosition = 0;
+        let answerPosition = 0;
+        const outputAnswer = () => {
+          answerPosition = Math.min(
+            answerCharacters.length,
+            answerPosition + answerChunk,
+          );
+          active.answer = answerCharacters.slice(0, answerPosition).join('');
+          showFrame();
+          if (answerPosition < answerCharacters.length) schedule(outputAnswer);
+          else {
+            persistTurn(active.turn, { ...reply.inputs, question: '' });
+            run.current = null;
+            timer.current = null;
+            setStream(null);
+            setPending('');
+          }
         };
-        const next = [...turns, turn].slice(-20);
-        const nextInput = { ...reply.inputs, question: '' };
-        setEdited(nextInput);
-        if (
-          updateWorkspace((s) => ({
-            ...s,
-            sessions: (s.sessions ?? []).map((item) =>
-              item.id === session.id
-                ? {
-                    ...item,
-                    turns: localTurns
-                      ? mergeConversationTurns(item.turns, next)
-                      : [...item.turns, turn].slice(-20),
-                    draft: nextInput,
-                    title:
-                      item.turns[0]?.question.slice(0, 48) ||
-                      query.slice(0, 48),
-                    updatedAt: turn.createdAt,
-                  }
-                : item,
-            ),
-          }))
-        )
-          setLocalTurns(null);
-        else {
-          setLocalTurns(next);
-          setMessage(storageMessage());
-        }
-      } catch (e) {
+        const outputThinking = () => {
+          thinkingPosition = Math.min(
+            thinkingCharacters.length,
+            thinkingPosition + 4,
+          );
+          active.processing = thinkingCharacters
+            .slice(0, thinkingPosition)
+            .join('');
+          showFrame();
+          if (thinkingPosition < thinkingCharacters.length)
+            schedule(outputThinking);
+          else
+            schedule(() => {
+              active.phase = 'answer';
+              outputAnswer();
+            }, 160);
+        };
+        outputThinking();
+      } catch (error) {
+        run.current = null;
+        timer.current = null;
+        setStream(null);
+        setPending('');
+        setQuestion(query);
         setMessage(
-          e instanceof Error
-            ? e.message
+          error instanceof Error
+            ? error.message
             : '暂时无法完成分析，请调整条件后再试。',
         );
-        setQuestion(query);
       }
-      setPending('');
-      scrollNext.current = true;
-    }, 240);
+    }, 60);
   }
   function stop() {
+    const active = run.current;
+    if (!active) return;
     if (timer.current) clearTimeout(timer.current);
-    setQuestion(pending);
+    run.current = null;
+    timer.current = null;
+    // Persist only text already displayed; unfinished structured results stay private to this run.
+    const interrupted: ConversationTurn = {
+      id: active.turn.id,
+      question: active.turn.question,
+      answer: active.answer,
+      createdAt: active.turn.createdAt,
+      inputs: active.captured,
+      sourceName: active.turn.sourceName,
+      sourceOrigin: active.turn.sourceOrigin,
+      processingSummary: active.processing,
+      status: 'stopped',
+    };
+    const saved = persistTurn(interrupted, {
+      ...active.captured,
+      question: active.turn.question,
+    });
+    setQuestion(active.turn.question);
+    setStream(null);
     setPending('');
-    setMessage('已停止本次分析，问题保留在输入框中。');
+    if (saved) setMessage('已停止生成，已输出的内容已保留。');
   }
+  const rateAnswer = useCallback(
+    (turnId: string, value: 'like' | 'dislike') => {
+      if (!session) return false;
+      const ok = updateWorkspace((s) => ({
+        ...s,
+        sessions: (s.sessions ?? []).map((item) =>
+          item.id === session.id
+            ? {
+                ...item,
+                turns: (localTurns
+                  ? mergeConversationTurns(item.turns, localTurns)
+                  : item.turns
+                ).map((turn) =>
+                  turn.id === turnId
+                    ? {
+                        ...turn,
+                        feedback: turn.feedback === value ? null : value,
+                      }
+                    : turn,
+                ),
+              }
+            : item,
+        ),
+      }));
+      if (ok) setLocalTurns(null);
+      return ok;
+    },
+    [session, localTurns],
+  );
   function saveDraft() {
     if (
       updateWorkspace((s) => ({
@@ -237,9 +372,12 @@ export default function ModuleWorkspace({
             ? {
                 ...item,
                 draft: { ...input, question: text },
-                title: item.turns.length
-                  ? item.title
-                  : text.trim().slice(0, 48) || '新对话',
+                title: conversationTitle(
+                  item,
+                  item.turns.length
+                    ? item.title
+                    : text.trim().slice(0, 48) || '新对话',
+                ),
               }
             : item,
         ),
@@ -248,58 +386,18 @@ export default function ModuleWorkspace({
       setMessage('问题与分析条件已保存为草稿。');
     else setMessage(storageMessage());
   }
-  function saveRecord() {
-    if (!saveTarget?.analysis || !recordName.trim()) return;
-    if (state.records.length >= 100) {
-      setMessage('最多保存 100 份分析，请先导出并清理旧记录。');
-      setSaveTarget(null);
-      return;
-    }
-    const recordId = crypto.randomUUID();
-    const target = saveTarget;
-    const record = {
-      id: recordId,
-      module: id,
-      name: recordName.trim(),
-      createdAt: new Date().toISOString(),
-      inputs: target.inputs,
-      analysis: target.analysis!,
-      sourceName: target.sourceName,
-      sourceOrigin: target.sourceOrigin,
-      state: '待跟进' as const,
-      note: '',
-      ...(target.customerDecision
-        ? { customerDecision: target.customerDecision }
-        : {}),
-    };
-    if (
-      updateWorkspace((s) => ({
-        ...s,
-        records: [record, ...s.records],
-        sessions: (s.sessions ?? []).map((item) =>
-          item.id === session?.id
-            ? {
-                ...item,
-                turns: (localTurns
-                  ? mergeConversationTurns(item.turns, localTurns)
-                  : item.turns
-                ).map((t) =>
-                  t.id === target.id ? { ...t, savedRecordId: recordId } : t,
-                ),
-              }
-            : item,
-        ),
-      }))
-    ) {
-      setLocalTurns(null);
-      setSaveTarget(null);
-      setMessage('分析已保存，可在分析记录中继续跟进。');
-    } else setMessage(storageMessage());
-  }
   return (
     <div className={'chat-workspace agent-tone-' + id}>
       <h1 className="sr-only">{m.name}</h1>
-      <div className="chat-body">
+      <div
+        ref={chatBody}
+        className="chat-body"
+        onScroll={(event) => {
+          const body = event.currentTarget;
+          followOutput.current =
+            body.scrollHeight - body.scrollTop - body.clientHeight < 100;
+        }}
+      >
         {!turns.length && !pending ? (
           <div className="chat-welcome">
             <AgentIdentity id={id} large />
@@ -320,7 +418,11 @@ export default function ModuleWorkspace({
                 ? '描述应用、参数或替代型号。信息不完整时，我会先帮你补齐；每条建议都可以查看原文件。'
                 : id === 'maintenance'
                   ? '描述设备、告警或现象，获取处理步骤、备件建议和修后验证方法。'
-                  : m.description + '直接告诉我您想解决的问题。'}
+                  : id === 'production'
+                    ? '生成生产日报，查询产量、质量和停机情况，也可以比较产线、追问异常依据。'
+                    : id === 'supplier'
+                      ? '查看评分排名、交付与质量风险，比较供应商表现，也可以追问评分依据和异常原因。'
+                      : m.description + '直接告诉我您想解决的问题。'}
             </p>
             <div
               className={
@@ -355,139 +457,22 @@ export default function ModuleWorkspace({
           </div>
         ) : (
           <div className="conversation-thread" aria-label="问答记录">
-            {turns.map((turn) => {
-              const saved =
-                turn.savedRecordId &&
-                state.records.some((r) => r.id === turn.savedRecordId);
-              return (
-                <div className="conversation-turn" key={turn.id}>
-                  <div className="user-message">
-                    <span className="message-person">我</span>
-                    <p>{turn.question}</p>
-                  </div>
-                  <div className="assistant-message">
-                    <AgentIdentity id={id} />
-                    <div className="assistant-message-body">
-                      <div className="assistant-name">
-                        {m.name}
-                        {!plainReply && <span>资料分析</span>}
-                      </div>
-                      {id === 'maintenance' || id === 'energy' ? (
-                        <MessageContent
-                          content={[
-                            turn.answer,
-                            turn.analysis
-                              ? legacyAnalysisText(turn.analysis)
-                              : '',
-                          ]
-                            .filter(Boolean)
-                            .join('\n\n')}
-                        />
-                      ) : (
-                        <p className="assistant-answer">{turn.answer}</p>
-                      )}
-                      {id === 'customer' &&
-                        !turn.analysis &&
-                        conditionSummary(id, turn.inputs).length > 0 && (
-                          <p className="customer-known-conditions">
-                            已识别的条件：
-                            {conditionSummary(id, turn.inputs).join('，')}。
-                          </p>
-                        )}
-                      {id === 'customer' && turn.missing?.length ? (
-                        <p className="customer-missing">
-                          待补充：{turn.missing.join('、')}
-                        </p>
-                      ) : null}
-                      {turn.analysis &&
-                        id !== 'maintenance' &&
-                        id !== 'energy' && (
-                          <>
-                            {!plainReply && (
-                              <div className="answer-conditions">
-                                {conditionSummary(id, turn.inputs).map(
-                                  (v, i) => (
-                                    <span key={i}>{v}</span>
-                                  ),
-                                )}
-                              </div>
-                            )}
-                            <div className="chat-analysis-panel">
-                              <AnalysisResult
-                                analysis={turn.analysis}
-                                module={id}
-                                inputs={turn.inputs}
-                              />
-                            </div>
-                            {!plainReply && (
-                              <div className="answer-actions">
-                                <span>
-                                  <FileText size={14} />
-                                  {turn.sourceName}
-                                </span>
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => {
-                                    if (saved)
-                                      navigate(
-                                        '/records/' + turn.savedRecordId,
-                                      );
-                                    else {
-                                      setSaveTarget(turn);
-                                      setRecordName(turn.question.slice(0, 55));
-                                    }
-                                  }}
-                                >
-                                  {saved ? (
-                                    <Check size={15} />
-                                  ) : (
-                                    <Save size={15} />
-                                  )}{' '}
-                                  {saved ? '已保存 · 打开记录' : '保存分析'}
-                                </Button>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      {id === 'energy' && turn.analysis && (
-                        <p className="source-unavailable">
-                          参考数据：{turn.sourceName}
-                          （历史汇总记录，按当时条件作线性估算）。
-                        </p>
-                      )}
-                      {(id === 'maintenance' ||
-                        (id === 'customer' && !turn.analysis)) && (
-                        <AnswerSources
-                          sources={turn.sources}
-                          legacy={!turn.sources}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-            {pending && (
-              <div className="conversation-turn">
-                <div className="user-message">
-                  <span className="message-person">我</span>
-                  <p>{pending}</p>
-                </div>
-                <div className="assistant-message">
-                  <AgentIdentity id={id} />
-                  <div className="assistant-message-body">
-                    <div className="assistant-name">{m.name}</div>
-                    <output className="chat-pending">
-                      <span>
-                        <i />
-                        <i />
-                        <i />
-                      </span>
-                      正在分析本地资料…
-                    </output>
-                  </div>
-                </div>
-              </div>
+            {[...displayedTurns, ...(stream ? [stream.turn] : [])].map(
+              (turn) => (
+                <ConversationAnswer
+                  key={turn.id}
+                  module={id}
+                  turn={turn}
+                  phase={stream?.turn.id === turn.id ? stream.phase : undefined}
+                  processing={
+                    stream?.turn.id === turn.id ? stream.processing : undefined
+                  }
+                  content={
+                    stream?.turn.id === turn.id ? stream.answer : undefined
+                  }
+                  onFeedback={rateAnswer}
+                />
+              ),
             )}
             <div ref={end} />
           </div>
@@ -495,18 +480,8 @@ export default function ModuleWorkspace({
       </div>
       <div className="chat-composer-region">
         {message && <output className="chat-feedback">{message}</output>}
-        {!plainReply && turns.length > 0 && !pending && (
-          <div className="chat-followups">
-            {suggestions[id].slice(1).map((p) => (
-              <button key={p.title} onClick={() => send(p.question)}>
-                {p.title}
-                <ArrowUpRight size={13} />
-              </button>
-            ))}
-          </div>
-        )}
         <div className="chat-composer">
-          {conditionsOpen && (
+          {conditionsOpen && id !== 'production' && id !== 'supplier' && (
             <div className="chat-conditions-panel">
               <div className="conditions-panel-heading">
                 <div>
@@ -576,7 +551,9 @@ export default function ModuleWorkspace({
                     ? '描述设备、告警或现象，也可以补充已检查的结果…'
                     : id === 'energy'
                       ? '问问用电、异常或优化建议，例如：产量增长5%，下周用电多少？'
-                      : '输入您的问题，也可以继续追问或调整分析条件…'
+                      : id === 'production'
+                        ? '例如：哪些产线没达到计划？3号产线有哪些异常？'
+                        : '例如：哪些供应商交付未达标？供应商C的评分怎么算？'
               }
               maxLength={2000}
               disabled={Boolean(pending)}
@@ -586,7 +563,9 @@ export default function ModuleWorkspace({
               <div>
                 {sampleLibrary ? (
                   <SourceLibrary module={id as 'customer' | 'maintenance'} />
-                ) : id === 'energy' ? null : (
+                ) : id === 'energy' ||
+                  id === 'production' ||
+                  id === 'supplier' ? null : (
                   <Button
                     type="button"
                     variant="ghost"
@@ -598,44 +577,47 @@ export default function ModuleWorkspace({
                     <span>资料</span>
                   </Button>
                 )}
-                {id !== 'maintenance' && id !== 'energy' && (
-                  <>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      aria-expanded={conditionsOpen}
-                      onClick={() => setConditionsOpen(!conditionsOpen)}
-                    >
-                      <SlidersHorizontal size={16} />
-                      <span>分析条件</span>
-                      <ChevronDown
-                        size={13}
-                        className={conditionsOpen ? 'rotated' : ''}
-                      />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      aria-label="保存当前问题和条件为草稿"
-                      title="保存草稿"
-                      onClick={saveDraft}
-                      disabled={Boolean(pending)}
-                    >
-                      <Save size={16} />
-                    </Button>
-                  </>
-                )}
+                {id !== 'maintenance' &&
+                  id !== 'energy' &&
+                  id !== 'production' &&
+                  id !== 'supplier' && (
+                    <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        aria-expanded={conditionsOpen}
+                        onClick={() => setConditionsOpen(!conditionsOpen)}
+                      >
+                        <SlidersHorizontal size={16} />
+                        <span>分析条件</span>
+                        <ChevronDown
+                          size={13}
+                          className={conditionsOpen ? 'rotated' : ''}
+                        />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        aria-label="保存当前问题和条件为草稿"
+                        title="保存草稿"
+                        onClick={saveDraft}
+                        disabled={Boolean(pending)}
+                      >
+                        <Save size={16} />
+                      </Button>
+                    </>
+                  )}
               </div>
               <div>
-                <span className="composer-shortcut">
-                  Enter 发送 · Shift + Enter 换行
-                </span>
                 {pending ? (
                   <Button
                     type="button"
                     className="send-message-button"
                     aria-label="停止分析"
-                    onClick={stop}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      stop();
+                    }}
                   >
                     <Square size={16} />
                   </Button>
@@ -654,47 +636,10 @@ export default function ModuleWorkspace({
           </form>
         </div>
         <div className="chat-composer-footnote">
-          <span>
-            {dataset.origin === 'sample' ? '示例资料' : '本地资料'} ·
-            问答由当前数据与规则生成
-          </span>
-          <span>
-            {turns.length >= 20 ? '保留最近 20 轮对话' : '对话保存在当前浏览器'}
-          </span>
+          <span>回答依据业务资料，请结合实际情况核对</span>
+          <span>{turns.length >= 20 ? '保留最近 20 轮对话' : ''}</span>
         </div>
       </div>
-      <Dialog
-        open={Boolean(saveTarget)}
-        onOpenChange={(open) => {
-          if (!open) setSaveTarget(null);
-        }}
-      >
-        <DialogContent className="app-dialog">
-          <DialogHeader>
-            <DialogTitle>保存分析记录</DialogTitle>
-            <DialogDescription>
-              保留本次问题、条件、引用资料与分析结果，方便后续跟进。
-            </DialogDescription>
-          </DialogHeader>
-          <div className="app-field">
-            <Label htmlFor="record-name">记录名称</Label>
-            <Input
-              id="record-name"
-              maxLength={100}
-              value={recordName}
-              onChange={(e) => setRecordName(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSaveTarget(null)}>
-              取消
-            </Button>
-            <Button onClick={saveRecord} disabled={!recordName.trim()}>
-              保存记录
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

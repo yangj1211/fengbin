@@ -48,7 +48,7 @@ export default function CustomerResult({
                 这款产品适用于{product.application}，额定电压 {product.voltage}{' '}
                 V，容量 {product.capacity} μF， 目录温度 {product.temperature}
                 ℃，寿命 {product.life.toLocaleString('zh-CN')} h， 外形尺寸 Φ
-                {product.diameter} × {product.height} mm，示例交期{' '}
+                {product.diameter} × {product.height} mm，参考交期{' '}
                 {product.leadDays} 天。
               </p>
             )}

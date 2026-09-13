@@ -7,6 +7,43 @@ import {
 import type { ConversationSession, ConversationTurn } from './conversation';
 import { normalizeCustomerInputs } from './customer-engine';
 import { normalizeMaintenanceInputs } from './maintenance-engine';
+import { withFixedRules } from './fixed-rules';
+
+export const CONVERSATION_TITLE_MAX_LENGTH = 48;
+
+export function conversationTitleError(value: string): string {
+  const title = value.trim();
+  if (!title) return '请输入对话名称。';
+  if (title.length > CONVERSATION_TITLE_MAX_LENGTH)
+    return '对话名称最多 ' + CONVERSATION_TITLE_MAX_LENGTH + ' 个字符。';
+  return '';
+}
+
+export function conversationTitle(
+  session: ConversationSession,
+  automaticTitle: string,
+): string {
+  return session.titleEdited ? session.title : automaticTitle;
+}
+
+export function renameConversation(
+  state: WorkspaceState,
+  sessionId: string,
+  value: string,
+): WorkspaceState {
+  const error = conversationTitleError(value);
+  if (error) throw new Error(error);
+  if (!state.sessions?.some((session) => session.id === sessionId))
+    throw new Error('这段对话已不存在，请选择其他对话。');
+  return {
+    ...state,
+    sessions: state.sessions.map((session) =>
+      session.id === sessionId
+        ? { ...session, title: value.trim(), titleEdited: true }
+        : session,
+    ),
+  };
+}
 
 function searchableText(value: unknown): string {
   if (typeof value === 'string' || typeof value === 'number')
@@ -50,21 +87,45 @@ export function currentSession(
   );
 }
 export function energyConditions(input: Inputs): Inputs {
-  return { process: input.process, period: input.period, change: input.change };
+  return {
+    process: input.process ?? defaultInputs.energy.process,
+    line: input.line || '全部产线',
+    period: input.period ?? defaultInputs.energy.period,
+    change: input.change ?? defaultInputs.energy.change,
+    dateFrom: input.dateFrom ?? '',
+    dateTo: input.dateTo ?? '',
+    granularity: input.granularity || 'day',
+    plannedProduction: input.plannedProduction ?? '',
+  };
 }
 export function applyEnergyDashboardConditions(
   state: WorkspaceState,
   input: Inputs,
 ): WorkspaceState {
-  const current = currentSession(state, 'energy');
-  const conditions = energyConditions(input);
-  if (!current) return startConversation(state, 'energy', conditions);
+  return applyDashboardConditions(state, 'energy', input);
+}
+export function applyDashboardConditions(
+  state: WorkspaceState,
+  module: 'energy' | 'production' | 'supplier',
+  input: Inputs,
+): WorkspaceState {
+  const current = currentSession(state, module);
+  const conditions =
+    module === 'energy'
+      ? energyConditions(input)
+      : module === 'production'
+        ? { line: input.line ?? defaultInputs.production.line }
+        : { supplier: input.supplier ?? defaultInputs.supplier.supplier };
+  if (!current) return startConversation(state, module, conditions);
   return {
     ...state,
-    moduleViews: { ...state.moduleViews, energy: 'chat' },
+    moduleViews: { ...state.moduleViews, [module]: 'chat' },
     sessions: (state.sessions ?? []).map((session) =>
       session.id === current.id
-        ? { ...session, draft: { ...session.draft, ...conditions } }
+        ? {
+            ...session,
+            draft: withFixedRules(module, { ...session.draft, ...conditions }),
+          }
         : session,
     ),
   };
@@ -78,6 +139,7 @@ export function startConversation(
   if (
     !draft &&
     current &&
+    !current.titleEdited &&
     !current.turns.length &&
     Object.entries(current.draft).every(
       ([k, v]) => v === (defaultInputs[module][k] ?? ''),
@@ -102,11 +164,11 @@ export function startConversation(
         ? normalizeCustomerInputs(draft)
         : module === 'maintenance'
           ? normalizeMaintenanceInputs(draft ?? {})
-          : {
+          : withFixedRules(module, {
               ...defaultInputs[module],
               ...draft,
               question: draft?.question ?? '',
-            },
+            }),
   };
   return {
     ...state,

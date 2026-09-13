@@ -1,20 +1,21 @@
 'use client';
-import { useState } from 'react';
-import {
-  Database,
-  Upload,
-  Download,
-  Plus,
-  PenLine,
-  Trash2,
-  RotateCcw,
-  ArrowRight,
-  FileSpreadsheet,
-} from 'lucide-react';
+import { useId, useState } from 'react';
+import { Eye, FileText, Search, Table2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -23,444 +24,352 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { modules, type WorkspaceState } from './model';
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-} from '@/components/ui/alert-dialog';
-import {
-  initialDatasets,
-  modules,
-  validateDataset,
-  importCSV,
-  csvExport,
-  type WorkspaceState,
-  type Dataset,
-  type Row,
-} from './model';
-import { storageMessage, updateWorkspace } from './store';
-import { AppHeading, DataTable, download } from './ui';
-export default function DataManager({
-  state,
-  navigate,
-}: {
-  state: WorkspaceState;
-  navigate: (path: string) => void;
-}) {
-  const [selected, setSelected] = useState('products');
-  const dataset = state.datasets.find((d) => d.id === selected)!;
-  const reference = initialDatasets.find((d) => d.id === selected)!;
+  getDataResources,
+  removeDataResource,
+  type DataResource,
+} from './data-resources';
+import { updateWorkspace, storageMessage } from './store';
+import type { SourceReference } from './customer-types';
+import { SourceDrawer } from './customer-sources';
+import { AppHeading, DataTable } from './ui';
+import MultiScopeChoice from './multi-scope-choice';
+import { filterScope } from './scope';
+import DetailExport from './detail-export';
+import DataFilePreview from './data-file-preview';
+import ListPagination, { getPageRange } from './list-pagination';
+
+export default function DataManager({ state }: { state: WorkspaceState }) {
+  const [query, setQuery] = useState('');
+  const [type, setType] = useState('全部类型');
+  const [agent, setAgent] = useState('全部智能体');
+  const [tableKey, setTableKey] = useState<string | null>(null);
+  const [source, setSource] = useState<SourceReference | null>(null);
+  const [csvKey, setCsvKey] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [tablePage, setTablePage] = useState(1);
+  const [tablePageSize, setTablePageSize] = useState(10);
+  const [pendingDelete, setPendingDelete] = useState<DataResource | null>(null);
+  const [deleteError, setDeleteError] = useState('');
   const [message, setMessage] = useState('');
-  const [edit, setEdit] = useState<{ index: number; row: Row } | null>(null);
-  const [editError, setEditError] = useState('');
-  const [remove, setRemove] = useState<number | null>(null);
-  const [restore, setRestore] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
-  const [imported, setImported] = useState<Dataset | null>(null);
-  const [importError, setImportError] = useState('');
-  function persist(next: Dataset) {
-    const error = validateDataset(next);
-    if (error) {
-      setEditError(error);
-      return false;
+  const resourceTableId = useId();
+  const detailTableId = useId();
+  const resources = getDataResources(state);
+  const visible = filterScope(
+    filterScope(resources, type, '全部类型', (resource) => resource.kind),
+    agent,
+    '全部智能体',
+    (resource) =>
+      modules.find((module) => module.id === resource.module)?.name ?? '',
+  ).filter((resource) =>
+    resource.name
+      .toLocaleLowerCase()
+      .includes(query.trim().toLocaleLowerCase()),
+  );
+  const selectedResource = resources.find(
+    (resource) => resource.key === tableKey,
+  );
+  const selectedTable =
+    selectedResource?.kind === '数据表' ? selectedResource.table : null;
+  const selectedCsv = resources.find((resource) => resource.key === csvKey);
+  const sampleRows = selectedTable?.rows.slice(0, 100) ?? [];
+  const resourceRange = getPageRange(visible.length, page, pageSize);
+  const detailRange = getPageRange(sampleRows.length, tablePage, tablePageSize);
+
+  function preview(resource: DataResource) {
+    if (resource.kind === '数据表') {
+      setTablePage(1);
+      setTableKey(resource.key);
+    } else if ('file' in resource) {
+      setCsvKey(resource.key);
+    } else {
+      const first = resource.document.sections[0];
+      if (first)
+        setSource({
+          documentId: resource.id,
+          sectionId: first.id,
+          page: first.page,
+        });
     }
-    if (
-      !updateWorkspace((s) => ({
-        ...s,
-        datasets: s.datasets.map((d) => (d.id === next.id ? next : d)),
-      }))
-    ) {
-      setEditError(storageMessage());
-      setMessage(storageMessage());
-      return false;
-    }
-    return true;
   }
-  function commitEdit() {
-    if (!edit) return;
-    const rows = [...dataset.rows];
-    const row = Object.fromEntries(
-      reference.columns.map((c) => [c, String(edit.row[c] ?? '').trim()]),
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    const ok = updateWorkspace((current) =>
+      removeDataResource(current, pendingDelete.key),
     );
-    if (edit.index < 0) rows.push(row);
-    else rows[edit.index] = row;
-    const next = {
-      ...dataset,
-      rows,
-      origin: 'local' as const,
-      fileName: '本地编辑',
-      updatedAt: new Date().toISOString(),
-    };
-    if (persist(next)) {
-      setEdit(null);
-      setMessage('数据已保存，后续分析将使用更新后的数据。');
-    }
-  }
-  function deleteRow() {
-    if (remove === null) return;
-    const next = {
-      ...dataset,
-      rows: dataset.rows.filter((_, i) => i !== remove),
-      origin: 'local' as const,
-      fileName: '本地编辑',
-      updatedAt: new Date().toISOString(),
-    };
-    if (persist(next)) {
-      setRemove(null);
-      setMessage('数据行已删除。');
-    } else setRemove(null);
-  }
-  async function readFile(file: File | undefined) {
-    setImported(null);
-    setImportError('');
-    if (!file) return;
-    if (!/\.csv$/i.test(file.name)) {
-      setImportError('请选择 CSV 文件。');
+    if (!ok) {
+      setDeleteError(storageMessage() || '删除失败，请重试。');
       return;
     }
-    if (file.size > 512000) {
-      setImportError('文件最大为 500 KB，请保留不超过 500 行。');
-      return;
-    }
-    try {
-      setImported(importCSV(reference, await file.text(), file.name));
-    } catch (e) {
-      setImportError(
-        e instanceof Error ? e.message : '无法读取文件，请检查内容。',
-      );
-    }
-  }
-  function commitImport() {
-    if (!imported) return;
-    if (persist(imported)) {
-      setImportOpen(false);
-      setMessage(
-        `已导入 ${imported.rows.length} 条数据，后续分析将使用该数据集。`,
-      );
-      setImported(null);
-    }
-  }
-  function template() {
-    download(
-      reference.name + '-模板.csv',
-      csvExport(
-        reference.columns,
-        reference.rows.map((r) => reference.columns.map((c) => r[c])),
+    setPage(
+      Math.min(
+        resourceRange.currentPage,
+        Math.max(1, Math.ceil((visible.length - 1) / pageSize)),
       ),
-      'text/csv;charset=utf-8',
     );
+    setMessage(`已从数据管理列表删除“${pendingDelete.name}”。`);
+    setPendingDelete(null);
+    setDeleteError('');
   }
+
+  if (selectedTable)
+    return (
+      <>
+        <AppHeading
+          title="数据表预览"
+          description="查看表信息与数据记录。"
+          back={{ destination: '数据管理', onClick: () => setTableKey(null) }}
+        />
+        <section
+          className="app-section data-table-detail"
+          aria-label={selectedTable.name}
+        >
+          <dl className="data-table-metadata">
+            <div>
+              <dt>表名</dt>
+              <dd>{selectedTable.name}</dd>
+            </div>
+            <div>
+              <dt>表注释</dt>
+              <dd>{selectedTable.comment || '暂无表注释'}</dd>
+            </div>
+          </dl>
+          <div className="data-resource-toolbar">
+            <div className="data-preview-heading">
+              <span>数据记录</span>
+              <p>共 {selectedTable.rows.length} 条，最多预览前 100 条</p>
+            </div>
+            <DetailExport
+              name={selectedTable.name + '-明细'}
+              columns={selectedTable.columns}
+              rows={selectedTable.rows}
+            />
+          </div>
+          <div id={detailTableId}>
+            {sampleRows.length ? (
+              <DataTable
+                columns={selectedTable.columns}
+                rows={sampleRows.slice(
+                  detailRange.offset,
+                  detailRange.offset + tablePageSize,
+                )}
+              />
+            ) : (
+              <p className="data-preview-empty">暂无数据记录。</p>
+            )}
+          </div>
+          <ListPagination
+            total={sampleRows.length}
+            page={tablePage}
+            pageSize={tablePageSize}
+            onPageChange={setTablePage}
+            onPageSizeChange={setTablePageSize}
+            controls={detailTableId}
+            label="数据记录分页"
+          />
+        </section>
+      </>
+    );
+
   return (
     <>
       <AppHeading
         title="数据管理"
-        description="维护五个业务模块的数据，查看、编辑或导入本地资料。"
-        action={
-          <Button
-            variant="outline"
-            onClick={() => navigate('/apps/' + dataset.module)}
-          >
-            进入业务模块
-            <ArrowRight size={15} />
-          </Button>
-        }
+        description="统一管理五个智能体使用的业务文件与数据表。"
       />
-      <div className="data-workspace-note">
-        <Database size={19} />
-        <div>
-          <strong>当前浏览器工作区</strong>
-          <p>
-            编辑与导入的数据只保存在当前浏览器。已保存的分析保留当时的结果快照。
-          </p>
-        </div>
-        <span className="app-status">AI 与业务系统待接入</span>
-      </div>
-      {message && <output className="app-message">{message}</output>}
-      <section className="app-section data-manager-section">
-        <Tabs
-          value={selected}
-          onValueChange={(v) => {
-            setSelected(String(v));
-            setMessage('');
-          }}
-        >
-          <TabsList variant="line" className="dataset-tabs">
-            {initialDatasets.map((d) => (
-              <TabsTrigger key={d.id} value={d.id}>
-                {modules.find((m) => m.id === d.module)?.category}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          <TabsContent value={selected}>
-            <div className="dataset-heading">
-              <div>
-                <h2>{dataset.name}</h2>
-                <p>
-                  {dataset.rows.length} 条数据 ·{' '}
-                  {dataset.origin === 'sample'
-                    ? '示例数据'
-                    : (dataset.fileName ?? '本地数据')}
-                  {dataset.updatedAt
-                    ? ' · ' +
-                      new Date(dataset.updatedAt).toLocaleDateString('zh-CN')
-                    : ''}
-                </p>
-              </div>
-              <div className="dataset-actions">
-                <Button variant="ghost" onClick={template}>
-                  <Download size={15} />
-                  下载模板
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setImportOpen(true);
-                    setImported(null);
-                    setImportError('');
-                  }}
-                >
-                  <Upload size={15} />
-                  导入 CSV
-                </Button>
-                <Button
-                  onClick={() => {
-                    setEdit({
-                      index: -1,
-                      row: Object.fromEntries(
-                        dataset.columns.map((c) => [c, '']),
-                      ),
-                    });
-                    setEditError('');
-                  }}
-                >
-                  <Plus size={15} />
-                  新增数据
-                </Button>
-              </div>
-            </div>
-            <DataTable
-              columns={dataset.columns}
-              rows={dataset.rows.map((r) => dataset.columns.map((c) => r[c]))}
-              actions={(i) => (
-                <div className="row-actions">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={'编辑第 ' + (i + 1) + ' 行'}
-                    onClick={() => {
-                      setEdit({ index: i, row: { ...dataset.rows[i] } });
-                      setEditError('');
-                    }}
-                  >
-                    <PenLine size={14} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={dataset.rows.length <= 1}
-                    title={
-                      dataset.rows.length <= 1 ? '至少保留一条数据' : '删除数据'
-                    }
-                    aria-label={'删除第 ' + (i + 1) + ' 行'}
-                    onClick={() => setRemove(i)}
-                  >
-                    <Trash2 size={14} />
-                  </Button>
-                </div>
-              )}
-            />
-            <div className="dataset-footer">
-              <Button
-                variant="ghost"
-                onClick={() =>
-                  download(
-                    dataset.name + '.csv',
-                    csvExport(
-                      dataset.columns,
-                      dataset.rows.map((r) => dataset.columns.map((c) => r[c])),
-                    ),
-                    'text/csv;charset=utf-8',
-                  )
-                }
-              >
-                <Download size={14} />
-                导出数据
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setRestore(true)}
-                disabled={dataset.origin === 'sample'}
-              >
-                <RotateCcw size={14} />
-                恢复示例数据
-              </Button>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </section>
-      <Dialog
-        open={Boolean(edit)}
-        onOpenChange={(open) => {
-          if (!open) setEdit(null);
-        }}
+      {selectedCsv && 'file' in selectedCsv && (
+        <DataFilePreview
+          key={selectedCsv.key}
+          resourceKey={selectedCsv.key}
+          name={selectedCsv.name}
+          table={selectedCsv.table}
+          onClose={() => setCsvKey(null)}
+        />
+      )}
+      {message && (
+        <output className="data-resource-message">
+          {message}
+        </output>
+      )}
+      <section
+        className="app-section data-resource-list"
+        aria-label="文件与数据表"
       >
-        <DialogContent className="app-dialog data-edit-dialog">
-          <DialogHeader>
-            <DialogTitle>
-              {edit?.index === -1 ? '新增数据' : '编辑数据'}
-            </DialogTitle>
-            <DialogDescription>
-              {dataset.name} · 所有字段均为必填，保存后影响后续分析。
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              commitEdit();
-            }}
-          >
-            <div className="edit-fields">
-              {dataset.columns.map((c) => (
-                <div className="app-field" key={c}>
-                  <Label htmlFor={'edit-' + c}>{c}</Label>
-                  <Input
-                    id={'edit-' + c}
-                    type={
-                      typeof reference.rows[0][c] === 'number'
-                        ? 'number'
-                        : 'text'
-                    }
-                    step="any"
-                    required
-                    maxLength={500}
-                    value={String(edit?.row[c] ?? '')}
-                    onChange={(e) => {
-                      if (edit)
-                        setEdit({
-                          ...edit,
-                          row: { ...edit.row, [c]: e.target.value },
-                        });
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-            {editError && (
-              <p className="form-error" role="alert">
-                {editError}
-              </p>
-            )}
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setEdit(null)}
-              >
-                取消
-              </Button>
-              <Button type="submit">保存数据</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-      <AlertDialog
-        open={remove !== null}
-        onOpenChange={(open) => {
-          if (!open) setRemove(null);
-        }}
-      >
-        <AlertDialogContent className="app-dialog">
-          <AlertDialogHeader>
-            <AlertDialogTitle>删除这一行数据？</AlertDialogTitle>
-            <AlertDialogDescription>
-              该条目将不再参与后续分析。已保存的分析记录不受影响。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <Button variant="outline" onClick={() => setRemove(null)}>
-              取消
-            </Button>
-            <Button variant="destructive" onClick={deleteRow}>
-              删除
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog open={restore} onOpenChange={setRestore}>
-        <AlertDialogContent className="app-dialog">
-          <AlertDialogHeader>
-            <AlertDialogTitle>恢复此数据集的示例内容？</AlertDialogTitle>
-            <AlertDialogDescription>
-              将替换当前的「{dataset.name}」。需要保留修改时，请先导出 CSV。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <Button variant="outline" onClick={() => setRestore(false)}>
-              取消
-            </Button>
-            <Button
-              onClick={() => {
-                if (persist({ ...reference })) {
-                  setRestore(false);
-                  setMessage('已恢复示例数据。');
-                }
+        <div className="data-resource-toolbar">
+          <div className="search-field">
+            <Search size={17} />
+            <Input
+              aria-label="搜索文件或数据表"
+              placeholder="搜索文件或数据表"
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setPage(1);
+                setMessage('');
               }}
-            >
-              恢复示例数据
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <Dialog open={importOpen} onOpenChange={setImportOpen}>
-        <DialogContent className="app-dialog import-dialog">
+            />
+          </div>
+        </div>
+        <Table id={resourceTableId} className="app-table data-resource-table">
+          <TableHeader>
+            <TableRow>
+              <TableHead>名称</TableHead>
+              <TableHead>
+                <MultiScopeChoice
+                  variant="column-header"
+                  label="类型"
+                  name="data-resource-type"
+                  value={type}
+                  allLabel="全部类型"
+                  options={['文件', '数据表']}
+                  onChange={(value) => {
+                    setType(value);
+                    setPage(1);
+                    setMessage('');
+                  }}
+                />
+              </TableHead>
+              <TableHead>
+                <MultiScopeChoice
+                  variant="column-header"
+                  label="关联智能体"
+                  name="data-resource-agent"
+                  value={agent}
+                  allLabel="全部智能体"
+                  options={modules.map((module) => module.name)}
+                  onChange={(value) => {
+                    setAgent(value);
+                    setPage(1);
+                    setMessage('');
+                  }}
+                />
+              </TableHead>
+              <TableHead>操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {visible
+              .slice(resourceRange.offset, resourceRange.offset + pageSize)
+              .map((resource) => (
+                <TableRow key={resource.key}>
+                  <TableCell>
+                    <span className="data-resource-name">
+                      {resource.kind === '文件' ? (
+                        <FileText size={19} />
+                      ) : (
+                        <Table2 size={19} />
+                      )}
+                      <span>{resource.name}</span>
+                    </span>
+                  </TableCell>
+                  <TableCell>{resource.kind}</TableCell>
+                  <TableCell>
+                    {
+                      modules.find((module) => module.id === resource.module)
+                        ?.name
+                    }
+                  </TableCell>
+                  <TableCell>
+                    <div className="data-resource-actions">
+                      <Tooltip>
+                        <TooltipTrigger
+                          delay={200}
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="data-resource-icon-button"
+                            />
+                          }
+                          aria-label={`预览${resource.name}`}
+                          onClick={() => preview(resource)}
+                        >
+                          <Eye size={17} aria-hidden="true" />
+                        </TooltipTrigger>
+                        <TooltipContent>预览</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger
+                          delay={200}
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="data-resource-icon-button data-resource-delete"
+                            />
+                          }
+                          aria-label={`删除${resource.name}`}
+                          onClick={() => {
+                            setPendingDelete(resource);
+                            setDeleteError('');
+                            setMessage('');
+                          }}
+                        >
+                          <Trash2 size={17} aria-hidden="true" />
+                        </TooltipTrigger>
+                        <TooltipContent>删除</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            {!visible.length && (
+              <TableRow>
+                <TableCell colSpan={4} className="data-resource-empty">
+                  没有找到匹配的文件或数据表。
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        <ListPagination
+          total={visible.length}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          controls={resourceTableId}
+          label="文件与数据表分页"
+        />
+      </section>
+      <SourceDrawer
+        selected={source}
+        onSelect={setSource}
+        onClose={() => setSource(null)}
+      />
+      <Dialog
+        open={Boolean(pendingDelete)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingDelete(null);
+            setDeleteError('');
+          }
+        }}
+      >
+        <DialogContent className="app-dialog">
           <DialogHeader>
-            <DialogTitle>导入 {dataset.name}</DialogTitle>
+            <DialogTitle>删除{pendingDelete?.kind}？</DialogTitle>
             <DialogDescription>
-              先下载模板并填写，再上传
-              CSV。导入会替换此数据集；文件仅在本机读取。
+              “{pendingDelete?.name}
+              ”将被删除，无法再预览。
+              {pendingDelete?.kind === '文件'
+                ? '历史回答和引用名称仍保留，但无法查看原文件。'
+                : '历史回答内容仍保留。'}
             </DialogDescription>
           </DialogHeader>
-          <div className="import-file-control">
-            <FileSpreadsheet size={24} />
-            <div>
-              <Label htmlFor="csv-file">选择 CSV 文件</Label>
-              <Input
-                id="csv-file"
-                type="file"
-                accept=".csv,text/csv"
-                onChange={(e) => void readFile(e.target.files?.[0])}
-              />
-              <p>UTF-8 编码 · 最多 500 行 · 最大 500 KB</p>
-            </div>
-            <Button variant="outline" onClick={template}>
-              下载模板
-            </Button>
-          </div>
-          {importError && (
-            <p className="form-error" role="alert">
-              {importError}
+          {deleteError && (
+            <p role="alert" className="form-error">
+              {deleteError}
             </p>
           )}
-          {imported && (
-            <div className="import-preview">
-              <p>校验通过，共 {imported.rows.length} 条。下方预览前 5 条：</p>
-              <DataTable
-                columns={imported.columns}
-                rows={imported.rows
-                  .slice(0, 5)
-                  .map((r) => imported.columns.map((c) => r[c]))}
-              />
-            </div>
-          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setImportOpen(false)}>
+            <Button variant="outline" onClick={() => setPendingDelete(null)}>
               取消
             </Button>
-            <Button onClick={commitImport} disabled={!imported}>
-              确认导入{imported ? ' ' + imported.rows.length + ' 条' : ''}
+            <Button variant="destructive" onClick={confirmDelete}>
+              确认删除
             </Button>
           </DialogFooter>
         </DialogContent>

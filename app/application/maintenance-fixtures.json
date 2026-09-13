@@ -2,38 +2,38 @@
   "documents": [
     {
       "id": "maintenance-guide",
-      "fileName": "示例设备维修手册.pdf",
-      "url": "/sample-data/maintenance/示例设备维修手册.pdf",
+      "fileName": "设备维修手册.pdf",
+      "url": "/data/maintenance/设备维修手册.pdf",
       "kind": "设备维修手册",
-      "summary": "五类虚构设备故障的原因、排查、条件维修方案、修后验证与注意事项。",
+      "summary": "五类设备故障的原因、排查、条件维修方案、修后验证与注意事项。",
       "pages": [
         {
           "page": 1,
-          "image": "/sample-data/maintenance/pages/maintenance-guide-1.png",
+          "image": "/data/maintenance/pages/maintenance-guide-1.png",
           "width": 1200,
           "height": 1698
         },
         {
           "page": 2,
-          "image": "/sample-data/maintenance/pages/maintenance-guide-2.png",
+          "image": "/data/maintenance/pages/maintenance-guide-2.png",
           "width": 1200,
           "height": 1698
         },
         {
           "page": 3,
-          "image": "/sample-data/maintenance/pages/maintenance-guide-3.png",
+          "image": "/data/maintenance/pages/maintenance-guide-3.png",
           "width": 1200,
           "height": 1698
         },
         {
           "page": 4,
-          "image": "/sample-data/maintenance/pages/maintenance-guide-4.png",
+          "image": "/data/maintenance/pages/maintenance-guide-4.png",
           "width": 1200,
           "height": 1698
         },
         {
           "page": 5,
-          "image": "/sample-data/maintenance/pages/maintenance-guide-5.png",
+          "image": "/data/maintenance/pages/maintenance-guide-5.png",
           "width": 1200,
           "height": 1698
         }
@@ -73,20 +73,20 @@
     },
     {
       "id": "maintenance-cases",
-      "fileName": "示例维修工单.pdf",
-      "url": "/sample-data/maintenance/示例维修工单.pdf",
-      "kind": "维修工单样例",
-      "summary": "五条虚构历史工单片段，不代表当前结论，也不代表已创建或更新真实工单。",
+      "fileName": "维修工单.pdf",
+      "url": "/data/maintenance/维修工单.pdf",
+      "kind": "维修工单",
+      "summary": "五条历史工单记录片段，供排查过程核对；当前工单的创建、更新与关闭须按现场流程办理。",
       "pages": [
         {
           "page": 1,
-          "image": "/sample-data/maintenance/pages/maintenance-cases-1.png",
+          "image": "/data/maintenance/pages/maintenance-cases-1.png",
           "width": 1200,
           "height": 1698
         },
         {
           "page": 2,
-          "image": "/sample-data/maintenance/pages/maintenance-cases-2.png",
+          "image": "/data/maintenance/pages/maintenance-cases-2.png",
           "width": 1200,
           "height": 1698
         }
@@ -96,50 +96,50 @@
           "id": "order-w-t01",
           "title": "卷绕机 / W-T01",
           "page": 1,
-          "text": "设备型号：WND-100；现象：张力波动与断箔。样例工单记录了WND-100的材料与穿料状态核对，并安排检查张力检测链路；根因待现场确认。"
+          "text": "设备型号：WND-100；现象：张力波动与断箔。工单记录了WND-100的材料与穿料状态核对，并安排检查张力检测链路；根因待现场确认。"
         },
         {
           "id": "order-i-v02",
           "title": "含浸机 / I-V02",
           "page": 1,
-          "text": "设备型号：IMP-200；现象：真空不足。样例工单记录了IMP-200的报警信息核对，并安排检查密封与测量链路；根因待现场确认。"
+          "text": "设备型号：IMP-200；现象：真空不足。工单记录了IMP-200的报警信息核对，并安排检查密封与测量链路；根因待现场确认。"
         },
         {
           "id": "order-a-t03",
           "title": "老化柜 / A-T03",
           "page": 1,
-          "text": "设备型号：AGE-300；现象：温度偏高。样例工单记录了AGE-300的散热条件与温度测量链路核查；根因待现场确认。"
+          "text": "设备型号：AGE-300；现象：温度偏高。工单记录了AGE-300的散热条件与温度测量链路核查；根因待现场确认。"
         },
         {
           "id": "order-t-c04",
           "title": "电容测试仪 / T-C04",
           "page": 2,
-          "text": "设备型号：TST-400；现象：测试读数波动。样例工单记录了TST-400的夹具连接与测试条件核对；根因待现场确认。"
+          "text": "设备型号：TST-400；现象：测试读数波动。工单记录了TST-400的夹具连接与测试条件核对；根因待现场确认。"
         },
         {
           "id": "order-p-l05",
           "title": "空压机 / P-L05",
           "page": 2,
-          "text": "设备型号：AIR-500；现象：供气压力不足。样例工单记录了AIR-500的连接、进气与压力测量链路检查安排；根因待现场确认。"
+          "text": "设备型号：AIR-500；现象：供气压力不足。工单记录了AIR-500的连接、进气与压力测量链路检查安排；根因待现场确认。"
         }
       ]
     },
     {
       "id": "maintenance-parts",
-      "fileName": "示例备件与维修FAQ.pdf",
-      "url": "/sample-data/maintenance/示例备件与维修FAQ.pdf",
+      "fileName": "备件与维修FAQ.pdf",
+      "url": "/data/maintenance/备件与维修FAQ.pdf",
       "kind": "备件与维修FAQ",
-      "summary": "按虚构型号列出的条件备件建议，以及信息补问、代码边界和反馈说明。",
+      "summary": "按设备型号列出的条件备件建议，以及信息补问、代码核对和反馈要求。",
       "pages": [
         {
           "page": 1,
-          "image": "/sample-data/maintenance/pages/maintenance-parts-1.png",
+          "image": "/data/maintenance/pages/maintenance-parts-1.png",
           "width": 1200,
           "height": 1698
         },
         {
           "page": 2,
-          "image": "/sample-data/maintenance/pages/maintenance-parts-2.png",
+          "image": "/data/maintenance/pages/maintenance-parts-2.png",
           "width": 1200,
           "height": 1698
         }
@@ -179,7 +179,7 @@
           "id": "intake",
           "title": "先确认设备、型号、代码与现象",
           "page": 2,
-          "text": "先补问设备名称、铭牌型号、屏幕原样显示的故障代码以及可观察到的故障现象。设备、型号、代码或现象缺失、互相矛盾，或无法确认适用手册时，应指出缺失或冲突信息，继续补问，不推断、不拼接其他设备的故障结论。若没有符合的样例，明确说明当前资料无法匹配，并建议由授权人员核对真实设备手册。"
+          "text": "先补问设备名称、铭牌型号、屏幕原样显示的故障代码以及可观察到的故障现象。设备、型号、代码或现象缺失、互相矛盾，或无法确认适用手册时，应指出缺失或冲突信息，继续补问，不推断、不拼接其他设备的故障结论。若没有符合的记录，明确说明当前资料无法匹配，并建议由授权人员核对真实设备手册。"
         },
         {
           "id": "code-boundary",
@@ -230,7 +230,7 @@
           "condition": "对应型号：WND-100。导向辊须确认损伤或机械异常后才考虑更换；张力检测组件须确认损坏或校准不通过后才考虑更换。由授权人员核对规格、安装接口与适用手册，不能仅凭断箔现象判定更换。"
         }
       ],
-      "history": "样例工单记录了WND-100的材料与穿料状态核对，并安排检查张力检测链路；根因待现场确认。",
+      "history": "工单记录了WND-100的材料与穿料状态核对，并安排检查张力检测链路；根因待现场确认。",
       "repair": [
         "以下处理均由授权维修人员在停机隔离、危险能量受控后按适用手册执行。确认穿料路径或材料接头异常时，重新穿料、修整接头或更换异常材料。",
         "确认导向辊污染时，按手册清洁；确认辊面损伤或机械转动异常且需更换时，核对适配件后更换导向辊组件。",
@@ -286,7 +286,7 @@
           "condition": "对应型号：IMP-200。密封件确认损伤或失效后才考虑更换；真空测量组件确认异常且校准不通过或损坏后才考虑更换。由授权人员核对材质、规格、接口与适用手册；真空系统其他部件须另行定位确认。"
         }
       ],
-      "history": "样例工单记录了IMP-200的报警信息核对，并安排检查密封与测量链路；根因待现场确认。",
+      "history": "工单记录了IMP-200的报警信息核对，并安排检查密封与测量链路；根因待现场确认。",
       "repair": [
         "以下处理均由授权维修人员在停机隔离、危险能量受控后按适用手册执行。确认密封面有异物时，清理密封面并按手册复装。",
         "确认密封件损伤或失效时，核对材质、规格和接口后更换适配密封件；仅有真空不足现象时，不直接更换。",
@@ -342,7 +342,7 @@
           "condition": "对应型号：AGE-300。风机须确认机械故障或组件失效后才考虑更换；温度检测组件须确认损坏或校准不通过后才考虑更换。由授权人员核对规格、安装位置、接口与适用手册。"
         }
       ],
-      "history": "样例工单记录了AGE-300的散热条件与温度测量链路核查；根因待现场确认。",
+      "history": "工单记录了AGE-300的散热条件与温度测量链路核查；根因待现场确认。",
       "repair": [
         "以下处理均由授权维修人员在停机隔离、相关热能等危险能量受控后按适用手册执行。确认风道堵塞时，清理堵塞物并恢复规定风路。",
         "确认风机机械故障或组件失效时，核对规格、接口和安装要求后更换适配风机组件；未确认故障时不直接更换。",
@@ -405,7 +405,7 @@
           "condition": "对应型号：TST-400。确认夹具或接触件磨损、损伤或失效后，才考虑更换适配组件。由授权人员核对仪器接口、测试条件和适用手册。参考件须符合该仪器的核验要求且在有效期内，不因读数波动直接更换仪器部件。"
         }
       ],
-      "history": "样例工单记录了TST-400的夹具连接与测试条件核对；根因待现场确认。",
+      "history": "工单记录了TST-400的夹具连接与测试条件核对；根因待现场确认。",
       "repair": [
         "以下处理均由授权维修人员在停机隔离、设备及待测件危险能量受控后按适用手册执行。确认夹具或接触面污染时，按手册清洁。",
         "确认夹具接触件磨损、损伤或失效时，核对仪器接口和测试条件后更换适配夹具或接触组件，再完成规定核验。",
@@ -468,7 +468,7 @@
           "condition": "对应型号：AIR-500。连接密封或接头须确认损伤；进气滤件须确认堵塞且符合手册更换条件；压力测量组件须确认损坏或校准不通过。满足对应条件后，由授权人员核对规格、接口和适用手册再考虑更换。"
         }
       ],
-      "history": "样例工单记录了AIR-500的连接、进气与压力测量链路检查安排；根因待现场确认。",
+      "history": "工单记录了AIR-500的连接、进气与压力测量链路检查安排；根因待现场确认。",
       "repair": [
         "以下处理均由授权维修人员在停机隔离、压力等危险能量受控后按适用手册执行。确认连接处泄漏时，按手册修复连接；确认密封或接头损伤时，更换适配件后复装。",
         "确认进气滤件堵塞且达到手册更换条件时，更换适配进气滤件；未确认堵塞时，不以压力不足直接判定滤件故障。",

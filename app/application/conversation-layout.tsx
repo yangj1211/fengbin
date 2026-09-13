@@ -1,12 +1,14 @@
 'use client';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import {
   Plus,
   MessageSquareText,
   Trash2,
+  Pencil,
   PanelLeft,
   Search,
   X,
+  ChartNoAxesCombined,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,8 +29,14 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import type { ModuleId, WorkspaceState } from './model';
-import { storageMessage } from './store';
-import { searchConversations } from './sessions';
+import { storageMessage, updateWorkspace } from './store';
+import {
+  CONVERSATION_TITLE_MAX_LENGTH,
+  conversationTitleError,
+  renameConversation,
+  searchConversations,
+} from './sessions';
+import { SourcePreviewScope } from './source-preview-panel';
 
 type HistoryProps = {
   state: WorkspaceState;
@@ -37,6 +45,7 @@ type HistoryProps = {
   onNew: () => boolean;
   onSelect: (id: string) => boolean;
   onDelete: (id: string) => boolean;
+  onOpenDashboard?: () => boolean;
   onDone?: () => void;
 };
 
@@ -47,11 +56,21 @@ function ConversationHistory({
   onNew,
   onSelect,
   onDelete,
+  onOpenDashboard,
   onDone,
   query,
   onQueryChange,
 }: HistoryProps & { query: string; onQueryChange: (query: string) => void }) {
   const [remove, setRemove] = useState<string | null>(null);
+  const [rename, setRename] = useState<{ id: string; title: string } | null>(
+    null,
+  );
+  const [renameError, setRenameError] = useState('');
+  const renameInput = useRef<HTMLInputElement>(null);
+  const renameDraft = useRef<typeof rename>(null);
+  const composingName = useRef(false);
+  const historyPanel = useRef<HTMLDivElement>(null);
+  const renameErrorId = useId();
   const [message, setMessage] = useState('');
   const searchInput = useRef<HTMLInputElement>(null);
   const sessions = (state.sessions ?? [])
@@ -60,9 +79,70 @@ function ConversationHistory({
   const target = sessions.find((s) => s.id === remove);
   const matches = searchConversations(sessions, query);
   const searching = Boolean(query.trim());
+  useEffect(() => {
+    if (!rename?.id) return;
+    renameInput.current?.focus();
+    renameInput.current?.select();
+  }, [rename?.id]);
+  function updateName(next: typeof rename) {
+    renameDraft.current = next;
+    setRename(next);
+  }
+  function cancelName(refocus = false) {
+    const id = renameDraft.current?.id;
+    updateName(null);
+    composingName.current = false;
+    setRenameError('');
+    if (refocus)
+      requestAnimationFrame(() => {
+        const target = Array.from(
+          historyPanel.current?.querySelectorAll<HTMLButtonElement>(
+            '[data-rename-session]',
+          ) ?? [],
+        ).find((button) => button.dataset.renameSession === id);
+        (target ?? searchInput.current)?.focus();
+      });
+  }
   function clearSearch() {
+    if (!finishName()) return;
     onQueryChange('');
     searchInput.current?.focus();
+  }
+  function saveName(refocus = false): boolean {
+    const draft = renameDraft.current;
+    if (!draft) return true;
+    if (composingName.current) return false;
+    if (!draft.title.trim()) {
+      cancelName(refocus);
+      return true;
+    }
+    const validation = conversationTitleError(draft.title);
+    if (validation) {
+      setRenameError(validation);
+      return false;
+    }
+    try {
+      if (
+        updateWorkspace((current) =>
+          renameConversation(current, draft.id, draft.title),
+        )
+      ) {
+        cancelName(refocus);
+        setMessage('');
+        return true;
+      }
+      setRenameError(storageMessage() || '未能保存对话名称，请重试。');
+    } catch (error) {
+      setRenameError(
+        error instanceof Error ? error.message : '未能保存对话名称，请重试。',
+      );
+    }
+    return false;
+  }
+  function finishName(): boolean {
+    if (saveName()) return true;
+    renameInput.current?.focus();
+    return false;
   }
   function finish(ok: boolean) {
     if (ok) {
@@ -75,11 +155,12 @@ function ConversationHistory({
       );
   }
   return (
-    <div className="conversation-history-panel">
+    <div ref={historyPanel} className="conversation-history-panel">
       <div className="conversation-history-start">
         <Button
           className="conversation-new-chat"
           onClick={() => {
+            if (!finishName()) return;
             const ok = onNew();
             if (ok) onQueryChange('');
             finish(ok);
@@ -88,6 +169,19 @@ function ConversationHistory({
           <Plus size={18} />
           新建对话
         </Button>
+        {onOpenDashboard && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-2 w-full justify-start gap-2.5"
+            onClick={() => {
+              if (finishName()) finish(onOpenDashboard());
+            }}
+          >
+            <ChartNoAxesCombined size={16} />
+            查看看板
+          </Button>
+        )}
       </div>
       <div className="conversation-history-search">
         <Search size={15} aria-hidden="true" />
@@ -98,7 +192,9 @@ function ConversationHistory({
           placeholder="搜索对话"
           value={query}
           maxLength={200}
-          onChange={(event) => onQueryChange(event.target.value)}
+          onChange={(event) => {
+            if (finishName()) onQueryChange(event.target.value);
+          }}
           onKeyDown={(event) => {
             if (
               event.key === 'Escape' &&
@@ -155,39 +251,134 @@ function ConversationHistory({
                 (session.id === sessionId ? ' is-current' : '')
               }
             >
-              <button
-                className="conversation-history-link"
-                aria-current={session.id === sessionId ? 'page' : undefined}
-                title={session.title}
-                onClick={() => finish(onSelect(session.id))}
-              >
-                <MessageSquareText size={15} />
-                <span>
-                  <strong>{session.title}</strong>
-                  <small>
-                    {session.turns.length
-                      ? new Date(session.updatedAt).toLocaleDateString(
-                          'zh-CN',
-                          { month: '2-digit', day: '2-digit' },
-                        ) +
-                        ' · ' +
-                        session.turns.length +
-                        ' 轮问答'
-                      : '草稿'}
-                  </small>
-                </span>
-              </button>
-              <button
-                className="conversation-history-delete"
-                title="删除对话"
-                aria-label={'删除对话：' + session.title}
-                onClick={() => {
-                  setRemove(session.id);
-                  setMessage('');
-                }}
-              >
-                <Trash2 size={14} />
-              </button>
+              {rename?.id === session.id ? (
+                <div className="conversation-history-link conversation-history-edit">
+                  <MessageSquareText size={15} aria-hidden="true" />
+                  <span>
+                    <Input
+                      ref={renameInput}
+                      className="conversation-name-input"
+                      aria-label="对话名称"
+                      value={rename.title}
+                      maxLength={CONVERSATION_TITLE_MAX_LENGTH}
+                      autoComplete="off"
+                      aria-invalid={Boolean(renameError)}
+                      aria-describedby={renameError ? renameErrorId : undefined}
+                      onChange={(event) => {
+                        updateName({
+                          id: session.id,
+                          title: event.target.value,
+                        });
+                        setRenameError('');
+                      }}
+                      onCompositionStart={() => {
+                        composingName.current = true;
+                      }}
+                      onCompositionEnd={(event) => {
+                        composingName.current = false;
+                        updateName({
+                          id: session.id,
+                          title: event.currentTarget.value,
+                        });
+                        if (document.activeElement !== event.currentTarget)
+                          saveName();
+                      }}
+                      onBlur={() => {
+                        saveName();
+                      }}
+                      onKeyDown={(event) => {
+                        event.stopPropagation();
+                        if (
+                          composingName.current ||
+                          event.nativeEvent.isComposing ||
+                          event.keyCode === 229
+                        )
+                          return;
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          saveName(true);
+                        } else if (event.key === 'Escape') {
+                          event.preventDefault();
+                          cancelName(true);
+                        }
+                      }}
+                    />
+                    {renameError && (
+                      <span
+                        id={renameErrorId}
+                        className="conversation-name-error"
+                        role="alert"
+                      >
+                        {renameError}
+                      </span>
+                    )}
+                    <small>
+                      {session.turns.length
+                        ? new Date(session.updatedAt).toLocaleDateString(
+                            'zh-CN',
+                            { month: '2-digit', day: '2-digit' },
+                          ) +
+                          ' · ' +
+                          session.turns.length +
+                          ' 轮问答'
+                        : '草稿'}
+                    </small>
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <button
+                    className="conversation-history-link"
+                    aria-current={session.id === sessionId ? 'page' : undefined}
+                    title={session.title}
+                    onClick={() => {
+                      if (finishName()) finish(onSelect(session.id));
+                    }}
+                  >
+                    <MessageSquareText size={15} />
+                    <span>
+                      <strong>{session.title}</strong>
+                      <small>
+                        {session.turns.length
+                          ? new Date(session.updatedAt).toLocaleDateString(
+                              'zh-CN',
+                              { month: '2-digit', day: '2-digit' },
+                            ) +
+                            ' · ' +
+                            session.turns.length +
+                            ' 轮问答'
+                          : '草稿'}
+                      </small>
+                    </span>
+                  </button>
+                  <button
+                    className="conversation-history-rename"
+                    data-rename-session={session.id}
+                    title="修改对话名称"
+                    aria-label={'修改对话名称：' + session.title}
+                    onClick={() => {
+                      if (!finishName()) return;
+                      updateName({ id: session.id, title: session.title });
+                      setRenameError('');
+                      setMessage('');
+                    }}
+                  >
+                    <Pencil size={14} aria-hidden="true" />
+                  </button>
+                  <button
+                    className="conversation-history-delete"
+                    title="删除对话"
+                    aria-label={'删除对话：' + session.title}
+                    onClick={() => {
+                      if (!finishName()) return;
+                      setRemove(session.id);
+                      setMessage('');
+                    }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </>
+              )}
             </div>
           ))
         ) : searching ? (
@@ -204,7 +395,7 @@ function ConversationHistory({
           </p>
         )}
       </div>
-      <p className="conversation-history-footer">对话保存在当前浏览器</p>
+      <p className="conversation-history-footer">可通过对话历史继续交流</p>
       <AlertDialog
         open={Boolean(target)}
         onOpenChange={(open) => {
@@ -216,7 +407,7 @@ function ConversationHistory({
             <AlertDialogTitle>删除这段对话？</AlertDialogTitle>
             <AlertDialogDescription>
               「{target?.title}
-              」的问答与草稿将被删除。已保存的分析记录仍然保留。
+              」的问答与草稿将被删除。
             </AlertDialogDescription>
           </AlertDialogHeader>
           {message && (
@@ -270,30 +461,43 @@ export default function ConversationLayout({
         />
       </aside>
       <div className="conversation-pane">
-        <div className="conversation-mobile-toolbar">
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger render={<Button variant="ghost" />}>
-              <PanelLeft size={17} />
-              对话历史
-            </SheetTrigger>
-            <SheetContent side="left" className="conversation-history-sheet">
-              <SheetHeader className="sr-only">
-                <SheetTitle>对话历史</SheetTitle>
-                <SheetDescription>
-                  查看当前智能体的对话，或新建一段对话。
-                </SheetDescription>
-              </SheetHeader>
-              <ConversationHistory
-                {...history}
-                query={query}
-                onQueryChange={setQuery}
-                onDone={() => setOpen(false)}
-              />
-            </SheetContent>
-          </Sheet>
-          <span>当前智能体的独立对话</span>
-        </div>
-        {children}
+        <SourcePreviewScope key={history.sessionId ?? 'initial'}>
+          <div className="conversation-mobile-toolbar">
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger render={<Button variant="ghost" />}>
+                <PanelLeft size={17} />
+                对话历史
+              </SheetTrigger>
+              <SheetContent side="left" className="conversation-history-sheet">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>对话历史</SheetTitle>
+                  <SheetDescription>
+                    查看当前智能体的对话，或新建一段对话。
+                  </SheetDescription>
+                </SheetHeader>
+                <ConversationHistory
+                  {...history}
+                  query={query}
+                  onQueryChange={setQuery}
+                  onDone={() => setOpen(false)}
+                />
+              </SheetContent>
+            </Sheet>
+            {history.onOpenDashboard ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={history.onOpenDashboard}
+              >
+                <ChartNoAxesCombined size={16} />
+                查看看板
+              </Button>
+            ) : (
+              <span>当前智能体的独立对话</span>
+            )}
+          </div>
+          {children}
+        </SourcePreviewScope>
       </div>
     </div>
   );

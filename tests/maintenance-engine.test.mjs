@@ -23,7 +23,11 @@ try {
       }).outputText,
     );
   }
-  for (const file of ['customer-fixtures.json', 'maintenance-fixtures.json'])
+  for (const file of [
+    'customer-fixtures.json',
+    'maintenance-fixtures.json',
+    'energy-fixtures.json',
+  ])
     fs.copyFileSync(`app/application/${file}`, path.join(temp, file));
   fs.symlinkSync(path.resolve('node_modules'), path.join(temp, 'node_modules'));
   const require = createRequire(path.join(temp, 'check.cjs'));
@@ -182,16 +186,15 @@ try {
     turns: [],
     draft: legacyDraft,
   };
-  let stored = JSON.stringify({ ...base, sessions: [oldSession] });
+  const stored = new Map([[STORAGE_KEY, JSON.stringify({ ...base, sessions: [oldSession] })]]);
   global.window = {};
   global.localStorage = {
-    getItem: () => stored,
-    setItem: (key, value) => {
-      assert.equal(key, STORAGE_KEY);
-      stored = value;
-    },
+    getItem: (key) => stored.get(key) ?? null,
+    setItem: (key, value) => stored.set(key, value),
+    removeItem: (key) => stored.delete(key),
   };
-  const { updateWorkspace } = require('./store.js');
+  const { setWorkspaceUser, updateWorkspace } = require('./store.js');
+  assert.ok(setWorkspaceUser('default-admin', true));
   assert.ok(
     updateWorkspace((state) => {
       assert.equal(state.sessions[0].draft.device, '');

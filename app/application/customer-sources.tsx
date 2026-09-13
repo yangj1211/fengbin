@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import {
-  ArrowLeft,
   ArrowUpRight,
   BookOpen,
   ChevronLeft,
@@ -16,13 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+import SourcePreviewPanel from './source-preview-panel';
 import {
   sourceDocuments,
   documentsFor,
@@ -30,6 +23,9 @@ import {
   uniqueSources,
 } from './knowledge-sources';
 import type { CustomerFixtures, SourceReference } from './customer-types';
+import BackButton from './back-button';
+import { useWorkspace } from './store';
+import { isDataResourceDeleted } from './data-resources';
 
 function OriginalPage({
   document,
@@ -83,7 +79,7 @@ function OriginalPage({
   );
 }
 
-function SourceDrawer({
+export function SourceDrawer({
   selected,
   library,
   module = 'customer',
@@ -96,7 +92,14 @@ function SourceDrawer({
   onClose: () => void;
   onSelect: (ref: SourceReference | null) => void;
 }) {
+  const state = useWorkspace();
   const resolved = selected ? resolveSource(selected) : null;
+  const deleted = Boolean(
+    selected && isDataResourceDeleted(state, `file:${selected.documentId}`),
+  );
+  const availableDocuments = documentsFor(module).filter(
+    (document) => !isDataResourceDeleted(state, `file:${document.id}`),
+  );
   const pages = resolved?.document.pages ?? [];
   const pageIndex = pages.findIndex((page) => page.page === selected?.page);
   function changePage(page: number) {
@@ -111,116 +114,113 @@ function SourceDrawer({
       });
   }
   return (
-    <Sheet
+    <SourcePreviewPanel
       open={Boolean(selected) || Boolean(library)}
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
+      title={resolved ? resolved.document.fileName : '业务资料'}
+      description="业务资料。打开后定位到引用页，可切换页码查看原文。"
+      hideDescription={Boolean(resolved)}
+      className={`customer-source-sheet${resolved ? ' is-reading' : ''}`}
+      onClose={onClose}
     >
-      <SheetContent
-        className={`customer-source-sheet${resolved ? ' is-reading' : ''}`}
-      >
-        <SheetHeader>
-          <SheetTitle>
-            {resolved ? resolved.document.fileName : '示例资料'}
-          </SheetTitle>
-          <SheetDescription className={resolved ? 'sr-only' : undefined}>
-            示例资料。打开后定位到引用页，可切换页码查看原文。
-          </SheetDescription>
-        </SheetHeader>
-        {resolved ? (
-          <>
-            <div className="source-page-toolbar">
-              {library && (
-                <Button variant="ghost" onClick={() => onSelect(null)}>
-                  <ArrowLeft size={15} />
-                  全部资料
-                </Button>
-              )}
-              <nav className="source-page-controls" aria-label="原文件翻页">
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="上一页"
-                  title="上一页"
-                  disabled={pageIndex <= 0}
-                  onClick={() => {
-                    if (pageIndex > 0) changePage(pages[pageIndex - 1].page);
-                  }}
-                >
-                  <ChevronLeft size={17} />
-                </Button>
-                <Select
-                  value={selected!.page}
-                  items={pages.map((item) => ({
-                    value: item.page,
-                    label: `第 ${item.page} 页`,
-                  }))}
-                  onValueChange={(page) => {
-                    if (page !== null) changePage(page);
-                  }}
-                  disabled={pages.length < 2}
-                >
-                  <SelectTrigger aria-label="切换页码">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent alignItemWithTrigger={false}>
-                    {pages.map((item) => (
-                      <SelectItem key={item.page} value={item.page}>
-                        第 {item.page} 页
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <span className="source-page-total">共 {pages.length} 页</span>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="下一页"
-                  title="下一页"
-                  disabled={pageIndex < 0 || pageIndex >= pages.length - 1}
-                  onClick={() => {
-                    if (pageIndex < pages.length - 1)
-                      changePage(pages[pageIndex + 1].page);
-                  }}
-                >
-                  <ChevronRight size={17} />
-                </Button>
-              </nav>
-            </div>
-            <OriginalPage
-              key={`${resolved.document.id}-${selected!.page}`}
-              document={resolved.document}
-              page={selected!.page}
-            />
-          </>
-        ) : (
-          <div className="source-sheet-body">
-            <div className="source-library-list">
-              {documentsFor(module).map((document) => (
-                <button
-                  key={document.id}
-                  onClick={() =>
-                    onSelect({
-                      documentId: document.id,
-                      sectionId: document.sections[0].id,
-                      page: document.sections[0].page,
-                    })
-                  }
-                >
-                  <FileText size={21} />
-                  <span>
-                    <strong>{document.fileName}</strong>
-                    <small>{document.summary}</small>
-                  </span>
-                  <ArrowUpRight size={17} />
-                </button>
-              ))}
-            </div>
+      {deleted ? (
+        <div className="source-sheet-body">
+          <p className="source-unavailable">文件已删除，无法查看原文。</p>
+        </div>
+      ) : resolved ? (
+        <>
+          <div className="source-page-toolbar">
+            {library && (
+              <BackButton
+                destination="资料列表"
+                onClick={() => onSelect(null)}
+              />
+            )}
+            <nav className="source-page-controls" aria-label="原文件翻页">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="上一页"
+                title="上一页"
+                disabled={pageIndex <= 0}
+                onClick={() => {
+                  if (pageIndex > 0) changePage(pages[pageIndex - 1].page);
+                }}
+              >
+                <ChevronLeft size={17} />
+              </Button>
+              <Select
+                value={selected!.page}
+                items={pages.map((item) => ({
+                  value: item.page,
+                  label: `第 ${item.page} 页`,
+                }))}
+                onValueChange={(page) => {
+                  if (page !== null) changePage(page);
+                }}
+                disabled={pages.length < 2}
+              >
+                <SelectTrigger aria-label="切换页码">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent alignItemWithTrigger={false}>
+                  {pages.map((item) => (
+                    <SelectItem key={item.page} value={item.page}>
+                      第 {item.page} 页
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="source-page-total">共 {pages.length} 页</span>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="下一页"
+                title="下一页"
+                disabled={pageIndex < 0 || pageIndex >= pages.length - 1}
+                onClick={() => {
+                  if (pageIndex < pages.length - 1)
+                    changePage(pages[pageIndex + 1].page);
+                }}
+              >
+                <ChevronRight size={17} />
+              </Button>
+            </nav>
           </div>
-        )}
-      </SheetContent>
-    </Sheet>
+          <OriginalPage
+            key={`${resolved.document.id}-${selected!.page}`}
+            document={resolved.document}
+            page={selected!.page}
+          />
+        </>
+      ) : (
+        <div className="source-sheet-body">
+          <div className="source-library-list">
+            {availableDocuments.map((document) => (
+              <button
+                key={document.id}
+                onClick={() =>
+                  onSelect({
+                    documentId: document.id,
+                    sectionId: document.sections[0].id,
+                    page: document.sections[0].page,
+                  })
+                }
+              >
+                <FileText size={21} />
+                <span>
+                  <strong>{document.fileName}</strong>
+                  <small>{document.summary}</small>
+                </span>
+                <ArrowUpRight size={17} />
+              </button>
+            ))}
+            {!availableDocuments.length && (
+              <p className="source-unavailable">暂无可用的业务资料。</p>
+            )}
+          </div>
+        </div>
+      )}
+    </SourcePreviewPanel>
   );
 }
 
@@ -231,6 +231,7 @@ export function AnswerSources({
   sources?: SourceReference[];
   legacy?: boolean;
 }) {
+  const state = useWorkspace();
   const [selected, setSelected] = useState<SourceReference | null>(null);
   const valid = uniqueSources(sources ?? []).filter((source) =>
     resolveSource(source),
@@ -251,20 +252,29 @@ export function AnswerSources({
     <section className="answer-source-section" aria-label="回答引用的原文件">
       <p className="answer-source-heading">参考资料</p>
       <ol className="answer-source-files">
-        {groups.map(({ document, refs }) => (
-          <li key={document.id}>
-            <button
-              onClick={() => setSelected(refs[0])}
-              title={document.fileName}
-            >
-              {document.fileName}（第{' '}
-              {Array.from(new Set(refs.map((r) => r.page)))
-                .sort((a, b) => a - b)
-                .join('、')}{' '}
-              页）
-            </button>
-          </li>
-        ))}
+        {groups.map(({ document, refs }) => {
+          const label = `${document.fileName}（第 ${Array.from(
+            new Set(refs.map((ref) => ref.page)),
+          )
+            .sort((a, b) => a - b)
+            .join('、')} 页）`;
+          return (
+            <li key={document.id}>
+              {isDataResourceDeleted(state, `file:${document.id}`) ? (
+                <span className="source-reference-deleted">
+                  {label}（文件已删除）
+                </span>
+              ) : (
+                <button
+                  onClick={() => setSelected(refs[0])}
+                  title={document.fileName}
+                >
+                  {label}
+                </button>
+              )}
+            </li>
+          );
+        })}
       </ol>
       <SourceDrawer
         selected={selected}
@@ -286,7 +296,7 @@ export function SourceLibrary({
     <>
       <Button type="button" variant="ghost" onClick={() => setOpen(true)}>
         <BookOpen size={17} />
-        <span>示例资料</span>
+        <span>业务资料</span>
       </Button>
       <SourceDrawer
         library={open}

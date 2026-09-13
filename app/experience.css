@@ -121,6 +121,128 @@ body {
   border-radius: 12px;
 }
 /* Agent plaza: a quiet brand surface above actionable applications. */
+/* Compact column filters share selection behavior with dashboard scopes. */
+.scope-column-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 3px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.scope-column-filter > svg:last-child {
+  display: none;
+}
+.scope-column-filter > svg {
+  color: var(--muted-foreground);
+}
+.scope-column-filter:hover,
+.scope-column-filter[data-active] {
+  color: var(--primary);
+}
+.scope-column-filter[data-active] > svg {
+  color: currentColor;
+}
+.scope-column-filter:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.scope-column-filter-count {
+  min-width: 17px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--muted);
+  color: var(--primary);
+  font-size: 11px;
+  line-height: 17px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+@media (hover: none), (max-width: 767px) {
+  .scope-column-filter { min-height: 44px; }
+}
+
+.scope-selection-clear {
+  border: 0;
+  background: transparent;
+  padding: 4px 6px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 20px;
+  cursor: pointer;
+}
+.scope-selection-clear:hover {
+  color: var(--foreground);
+  text-decoration: underline;
+}
+.scope-selection-clear:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+.answer-thinking {
+  margin: 0 0 18px;
+}
+.answer-thinking-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  cursor: pointer;
+}
+.answer-thinking-toggle:hover {
+  color: var(--foreground);
+}
+.answer-thinking-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.answer-thinking-toggle.is-expanded > svg {
+  transform: rotate(90deg);
+}
+.answer-thinking-state {
+  margin-left: 7px;
+  font-size: 12px;
+}
+.answer-thinking-content {
+  padding: 5px 0 3px 22px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.answer-final > h3 {
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.answer-final[aria-busy='true'] .message-markdown > :last-child::after {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 3px;
+  background: currentColor;
+  vertical-align: -0.12em;
+}
+.answer-stopped {
+  margin-top: 12px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
 .plaza-intro {
   display: flex;
   justify-content: space-between;
@@ -133,38 +255,16 @@ body {
   position: relative;
   overflow: hidden;
 }
-.platform-signature {
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  color: oklch(0.8 0.012 255);
-}
-.platform-signature svg {
-  color: oklch(0.8 0.12 60);
-}
 .plaza-intro h1 {
   font-size: 34px;
   font-weight: 600;
   letter-spacing: -0.025em;
-  margin: 12px 0 7px;
+  margin: 0 0 7px;
   line-height: 1.5;
 }
 .plaza-intro-copy > p {
   font-size: 16px;
   color: oklch(0.84 0.012 255);
-}
-.plaza-intro-details {
-  display: flex;
-  gap: 18px;
-  margin-top: 21px;
-  color: oklch(0.76 0.012 255);
-  font-size: 12px;
-}
-.plaza-intro-details span + span:before {
-  content: '·';
-  margin-right: 18px;
 }
 .plaza-workflow {
   min-width: 340px;
@@ -207,6 +307,7 @@ body {
   align-items: center;
   gap: 18px;
   margin: 31px 0 21px;
+  max-width: 1200px;
 }
 .plaza-library-heading h2 {
   font-size: 18px;
@@ -234,6 +335,61 @@ body {
 .plaza-library-heading [data-slot='button'] {
   gap: 8px;
   font-size: 13px;
+}
+.plaza-agent-search {
+  position: relative;
+  flex: 0 1 320px;
+  min-width: 0;
+}
+.plaza-agent-search > svg {
+  position: absolute;
+  top: 12px;
+  left: 13px;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+.plaza-agent-search input {
+  height: 42px;
+  padding: 8px 42px 8px 40px;
+  background: var(--card);
+  font-size: 14px;
+}
+.plaza-agent-search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+.plaza-search-clear {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.plaza-search-clear:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.plaza-search-clear:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+.plaza-search-empty {
+  grid-column: 1 / -1;
+  padding: 50px 16px;
+  text-align: center;
+}
+.plaza-search-empty h3 {
+  font-size: 16px;
+  font-weight: 500;
+}
+.plaza-search-empty p {
+  margin: 8px 0 16px;
+  color: var(--muted-foreground);
+  font-size: 14px;
 }
 /* Lightweight application entries with a shared, custom agent emblem system. */
 .agent-plaza-grid {
@@ -388,11 +544,6 @@ body {
 .plaza-agent-card:hover .plaza-entry-arrow svg {
   transform: translate(1px, -1px);
 }
-.application-footer {
-  font-size: 12px;
-  padding-top: 22px;
-  padding-bottom: 22px;
-}
 @media (max-width: 1260px) {
   .agent-plaza-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -423,16 +574,28 @@ body {
   .plaza-intro h1 {
     font-size: 28px;
   }
-  .plaza-intro-details {
-    font-size: 12px;
-    gap: 10px;
-  }
-  .plaza-intro-details span + span:before {
-    margin-right: 10px;
-  }
   .plaza-library-heading {
     align-items: flex-start;
     margin-top: 26px;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .plaza-agent-search {
+    flex: none;
+    width: 100%;
+  }
+  .plaza-agent-search input {
+    height: 48px;
+    font-size: 16px;
+  }
+  .plaza-agent-search > svg {
+    top: 15px;
+  }
+  .plaza-search-clear {
+    top: 2px;
+    right: 2px;
+    width: 44px;
+    height: 44px;
   }
   .plaza-library-heading p {
     max-width: 22ch;
@@ -635,11 +798,6 @@ body {
   background: oklch(0.89 0.015 255);
   color: oklch(0.56 0.012 255);
   opacity: 1;
-}
-.composer-shortcut {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-right: 9px;
 }
 .chat-composer-footnote {
   display: flex;
@@ -982,9 +1140,6 @@ body {
     padding-left: 22px;
     padding-right: 22px;
   }
-  .composer-shortcut {
-    display: none;
-  }
   .chat-welcome h2 {
     font-size: 25px;
   }
@@ -1135,6 +1290,9 @@ body {
 .sidebar-account-control {
   width: 100%;
   min-width: 0;
+  min-height: 44px;
+  font-size: 13px;
+  line-height: 1.6;
   display: flex;
   align-items: center;
   text-align: left;
@@ -1147,6 +1305,10 @@ body {
 .sidebar-account-control:hover,
 .sidebar-account-control[data-popup-open] {
   background: var(--sidebar-accent);
+}
+.sidebar-account-control:focus-visible {
+  outline: 2px solid var(--copper-light);
+  outline-offset: 2px;
 }
 .sidebar-account-control .avatar {
   flex-shrink: 0;
@@ -1318,14 +1480,69 @@ body {
 }
 
 /* Local conversation navigation sits inside the application workspace. */
+.app-back-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.app-back-control:hover {
+  color: var(--foreground);
+}
+.app-back-control:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.app-back-control[data-icon-only] {
+  width: 36px;
+  height: 36px;
+  justify-content: center;
+  padding: 0;
+}
+.app-back-control[data-icon-only]:hover {
+  background: var(--muted);
+}
+.application-heading-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.application-heading-main > .app-back-control {
+  margin-top: 2px;
+}
+.application-heading-copy {
+  min-width: 0;
+}
+@media (pointer: coarse) {
+  .app-back-control {
+    min-height: 44px;
+  }
+  .app-back-control[data-icon-only] {
+    width: 44px;
+    height: 44px;
+  }
+  .application-heading-main > .app-back-control {
+    margin-top: 0;
+  }
+}
 .conversation-layout {
   display: flex;
   height: 100svh;
   min-width: 0;
   min-height: 0;
-}
-.agent-mode-tabs .conversation-layout {
-  height: calc(100svh - 52px);
 }
 .conversation-history-rail {
   width: 244px;
@@ -1344,6 +1561,9 @@ body {
 .conversation-history-start {
   padding: 24px 18px 18px;
   flex-shrink: 0;
+}
+.conversation-back-to-dashboard.app-back-control {
+  margin-bottom: 14px;
 }
 .conversation-new-chat[data-slot='button'] {
   width: 100%;
@@ -1598,6 +1818,66 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .conversation-history-row,
   .conversation-history-delete {
+    transition: none;
+  }
+}
+/* Append after the existing conversation history styles in experience.css. */
+.conversation-history-rename {
+  width: 30px;
+  height: 38px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  margin: 4px 0 0;
+  color: var(--muted-foreground);
+  opacity: 0;
+  transition:
+    opacity 0.16s,
+    background 0.16s;
+}
+.conversation-history-row:hover .conversation-history-rename,
+.conversation-history-row:focus-within .conversation-history-rename {
+  opacity: 1;
+}
+.conversation-history-rename:hover {
+  color: var(--primary);
+  background: var(--muted);
+}
+.conversation-history-edit {
+  padding-right: 10px;
+}
+.conversation-history-edit > span {
+  flex: 1;
+  min-width: 0;
+}
+.conversation-name-input[data-slot='input'] {
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: var(--background);
+  font-size: 13px;
+  line-height: 20px;
+}
+.conversation-name-error {
+  display: block;
+  margin-top: 5px;
+  color: var(--destructive);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+@media (hover: none), (max-width: 767px) {
+  .conversation-history-rename {
+    opacity: 1;
+    width: 44px;
+    height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .conversation-history-rename {
     transition: none;
   }
 }

@@ -15,6 +15,7 @@ import type { SourceReference } from './customer-types';
 import type { CustomerDecision } from './customer-types';
 import { normalizeCustomerInputs } from './customer-engine';
 import { normalizeMaintenanceInputs } from './maintenance-engine';
+import { withFixedRules } from './fixed-rules';
 function validSources(sources: unknown): boolean {
   return (
     sources === undefined ||
@@ -52,6 +53,9 @@ const initial: WorkspaceState = {
 let snapshot = initial;
 let hydrated = false;
 let error = '';
+let workspaceUserKey: string | null = null;
+let userReady = false;
+const DEFAULT_ADMIN_KEY = `${STORAGE_KEY}.user.default-admin`;
 const listeners = new Set<() => void>();
 function notify() {
   listeners.forEach((l) => l());
@@ -134,8 +138,18 @@ function validTurn(t: ConversationTurn): boolean {
     typeof t.id === 'string' &&
     typeof t.question === 'string' &&
     typeof t.answer === 'string' &&
+    (t.processingSummary === undefined ||
+      (typeof t.processingSummary === 'string' &&
+        t.processingSummary.length <= 2000)) &&
+    (t.status === undefined ||
+      t.status === 'complete' ||
+      t.status === 'stopped') &&
     validSources(t.sources) &&
     validDecision(t.customerDecision) &&
+    (t.feedback === undefined ||
+      t.feedback === null ||
+      t.feedback === 'like' ||
+      t.feedback === 'dislike') &&
     (t.missing === undefined ||
       (Array.isArray(t.missing) &&
         t.missing.every((m) => typeof m === 'string'))) &&
@@ -149,18 +163,7 @@ function validTurn(t: ConversationTurn): boolean {
     (!t.savedRecordId || typeof t.savedRecordId === 'string'),
   );
 }
-function hydrate() {
-  if (typeof window === 'undefined' || hydrated) return;
-  hydrated = true;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      snapshot = initial;
-      error = '';
-      return;
-    }
-    if (raw.length > 3000000) throw new Error();
-    const parsed = JSON.parse(raw) as WorkspaceState;
+function normalizeWorkspace(parsed: WorkspaceState): WorkspaceState {
     if (
       parsed.version !== 1 ||
       !Array.isArray(parsed.datasets) ||
@@ -173,6 +176,15 @@ function hydrate() {
       typeof parsed.drafts !== 'object'
     )
       throw new Error();
+    parsed.deletedDataResourceIds = Array.isArray(parsed.deletedDataResourceIds)
+      ? [
+          ...new Set(
+            parsed.deletedDataResourceIds.filter(
+              (id) => typeof id === 'string' && id.length <= 200,
+            ),
+          ),
+        ].slice(0, 1000)
+      : [];
     parsed.records = parsed.records.filter(
       (r) =>
         r &&
@@ -200,7 +212,10 @@ function hydrate() {
           id,
           id === 'maintenance'
             ? normalizeMaintenanceInputs(draft)
-            : { ...defaultInputs[id as keyof typeof defaultInputs], ...draft },
+            : withFixedRules(id as keyof typeof defaultInputs, {
+                ...defaultInputs[id as keyof typeof defaultInputs],
+                ...draft,
+              }),
         ]),
     );
     if (!Array.isArray(parsed.sessions)) {
@@ -239,12 +254,12 @@ function hydrate() {
                       question: '',
                       ...draft,
                     })
-                  : {
+                  : withFixedRules(m.id, {
                       ...defaultInputs[m.id],
                       ...turns.at(-1)?.inputs,
                       question: '',
                       ...draft,
-                    },
+                    }),
           },
         ];
       });
@@ -268,13 +283,17 @@ function hydrate() {
         )
           return false;
         seen.add(session.id);
+        session.titleEdited = session.titleEdited === true;
         session.turns = session.turns.filter(validTurn).slice(-20);
         session.draft =
           session.module === 'customer'
             ? normalizeCustomerInputs(session.draft)
             : session.module === 'maintenance'
               ? normalizeMaintenanceInputs(session.draft)
-              : { ...defaultInputs[session.module], ...session.draft };
+              : withFixedRules(session.module, {
+                  ...defaultInputs[session.module],
+                  ...session.draft,
+                });
         return true;
       });
     }
@@ -296,19 +315,117 @@ function hydrate() {
     );
     parsed.drafts = {};
     parsed.datasets = parsed.datasets.map((d) =>
-      (d.id === 'products' || d.id === 'maintenance') && d.origin === 'sample'
+      (d.id === 'products' || d.id === 'maintenance' || d.id === 'energy') &&
+      d.origin === 'sample'
         ? initialDatasets.find((item) => item.id === d.id)!
         : d,
     );
-    snapshot = parsed;
+    return parsed;
+}
+
+type PersonalWorkspace = Pick<
+  WorkspaceState,
+  'version' | 'records' | 'drafts' | 'sessions' | 'activeSessionIds' | 'moduleViews'
+>;
+
+function personalWorkspace(state: WorkspaceState): PersonalWorkspace {
+  return {
+    version: 1,
+    records: state.records,
+    drafts: state.drafts,
+    sessions: state.sessions ?? [],
+    activeSessionIds: state.activeSessionIds ?? {},
+    moduleViews: state.moduleViews ?? {},
+  };
+}
+function sharedWorkspace(state: WorkspaceState) {
+  return {
+    version: 1,
+    datasets: state.datasets,
+    deletedDataResourceIds: state.deletedDataResourceIds ?? [],
+  };
+}
+function parseStored(raw: string): Record<string, unknown> {
+  if (raw.length > 3000000) throw new Error();
+  const parsed = JSON.parse(raw);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+    throw new Error();
+  return parsed;
+}
+function serializeStored(value: unknown): string {
+  const raw = JSON.stringify(value);
+  if (raw.length > 3000000) throw new Error();
+  return raw;
+}
+function hydrate() {
+  if (typeof window === 'undefined' || hydrated) return;
+  hydrated = true;
+  if (!workspaceUserKey) {
+    snapshot = initial;
+    return;
+  }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const stored = raw ? parseStored(raw) : sharedWorkspace(initial);
+    const shared = normalizeWorkspace({
+      records: [],
+      drafts: {},
+      ...stored,
+    } as WorkspaceState);
+    // Keep a recoverable admin copy before removing legacy conversations from
+    // the shared business-data record. A failed write never consumes the source.
+    if (raw && ['records', 'drafts', 'sessions', 'conversations'].some(
+      (key) => Object.hasOwn(stored, key),
+    )) {
+      const adminRaw = localStorage.getItem(DEFAULT_ADMIN_KEY);
+      if (adminRaw === null) {
+        localStorage.setItem(DEFAULT_ADMIN_KEY, serializeStored(personalWorkspace(shared)));
+      } else {
+        normalizeWorkspace({
+          ...parseStored(adminRaw),
+          datasets: shared.datasets,
+        } as WorkspaceState);
+      }
+      localStorage.setItem(STORAGE_KEY, serializeStored(sharedWorkspace(shared)));
+    }
+    const personalRaw = localStorage.getItem(workspaceUserKey);
+    const personal = personalRaw
+      ? parseStored(personalRaw)
+      : personalWorkspace(initial);
+    snapshot = normalizeWorkspace({
+      ...personal,
+      datasets: shared.datasets,
+      deletedDataResourceIds: shared.deletedDataResourceIds,
+    } as WorkspaceState);
     error = '';
+    userReady = true;
   } catch {
     snapshot = { ...initial };
-    error = '本地数据无法读取，已使用初始工作区。原始存储尚未改动。';
+    userReady = false;
+    error = '当前账号的数据读取或迁移失败，原有记录仍保留，请重试。';
   }
 }
+
+/** Bind before mounting Workspace so another account never renders old chats. */
+export function setWorkspaceUser(userId: string, isDefaultAdmin: boolean): boolean {
+  if (typeof window === 'undefined') return false;
+  const key = userId.trim()
+    ? isDefaultAdmin
+      ? DEFAULT_ADMIN_KEY
+      : `${STORAGE_KEY}.user.account.${encodeURIComponent(userId)}`
+    : null;
+  if (key && workspaceUserKey === key && userReady) return true;
+  workspaceUserKey = key;
+  snapshot = initial;
+  hydrated = false;
+  userReady = false;
+  error = '';
+  hydrate();
+  notify();
+  return userReady;
+}
 function onStorage(event: StorageEvent) {
-  if (event.key === STORAGE_KEY || event.key === null) {
+  if (event.key === STORAGE_KEY || event.key === workspaceUserKey || event.key === null) {
     hydrated = false;
     hydrate();
     notify();
@@ -337,19 +454,50 @@ export function storageMessage() {
 export function updateWorkspace(
   update: (state: WorkspaceState) => WorkspaceState,
 ): boolean {
+  if (!workspaceUserKey) {
+    error = '请先登录后再保存。';
+    return false;
+  }
   hydrated = false;
   hydrate();
+  if (!userReady) {
+    notify();
+    return false;
+  }
   const next = update(snapshot);
+  const written: { key: string; previous: string | null }[] = [];
   try {
-    const serialized = JSON.stringify(next);
-    if (serialized.length > 3000000) throw new Error();
-    localStorage.setItem(STORAGE_KEY, serialized);
+    const changes = [
+      { key: workspaceUserKey, value: serializeStored(personalWorkspace(next)) },
+      { key: STORAGE_KEY, value: serializeStored(sharedWorkspace(next)) },
+    ];
+    for (const change of changes) {
+      const previous = localStorage.getItem(change.key);
+      if (previous === change.value) continue;
+      localStorage.setItem(change.key, change.value);
+      written.push({ key: change.key, previous });
+    }
     snapshot = next;
     error = '';
     notify();
     return true;
   } catch {
-    error = '当前浏览器无法保存，可能是存储空间不足。请导出数据后再试。';
+    let restored = true;
+    for (const { key, previous } of written.reverse()) {
+      try {
+        if (previous === null) localStorage.removeItem(key);
+        else localStorage.setItem(key, previous);
+      } catch {
+        restored = false;
+      }
+    }
+    if (!restored) {
+      hydrated = false;
+      hydrate();
+    }
+    error = restored
+      ? '保存失败，存储空间可能不足。原有记录未改动。'
+      : '部分内容未能保存，请核对当前记录后重试。';
     notify();
     return false;
   }

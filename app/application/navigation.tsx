@@ -1,12 +1,5 @@
 'use client';
-import {
-  Home,
-  Database,
-  History,
-  Layers2,
-  LogOut,
-  ChevronsUpDown,
-} from 'lucide-react';
+import { Home, Database, Layers2, LogOut, UsersRound, KeyRound } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -31,11 +24,17 @@ export default function Navigation({
   navigate,
   onLogout,
   loggingOut,
+  username,
+  canManage,
+  onChangePassword,
 }: {
   path: string;
   navigate: (path: string) => boolean;
   onLogout: () => void;
   loggingOut: boolean;
+  username: string;
+  canManage: boolean;
+  onChangePassword: () => void;
 }) {
   const {
     setOpenMobile,
@@ -104,21 +103,9 @@ export default function Navigation({
               );
             })}
           </SidebarMenu>
-          <div className="sidebar-workspace-links">
-            <div className="workspace-label nav-group-label">工作空间</div>
+          {canManage && <div className="sidebar-workspace-links">
+            <div className="workspace-label nav-group-label">平台管理</div>
             <SidebarMenu className="agent-menu">
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  className="agent-nav group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-0!"
-                  aria-label="分析记录"
-                  tooltip="分析记录"
-                  isActive={path.startsWith('/records')}
-                  onClick={() => go('/records')}
-                >
-                  <History />
-                  <span>分析记录</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="agent-nav group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-0!"
@@ -131,8 +118,20 @@ export default function Navigation({
                   <span>数据管理</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="agent-nav group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-0!"
+                  aria-label="用户管理"
+                  tooltip="用户管理"
+                  isActive={path === '/users'}
+                  onClick={() => go('/users')}
+                >
+                  <UsersRound />
+                  <span>用户管理</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
-          </div>
+          </div>}
         </SidebarContent>
         <SidebarFooter className="sidebar-bottom">
           <DropdownMenu>
@@ -140,17 +139,13 @@ export default function Navigation({
               disabled={loggingOut}
               render={
                 <button
-                  className="account sidebar-account-control"
-                  aria-label="管理员账户菜单"
+                  className="sidebar-account-control"
+                  aria-label={`${username}账户菜单`}
+                  title={username}
                 />
               }
             >
-              <span className="avatar">管</span>
-              <span className="sidebar-account-text">
-                <strong>管理员</strong>
-                <span>丰宾电子 · 管理员工作区</span>
-              </span>
-              <ChevronsUpDown size={15} />
+              {expanded ? username : Array.from(username)[0]}
             </DropdownMenuTrigger>
             <DropdownMenuContent
               side="top"
@@ -158,6 +153,10 @@ export default function Navigation({
               sideOffset={10}
               className="account-dropdown"
             >
+              <DropdownMenuItem disabled={loggingOut} onClick={onChangePassword}>
+                <KeyRound size={16} />
+                修改密码
+              </DropdownMenuItem>
               <DropdownMenuItem disabled={loggingOut} onClick={onLogout}>
                 <LogOut size={16} />
                 {loggingOut ? '正在退出…' : '退出登录'}

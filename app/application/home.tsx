@@ -1,12 +1,15 @@
 'use client';
+import { useRef, useState } from 'react';
 import {
   ArrowUpRight,
   ArrowRight,
   FileText,
   Workflow,
   FileCheck2,
-  History,
+  Search,
+  X,
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { modules, type ModuleId } from './model';
 import AgentArtwork from './agent-artwork';
@@ -22,19 +25,35 @@ export default function AgentPlaza({
 }: {
   navigate: (path: string) => void;
 }) {
+  const [query, setQuery] = useState('');
+  const searchInput = useRef<HTMLInputElement>(null);
+  const normalize = (value: string) =>
+    value.normalize('NFKC').toLocaleLowerCase('zh-CN').trim();
+  const terms = normalize(query).split(/\s+/).filter(Boolean);
+  const matches = modules.filter((module) => {
+    const text = normalize(
+      [
+        module.name,
+        module.category,
+        module.description,
+        descriptions[module.id],
+        module.action,
+        module.inputTitle,
+        module.resultTitle,
+      ].join(' '),
+    );
+    return terms.every((term) => text.includes(term));
+  });
+  function clearSearch() {
+    setQuery('');
+    searchInput.current?.focus();
+  }
   return (
     <>
       <div className="plaza-intro">
         <div className="plaza-intro-copy">
-          <span className="platform-signature">
-            <Workflow size={17} /> FENG BIN INTELLIGENCE
-          </span>
           <h1>智能体广场</h1>
           <p>把业务问题，交给专业助手。</p>
-          <div className="plaza-intro-details">
-            <span>五个制造业务场景</span>
-            <span>业务看板与专业问答</span>
-          </div>
         </div>
         <div className="plaza-workflow" aria-label="从业务资料到分析结果">
           <span className="workflow-caption">让每一份资料，成为决策依据</span>
@@ -59,17 +78,46 @@ export default function AgentPlaza({
       <div className="plaza-library-heading">
         <div>
           <h2>
-            选择你的业务助手 <span>5</span>
+            选择你的业务助手 <span aria-hidden="true">{matches.length}</span>
           </h2>
         </div>
-        <Button variant="ghost" onClick={() => navigate('/records')}>
-          <History size={16} />
-          分析记录
-          <ArrowUpRight size={16} />
-        </Button>
+        <search className="plaza-agent-search" aria-label="搜索智能体">
+          <Search size={18} aria-hidden="true" />
+          <Input
+            ref={searchInput}
+            type="search"
+            aria-label="搜索智能体名称或用途"
+            aria-controls="plaza-agent-results"
+            placeholder="搜索智能体名称或用途"
+            autoComplete="off"
+            maxLength={200}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape' && !event.nativeEvent.isComposing) {
+                event.preventDefault();
+                clearSearch();
+              }
+            }}
+          />
+          {query && (
+            <button
+              type="button"
+              className="plaza-search-clear"
+              aria-label="清空智能体搜索"
+              title="清空搜索"
+              onClick={clearSearch}
+            >
+              <X size={16} aria-hidden="true" />
+            </button>
+          )}
+        </search>
       </div>
-      <div className="agent-plaza-grid">
-        {modules.map((m) => {
+      <output className="sr-only" aria-live="polite" aria-atomic="true">
+        {terms.length ? '找到' : '共'} {matches.length} 个智能体
+      </output>
+      <div id="plaza-agent-results" className="agent-plaza-grid">
+        {matches.map((m) => {
           return (
             <button
               key={m.id}
@@ -91,6 +139,15 @@ export default function AgentPlaza({
             </button>
           );
         })}
+        {!matches.length && (
+          <div className="plaza-search-empty">
+            <h3>未找到匹配的智能体</h3>
+            <p>试试其他名称或用途关键词。</p>
+            <Button variant="ghost" onClick={clearSearch}>
+              清空搜索
+            </Button>
+          </div>
+        )}
       </div>
     </>
   );

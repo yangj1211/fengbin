@@ -19,20 +19,34 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { ArrowRight, FileText } from 'lucide-react';
+import BackButton from './back-button';
+import SearchableChoice from './searchable-choice';
+import MultiScopeChoice from './multi-scope-choice';
 export function AppHeading({
   title,
   description,
   action,
+  back,
 }: {
   title: string;
   description: string;
   action?: ReactNode;
+  back?: { destination: string; onClick: () => void };
 }) {
   return (
     <div className="application-heading">
-      <div>
-        <h1>{title}</h1>
-        <p>{description}</p>
+      <div className="application-heading-main">
+        {back && (
+          <BackButton
+            destination={back.destination}
+            onClick={back.onClick}
+            iconOnly
+          />
+        )}
+        <div className="application-heading-copy">
+          <h1>{title}</h1>
+          <p>{description}</p>
+        </div>
       </div>
       {action}
     </div>
@@ -76,34 +90,63 @@ export function Choice({
   value,
   options,
   onChange,
+  searchable = false,
+  searchPlaceholder,
+  multiple = false,
+  allLabel,
 }: {
   label: string;
   name: string;
   value: string;
   options: string[];
   onChange: (value: string) => void;
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  multiple?: boolean;
+  allLabel?: string;
 }) {
   return (
     <div className="app-field">
       <Label htmlFor={name}>{label}</Label>
-      <Select
-        value={value}
-        items={options.map((v) => ({ label: v, value: v }))}
-        onValueChange={(v) => {
-          if (v !== null) onChange(v);
-        }}
-      >
-        <SelectTrigger id={name}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((v) => (
-            <SelectItem key={v} value={v}>
-              {v}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {multiple ? (
+        <MultiScopeChoice
+          name={name}
+          label={label}
+          value={value}
+          options={options}
+          onChange={onChange}
+          allLabel={allLabel ?? options[0] ?? '全部'}
+          searchPlaceholder={searchPlaceholder}
+        />
+      ) : searchable ? (
+        <SearchableChoice
+          name={name}
+          label={label}
+          value={value}
+          options={options}
+          onChange={onChange}
+          searchPlaceholder={searchPlaceholder}
+        />
+      ) : (
+        <Select
+          value={value}
+          items={options.map((v) => ({ label: v, value: v }))}
+          onValueChange={(v) => {
+            if (v !== null) onChange(v);
+          }}
+        >
+          <SelectTrigger id={name}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((v) => (
+              <SelectItem key={v} value={v}>
+                {v}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
     </div>
   );
 }
@@ -174,10 +217,12 @@ export function EmptyState({
 }
 export function download(
   name: string,
-  content: string,
+  content: string | Blob,
   type = 'text/plain;charset=utf-8',
 ) {
-  const url = URL.createObjectURL(new Blob([content], { type }));
+  const url = URL.createObjectURL(
+    content instanceof Blob ? content : new Blob([content], { type }),
+  );
   const a = document.createElement('a');
   a.href = url;
   a.download = name;

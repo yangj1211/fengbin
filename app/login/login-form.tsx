@@ -1,9 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState, useSyncExternalStore } from 'react';
 import {
   ArrowRight,
-  Eye,
-  EyeOff,
   Layers2,
   LockKeyhole,
   ShieldCheck,
@@ -15,24 +13,50 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-export default function LoginForm() {
-  const [showPassword, setShowPassword] = useState(false);
+import PasswordInput from './password-input';
+function formText(form: FormData, field: string) {
+  const value = form.get(field);
+  return typeof value === 'string' ? value : '';
+}
+function subscribeClientReady() {
+  return () => {};
+}
+export default function LoginForm({ initialAccount = '', notice = '' }: {
+  initialAccount?: string;
+  notice?: string;
+}) {
+  const ready = useSyncExternalStore(subscribeClientReady, () => true, () => false);
+  const [account, setAccount] = useState(initialAccount);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const submitting = useRef(false);
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending) return;
-    setPending(true);
+    if (!ready || submitting.current) return;
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    const identifier = account.trim().toLowerCase();
+    const password = formText(form, 'password');
+    const errors: Record<string, string> = {};
+    if (!identifier) errors.account = '请输入账号。';
+    if (!password) errors.password = '请输入密码。';
+    setFieldErrors(errors);
     setError('');
-    const form = new FormData(event.currentTarget);
+    if (Object.keys(errors).length) {
+      (formElement.elements.namedItem(Object.keys(errors)[0]) as HTMLInputElement | null)?.focus();
+      return;
+    }
+    submitting.current = true;
+    setPending(true);
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({
-          username: form.get('username'),
-          password: form.get('password'),
+          account: identifier,
+          password,
         }),
       });
       if (response.ok) {
@@ -45,6 +69,7 @@ export default function LoginForm() {
       setError('暂时无法连接，请检查网络后重试。');
     }
     setPending(false);
+    submitting.current = false;
   }
   return (
     <main className="login-page">
@@ -96,62 +121,55 @@ export default function LoginForm() {
           <div className="login-icon">
             <LockKeyhole size={25} />
           </div>
-          <h2>管理员登录</h2>
-          <p>登录后，进入智能体广场。</p>
-          <form onSubmit={submit}>
+          <h2>欢迎登录</h2>
+          <p>使用账号和密码登录，进入智能体广场。</p>
+          {notice && <output className="account-success">{notice}</output>}
+          <form method="post" action="/api/auth/login" onSubmit={submit} noValidate data-ready={ready ? 'true' : 'false'}>
             <div className="login-field">
-              <Label htmlFor="username">管理员账号</Label>
+              <Label htmlFor="account">账号</Label>
               <Input
-                id="username"
-                name="username"
-                defaultValue="admin"
+                id="account"
+                name="account"
+                type="text"
+                value={account}
+                onChange={(event) => setAccount(event.target.value)}
+                placeholder="请输入账号"
                 autoComplete="username"
                 required
-                maxLength={80}
+                maxLength={32}
                 disabled={pending}
                 autoCapitalize="none"
                 spellCheck={false}
+                aria-invalid={Boolean(fieldErrors.account)}
+                aria-describedby={fieldErrors.account ? 'account-error' : undefined}
               />
+              {fieldErrors.account && <p id="account-error" className="account-field-error">{fieldErrors.account}</p>}
             </div>
             <div className="login-field">
               <Label htmlFor="password">密码</Label>
-              <div className="password-field">
-                <Input
+                <PasswordInput
                   id="password"
                   name="password"
-                  type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  placeholder="请输入管理员密码"
+                  placeholder="请输入密码"
                   required
                   maxLength={256}
                   disabled={pending}
+                  aria-invalid={Boolean(fieldErrors.password)}
+                  aria-describedby={fieldErrors.password ? 'password-error' : undefined}
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={showPassword ? '隐藏密码' : '显示密码'}
-                  aria-pressed={showPassword}
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </Button>
-              </div>
+              {fieldErrors.password && <p id="password-error" className="account-field-error">{fieldErrors.password}</p>}
             </div>
             <p className="login-error" aria-live="polite">
               {error}
             </p>
-            <Button type="submit" className="login-submit" disabled={pending}>
+            <Button type="submit" className="login-submit" disabled={!ready || pending}>
               {pending ? '正在登录…' : '登录并进入'}
               {!pending && <ArrowRight size={17} />}
             </Button>
           </form>
-          <div className="login-session-note">
-            <ShieldCheck size={14} />
-            <span>管理员专用 · 登录状态保留 8 小时</span>
-          </div>
         </div>
-        <p className="login-footer">企业应用 · 管理员访问</p>
+        <p className="login-footer">丰宾电子 · 智能制造平台</p>
       </section>
     </main>
   );

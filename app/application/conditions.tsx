@@ -3,6 +3,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Field, Choice } from './ui';
 import type { ModuleId, Inputs, Dataset } from './model';
+import {
+  productionRuleDescription,
+  supplierRuleDescription,
+} from './fixed-rules';
 export default function AnalysisConditions({
   id,
   input,
@@ -67,7 +71,7 @@ export default function AnalysisConditions({
             {numeric('height', '最大高度（选填）', 'mm')}
           </div>
           <div className="field-pair">
-            {numeric('leadDays', '示例交期上限（选填）', '天')}
+            {numeric('leadDays', '交期上限（选填）', '天')}
             {choice('priority', '优先考虑', [
               '综合匹配',
               '小型化优先',
@@ -102,10 +106,8 @@ export default function AnalysisConditions({
             '全部产线',
             ...dataset.rows.map((r) => String(r['产线'])),
           ])}
-          {numeric('completion', '计划完成率目标', '%')}
-          {numeric('defect', '不良率预警阈值', '%')}
           <div className="form-inline-note">
-            任意一项指标偏离目标，即提示关注。
+            {productionRuleDescription}当前规则固定，不支持修改。
           </div>
         </>
       )}
@@ -115,24 +117,8 @@ export default function AnalysisConditions({
             '全部供应商',
             ...dataset.rows.map((r) => String(r['供应商'])),
           ])}
-          <div className="field-pair">
-            {numeric('deliveryTarget', '交付目标', '%')}
-            {numeric('qualityTarget', '质量目标', '%')}
-          </div>
-          <div className="form-subtitle">评分权重</div>
-          <div className="field-pair">
-            {numeric('deliveryWeight', '交付权重', '%')}
-            {numeric('qualityWeight', '质量权重', '%')}
-          </div>
           <div className="form-inline-note">
-            响应权重：
-            {Math.max(
-              0,
-              100 -
-                Number(input.deliveryWeight || 0) -
-                Number(input.qualityWeight || 0),
-            )}
-            %。三项权重合计 100%。
+            {supplierRuleDescription}当前规则固定，不支持修改。
           </div>
         </>
       )}

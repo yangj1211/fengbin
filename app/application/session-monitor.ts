@@ -1,6 +1,8 @@
+import type { AccountUser } from './account-types';
+
 // Keep authentication independent of workspace rendering. Direct URLs still
 // pass the server guard; this also detects expiry/logout while the app is open.
-export function monitorAdminSession() {
+export function monitorAdminSession(onUser?: (user: AccountUser) => void) {
   const controller = new AbortController();
   let checking = false;
   async function check() {
@@ -14,6 +16,10 @@ export function monitorAdminSession() {
       });
       if (response.status === 401 && !controller.signal.aborted)
         window.location.replace('/login');
+      else if (response.ok && onUser) {
+        const result = await response.json() as { user?: AccountUser };
+        if (result.user && !controller.signal.aborted) onUser(result.user);
+      }
     } catch {
       // A transient connection failure should not interrupt local work.
       // Retry on focus, the next navigation, or the periodic check.

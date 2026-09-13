@@ -74,7 +74,7 @@ try {
   assert.ok(conflictComparison.every((line) => line.endsWith('，不符合。')));
   assert.match(
     conflictComparison.at(-1),
-    /交期要求不超过 7 天，产品示例交期为 14 天/,
+    /交期要求不超过 7 天，产品参考交期为 14 天/,
   );
   assert.equal(
     compare({ voltage: '450', capacity: '', life: '' }, sample).length,

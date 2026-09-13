@@ -93,7 +93,7 @@ export function replyToMaintenance(
     /能做什么|怎么用|如何使用/.test(q)
   )
     return reply(
-      '可以告诉我设备型号、告警代码或具体故障现象。我会结合示例手册、历史工单和备件资料，给出具体维修方案，包括处理步骤、所需备件及修后验证；不清楚的信息会先向你确认。',
+      '可以告诉我设备型号、告警代码或具体故障现象。我会结合设备手册、历史工单和备件资料，给出具体维修方案，包括处理步骤、所需备件及修后验证；不清楚的信息会先向你确认。',
     );
 
   const labeledCode = q.match(
@@ -123,7 +123,7 @@ export function replyToMaintenance(
   if (unknown.length) {
     input = { ...maintenanceDefaults, question: q };
     return reply(
-      `现有示例资料里没有 ${unknown.join('、')} 的适用说明，不能套用其他型号或故障码的维修建议。请补充对应设备型号、告警原文及具体表现，我会先确认资料是否适用。`,
+      `当前资料中没有 ${unknown.join('、')} 的适用说明，不能套用其他型号或故障码的维修建议。请补充对应设备型号、告警原文及具体表现，我会先确认资料是否适用。`,
     );
   }
   if (
@@ -136,7 +136,7 @@ export function replyToMaintenance(
   ) {
     input = { ...maintenanceDefaults, question: q };
     return reply(
-      '这条描述中有多台设备，或型号与告警代码的示例映射不一致。请先确认要排查的设备型号和告警原文，我再继续，避免把不同设备的处理方法混在一起。',
+      '这条描述中有多台设备，或型号与告警代码的适用关系不一致。请先确认要排查的设备型号和告警原文，我再继续，避免把不同设备的处理方法混在一起。',
     );
   }
   const device = devices[0] ?? models[0]?.device;
@@ -150,7 +150,7 @@ export function replyToMaintenance(
     if (input.device && input.device !== codes[0].device) {
       input = { ...maintenanceDefaults, question: q };
       return reply(
-        '这个告警代码与前面设备的示例资料不一致。请确认是否已切换设备，并补充型号。',
+        '这个告警代码与前面设备的资料不一致。请确认是否已切换设备，并补充型号。',
       );
     }
     input.code = codes[0].code;
@@ -204,7 +204,7 @@ export function replyToMaintenance(
     input.caseId = '';
     input.code = '';
     return reply(
-      '当前现象与前面的故障不同，现有示例资料还不足以给出对应方案。请补充当前设备型号、告警原文和仍存在的具体表现，我会重新核对，不继续套用先前的故障原因。',
+      '当前现象与前面的故障不同，现有资料还不足以给出对应方案。请补充当前设备型号、告警原文和仍存在的具体表现，我会重新核对，不继续套用先前的故障原因。',
     );
   }
   if (symptomMatches.length && !matchedSymptom && input.device) {
@@ -212,7 +212,7 @@ export function replyToMaintenance(
     input.caseId = '';
     input.code = '';
     return reply(
-      `我还没有找到“${input.device}”与这条现象对应的示例资料。请补充型号、告警原文和异常发生时的工况；暂不沿用前一个故障的建议。`,
+      `我还没有找到“${input.device}”与这条现象对应的维修资料。请补充型号、告警原文和异常发生时的工况；暂不沿用前一个故障的建议。`,
     );
   }
   if (matchedSymptom) {
@@ -239,7 +239,7 @@ export function replyToMaintenance(
   if (!input.device) {
     if (codes[0])
       return reply(
-        `在示例手册中，${codes[0].code} 对应 ${codes[0].device} ${codes[0].model} 的“${codes[0].symptom}”。这只是示例代码映射。请确认现场设备型号及告警原文，不能仅凭代码认定故障。`,
+        `在设备手册中，${codes[0].code} 对应 ${codes[0].device} ${codes[0].model} 的“${codes[0].symptom}”。请确认现场设备型号及告警原文，故障码含义需结合适用手册核对，不能仅凭代码认定故障。`,
         [
           ...codes[0].sources.filter(
             (source) => source.documentId === 'maintenance-guide',
@@ -260,8 +260,8 @@ export function replyToMaintenance(
     );
 
   const scope = input.model
-    ? `根据你提供的 ${input.device} ${input.model}${input.code ? `、告警 ${input.code}` : ''}，可以参考示例手册中“${example.symptom}”的维修方案。`
-    : `你描述的是${input.device}的${example.symptom}。现有相似资料适用于示例型号 ${example.model}，请补充现场型号确认是否适用。`;
+    ? `根据你提供的 ${input.device} ${input.model}${input.code ? `、告警 ${input.code}` : ''}，可以参考设备手册中“${example.symptom}”的维修方案。`
+    : `你描述的是${input.device}的${example.symptom}。现有相似资料适用于型号 ${example.model}，请补充现场型号确认是否适用。`;
   const cautious =
     '处理动作需根据检查结果选择，不能直接将可能原因当作已确认故障。';
   const wantsPlan =

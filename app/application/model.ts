@@ -8,6 +8,11 @@ import { customerProducts } from './customer-data';
 import { maintenanceCases } from './maintenance-data';
 import { maintenanceDefaults } from './maintenance-engine';
 import { buildCustomerAnalysis, customerDefaults } from './customer-engine';
+import { energySampleReadings, type EnergyReading } from './energy-data';
+import { belowProductionThreshold as belowProduction } from './production-metrics';
+import { supplierScore, supplierRisk } from './supplier-metrics';
+import { productionRules, supplierRules, withFixedRules } from './fixed-rules';
+import { filterScope, normalizeScopeName, validInputString } from './scope';
 export const modules = [
   {
     id: 'customer',
@@ -76,6 +81,7 @@ export type Dataset = {
   origin: 'sample' | 'local';
   fileName?: string;
   updatedAt?: string;
+  energyDetails?: EnergyReading[];
 };
 function data(
   id: string,
@@ -123,17 +129,20 @@ export const initialDatasets: Dataset[] = [
       item.steps.join('；'),
     ]),
   ),
-  data(
-    'energy',
-    '工序用电与产量',
-    'energy',
-    ['工序', '用电量(kWh)', '产量(千只)', '基准单耗(kWh/千只)'],
-    [
-      ['老化', 56700, 4200, 12],
-      ['含浸', 37800, 4200, 8.8],
-      ['其他', 31500, 4200, 7.5],
-    ],
-  ),
+  {
+    ...data(
+      'energy',
+      '工序用电与产量',
+      'energy',
+      ['工序', '用电量(kWh)', '产量(千只)', '基准单耗(kWh/千只)'],
+      [
+        ['老化', 56700, 4200, 12],
+        ['含浸', 37800, 4200, 8.8],
+        ['其他', 31500, 4200, 7.5],
+      ],
+    ),
+    energyDetails: energySampleReadings,
+  },
   data(
     'production',
     '产线生产日报',
@@ -169,14 +178,21 @@ export type Inputs = Record<string, string>;
 export const defaultInputs: Record<ModuleId, Inputs> = {
   customer: customerDefaults,
   maintenance: maintenanceDefaults,
-  energy: { period: '7', change: '5', process: '全部工序', notes: '' },
-  production: { line: '全部产线', completion: '95', defect: '2', notes: '' },
+  energy: {
+    period: '7',
+    change: '0',
+    plannedProduction: '',
+    dateFrom: '',
+    dateTo: '',
+    granularity: 'day',
+    process: '全部工序',
+    line: '全部产线',
+    notes: '',
+  },
+  production: { line: '全部产线', ...productionRules, notes: '' },
   supplier: {
     supplier: '全部供应商',
-    deliveryTarget: '95',
-    qualityTarget: '98',
-    deliveryWeight: '40',
-    qualityWeight: '40',
+    ...supplierRules,
     notes: '',
   },
 };
@@ -222,6 +238,7 @@ export type WorkspaceState = {
   sessions?: ConversationSession[];
   activeSessionIds?: Partial<Record<ModuleId, string>>;
   moduleViews?: Partial<Record<ModuleId, 'dashboard' | 'chat'>>;
+  deletedDataResourceIds?: string[];
 };
 export const STORAGE_KEY = 'fengbin.application.v1';
 const n = (row: Row, key: string) => Number(row[key]);
@@ -236,11 +253,35 @@ export function validateInputs(id: ModuleId, input: Inputs): string | null {
   if (
     !input ||
     typeof input !== 'object' ||
-    Object.values(input).some((v) => typeof v !== 'string' || v.length > 4000)
+    Object.entries(input).some(([key, value]) => !validInputString(key, value))
   )
     return '输入格式不正确，请重新填写。';
   if (id === 'energy' && !['7', '14', '30'].includes(input.period))
     return '请选择 7、14 或 30 天的预测周期。';
+  if (id === 'energy') {
+    for (const date of [input.dateFrom, input.dateTo]) {
+      if (!date) continue;
+      const value = Date.parse(`${date}T00:00:00Z`);
+      if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+        !Number.isFinite(value) ||
+        new Date(value).toISOString().slice(0, 10) !== date
+      )
+        return '请选择有效的日期。';
+    }
+    if (input.dateFrom && input.dateTo && input.dateFrom > input.dateTo)
+      return '开始日期不能晚于结束日期。';
+    if (
+      input.granularity &&
+      !['day', 'month', 'year'].includes(input.granularity)
+    )
+      return '请选择按日、月或年查看。';
+    if (
+      input.plannedProduction?.trim() &&
+      (!finite(input.plannedProduction) || Number(input.plannedProduction) < 0)
+    )
+      return '计划产量应为大于或等于 0 的有效数值。';
+  }
   const numeric: Record<ModuleId, string[]> = {
     customer: ['voltage', 'capacity', 'temperature', 'life'],
     maintenance: [],
@@ -290,6 +331,7 @@ export function analyze(
   input: Inputs,
   dataset: Dataset,
 ): Analysis {
+  input = withFixedRules(id, input);
   const error = validateInputs(id, input);
   if (error) throw new Error(error);
   const datasetError = validateDataset(dataset);
@@ -309,8 +351,8 @@ export function analyze(
   };
   const common = {
     basis: [
-      `来源：${dataset.name}（${dataset.origin === 'sample' ? '示例数据' : '本地导入'}，${dataset.rows.length} 条）。`,
-      '当前结果按可见参数及前端规则计算；AI 服务尚未接入。',
+      `来源：${dataset.name}（${dataset.rows.length} 条记录）。`,
+      '结果依据当前筛选条件和固定业务规则计算。',
     ],
     steps: [] as Analysis['steps'],
   };
@@ -368,9 +410,8 @@ export function analyze(
     };
   }
   if (id === 'energy') {
-    const rows = dataset.rows.filter(
-      (r) =>
-        input.process === '全部工序' || String(r['工序']) === input.process,
+    const rows = filterScope(dataset.rows, input.process, '全部工序', (row) =>
+      String(row['工序']),
     );
     if (!rows.length) return emptyRange;
     const current = rows.reduce((sum, r) => sum + n(r, '用电量(kWh)'), 0);
@@ -441,15 +482,20 @@ export function analyze(
     };
   }
   if (id === 'production') {
-    const rows = dataset.rows.filter(
-      (r) => input.line === '全部产线' || r['产线'] === input.line,
+    const rows = filterScope(dataset.rows, input.line, '全部产线', (row) =>
+      String(row['产线']),
     );
     if (!rows.length) return emptyRange;
     const issues = rows.filter(
       (r) =>
-        (n(r, '实际产量(万只)') / n(r, '计划产量(万只)')) * 100 <
-          Number(input.completion) ||
-        (n(r, '不良数量') / n(r, '检验数量')) * 100 > Number(input.defect),
+        belowProduction(
+          n(r, '实际产量(万只)') * 100,
+          n(r, '计划产量(万只)') * Number(input.completion),
+        ) ||
+        belowProduction(
+          n(r, '检验数量') * Number(input.defect),
+          n(r, '不良数量') * 100,
+        ),
     );
     const planned = rows.reduce((s, r) => s + n(r, '计划产量(万只)'), 0);
     const actual = rows.reduce((s, r) => s + n(r, '实际产量(万只)'), 0);
@@ -516,20 +562,22 @@ export function analyze(
       ],
     };
   }
-  const rows = dataset.rows.filter(
-    (r) => input.supplier === '全部供应商' || r['供应商'] === input.supplier,
+  const rows = filterScope(
+    dataset.rows,
+    input.supplier,
+    '全部供应商',
+    (row) => String(row['供应商']),
+    (name) => normalizeScopeName(name).replace(/^供应商/, ''),
   );
   if (!rows.length) return emptyRange;
   const dw = Number(input.deliveryWeight) / 100;
   const qw = Number(input.qualityWeight) / 100;
   const rw = 1 - dw - qw;
-  const score = (r: Row) =>
-    n(r, '交付及时率(%)') * dw +
-    n(r, '来料合格率(%)') * qw +
-    n(r, '响应评分') * rw;
-  const risks = (r: Row) =>
-    Number(n(r, '交付及时率(%)') < Number(input.deliveryTarget)) +
-    Number(n(r, '来料合格率(%)') < Number(input.qualityTarget));
+  const score = (r: Row) => supplierScore(r, input);
+  const risks = (r: Row) => {
+    const risk = supplierRisk(r, input);
+    return Number(risk.delivery) + Number(risk.quality);
+  };
   const sorted = [...rows].sort((a, b) => score(b) - score(a));
   const needs = rows.filter((r) => risks(r) > 0);
   return {
@@ -588,8 +636,8 @@ export function validateDataset(dataset: Dataset): string | null {
     !Array.isArray(dataset.columns)
   )
     return '数据格式不正确。';
-  if (dataset.rows.length < 1 || dataset.rows.length > 500)
-    return '数据应包含 1–500 行。';
+  if (dataset.rows.length < 1 || dataset.rows.length > 10000)
+    return '数据应包含 1–10,000 行。';
   const reference = initialDatasets.find((d) => d.id === dataset.id);
   if (!reference) return '不支持此数据类型。';
   if (

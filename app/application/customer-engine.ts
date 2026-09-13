@@ -66,7 +66,7 @@ export function customerConditions(input: Inputs) {
     input.life && `寿命 ≥ ${input.life} h`,
     input.diameter && `直径 ≤ ${input.diameter} mm`,
     input.height && `高度 ≤ ${input.height} mm`,
-    input.leadDays && `示例交期 ≤ ${input.leadDays} 天`,
+    input.leadDays && `交期要求 ≤ ${input.leadDays} 天`,
     input.replacement && `替代 ${input.replacement}`,
     input.priority !== '综合匹配' ? input.priority : '',
   ].filter(Boolean);
@@ -224,7 +224,7 @@ export function buildCustomerAnalysis(
             ? ['在满足硬性条件的候选中，按较小体积优先排列。']
             : []),
           ...(input.leadDays || input.priority === '交期优先'
-            ? [`样例交期 ${p.leadDays} 天，仅用于演示交期比较。`]
+            ? [`目录参考交期 ${p.leadDays} 天，供货时间需由销售确认。`]
             : []),
           ...(input.replacement
             ? [
@@ -260,7 +260,7 @@ export function buildCustomerAnalysis(
               ? `高度 ${p.height} mm 超限`
               : '',
             input.leadDays && p.leadDays > Number(input.leadDays)
-              ? `示例交期 ${p.leadDays} 天超限`
+              ? `参考交期 ${p.leadDays} 天超限`
               : '',
             mapping && !mapping.to.includes(p.model)
               ? '未列入该型号的替代说明'
@@ -284,9 +284,9 @@ export function buildCustomerAnalysis(
         ? `推荐 ${candidates.length} 款候选产品`
         : '暂无满足全部条件的候选产品',
     summary: lookup
-      ? '以下参数来自示例产品目录。'
+      ? '以下参数来自当前产品目录。'
       : candidates.length
-        ? `已按${input.application}需求筛选。${input.priority === '综合匹配' ? '满足硬性条件后，优先比较寿命，再比较示例交期。' : `当前排序：${input.priority}。`}`
+        ? `已按${input.application}需求筛选。${input.priority === '综合匹配' ? '满足硬性条件后，优先比较寿命，再比较参考交期。' : `当前排序：${input.priority}。`}`
         : '没有放宽电压、容量或其他约束来凑出推荐。可以补充资料，或明确调整某项条件后再试。',
     metrics: [],
     columns: [
@@ -296,7 +296,7 @@ export function buildCustomerAnalysis(
       '温度',
       '寿命',
       '尺寸（直径×高度）',
-      '示例交期',
+      '参考交期',
     ],
     rows: candidates.map((p) => [
       p.model,
@@ -312,11 +312,11 @@ export function buildCustomerAnalysis(
     steps: [],
     empty: !candidates.length,
     recommendation:
-      '请人工确认纹波电流的测试条件、安装与引脚、真实规格书和认证要求。示例参数与交期不用于实际采购或工程选型。',
+      '选型前请人工核对纹波电流的测试条件、安装方式与引脚、有效规格书和认证要求。供货安排需另行确认。',
     basis: [
-      '本次使用随应用提供的示例原始资料。',
+      '本次按当前产品目录、选型规则及相关资料核对。',
       '电压、温度、寿命采用最低要求，容量与应用须匹配；已填写的尺寸与交期作为额外约束。',
-      '最多展示 3 款候选，不表示匹配准确率。',
+      '最多展示 3 款候选，最终适用性需结合项目要求确认。',
     ],
     sources: uniqueSources(sourceList),
     customerCandidates: resultCandidates,
@@ -340,17 +340,17 @@ export function replyToCustomer(
     /能做什么|怎么用|如何使用|什么功能/.test(q)
   )
     return respond(
-      '我可以根据应用场景和关键参数，帮你筛选电容器、比较候选型号或查找替代方案。可以直接描述需求；每次回答下方都能打开对应的示例原始资料。',
+      '我可以根据应用场景和关键参数，帮你筛选电容器、比较候选型号或查找替代方案。可以直接描述需求；回答末尾可查看对应的原始资料。',
       [faq('how-to-use')],
     );
   if (/价格|报价|多少钱|库存|有货|多少钱/.test(q))
     return respond(
-      '这套示例资料没有真实报价和库存，不能据此承诺价格或到货时间。产品目录中的交期只是演示条件；可以先完成型号筛选，再由销售确认报价与供货。',
+      '当前资料未提供有效报价和库存信息，不能据此承诺价格或到货时间。目录参考交期仅用于候选比较，报价与供货安排需由销售确认。',
       [faq('price-stock'), rule('data-scope')],
     );
   if (/资料来源|原文件|来源是什么|引用是什么|数据哪里|数据从哪/.test(q))
     return respond(
-      '这里使用的是为本场景编写的示例产品目录、选型规则、替代说明、需求案例和销售 FAQ。引用标明文件名、页码与原文片段，点击后可打开对应 PDF。它们不是丰宾电子真实产品规格。',
+      '当前依据产品目录、选型规则、替代说明、需求案例和销售 FAQ 回答。文末引用标明文件名和页码，点击可核对原文。',
       [faq('source-meaning'), rule('data-scope')],
     );
   if (
@@ -369,7 +369,7 @@ export function replyToCustomer(
   ) {
     const product = customerProducts.find((p) => p.model === model);
     if (!product)
-      return respond(`示例产品目录中未找到 ${model}，请核对型号。`, [
+      return respond(`当前产品目录中未找到 ${model}，请核对型号。`, [
         rule('no-result'),
         faq('missing-data'),
       ]);
@@ -406,7 +406,7 @@ export function replyToCustomer(
     )
   )
     return respond(
-      '我目前帮助处理产品选型需求。请描述应用和关键参数，或从示例需求中选择一个开始。',
+      '我目前帮助处理产品选型需求。请描述应用和关键参数，或从页面中的选型问题开始。',
       [faq('how-to-use')],
     );
   if (input.needsConfirmation)
@@ -449,7 +449,7 @@ export function replyToCustomer(
   const analysis = buildCustomerAnalysis(input);
   return {
     answer: analysis.empty
-      ? '已核对当前示例目录，暂时没有满足全部条件的型号。'
+      ? '已核对当前产品目录，暂时没有满足全部条件的型号。'
       : `根据本次需求，整理了 ${analysis.rows.length} 款候选，并列出了各自的推荐理由和原始资料。`,
     inputs: input,
     analysis,

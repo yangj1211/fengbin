@@ -54,7 +54,23 @@ export async function verifyPassword(
 ): Promise<boolean> {
   if (!validConfig(config) || password.length > 256 || username.length > 80)
     return false;
-  const { saltBytes, hashBytes } = hashParts(config.passwordHash);
+  const passwordMatches = await verifyPasswordHash(password, config.passwordHash);
+  const usernameMatches = sameBytes(encoder.encode(username), encoder.encode(config.username));
+  return passwordMatches && usernameMatches;
+}
+export async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const hash = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 100000 }, key, 256,
+  );
+  return `pbkdf2-sha256$100000$${encode(salt)}$${encode(new Uint8Array(hash))}`;
+}
+export async function verifyPasswordHash(password: string, passwordHash: string): Promise<boolean> {
+  if (password.length > 256) return false;
+  let parts: ReturnType<typeof hashParts>;
+  try { parts = hashParts(passwordHash); } catch { return false; }
+  const { saltBytes, hashBytes } = parts;
   const key = await crypto.subtle.importKey(
     'raw',
     encoder.encode(password),
@@ -67,11 +83,7 @@ export async function verifyPassword(
     key,
     256,
   );
-  const usernameMatches = sameBytes(
-    encoder.encode(username),
-    encoder.encode(config.username),
-  );
-  return sameBytes(new Uint8Array(result), hashBytes) && usernameMatches;
+  return sameBytes(new Uint8Array(result), hashBytes);
 }
 async function signingKey(config: AdminConfig) {
   return crypto.subtle.importKey(
@@ -146,6 +158,38 @@ export async function verifySession(
   } catch {
     return false;
   }
+}
+export type UserSessionClaims = { sub: string; version: number; iat: number; exp: number };
+export async function createUserSession(
+  user: { id: string; sessionVersion: number },
+  config: AdminConfig,
+  now = Math.floor(Date.now() / 1000),
+): Promise<string> {
+  if (!validConfig(config)) throw new Error('Authentication unavailable');
+  const payload = encode(encoder.encode(JSON.stringify({
+    sub: user.id, version: user.sessionVersion, iat: now, exp: now + SESSION_TTL,
+    nonce: encode(crypto.getRandomValues(new Uint8Array(16))),
+  })));
+  const signature = await crypto.subtle.sign('HMAC', await signingKey(config), encoder.encode(payload));
+  return `${payload}.${encode(new Uint8Array(signature))}`;
+}
+export async function readUserSession(
+  token: string | undefined,
+  config: AdminConfig,
+  now = Math.floor(Date.now() / 1000),
+): Promise<UserSessionClaims | null> {
+  if (!token || token.length > 2048 || !validConfig(config)) return null;
+  try {
+    const [payload, signature, extra] = token.split('.');
+    if (!payload || !signature || extra !== undefined || !(await crypto.subtle.verify(
+      'HMAC', await signingKey(config), decode(signature), encoder.encode(payload),
+    ))) return null;
+    const data = JSON.parse(new TextDecoder().decode(decode(payload)));
+    if (typeof data.sub !== 'string' || !Number.isSafeInteger(data.version) || data.version < 1 ||
+        !Number.isInteger(data.exp) || !Number.isInteger(data.iat) || data.iat > now ||
+        data.exp <= now || data.exp - data.iat !== SESSION_TTL) return null;
+    return data;
+  } catch { return null; }
 }
 export function sameOrigin(request: Request): boolean {
   const origin = request.headers.get('origin');

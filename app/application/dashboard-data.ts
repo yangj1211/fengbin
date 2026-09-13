@@ -5,6 +5,10 @@ import {
   type ModuleId,
   type Row,
 } from './model';
+import { belowProductionThreshold as belowProduction } from './production-metrics';
+import { supplierRisk } from './supplier-metrics';
+import { withFixedRules } from './fixed-rules';
+import { filterScope, normalizeScopeName } from './scope';
 export type DashboardId = 'energy' | 'production' | 'supplier';
 export const hasDashboard = (id: ModuleId): id is DashboardId =>
   id === 'energy' || id === 'production' || id === 'supplier';
@@ -28,6 +32,7 @@ export function buildDashboard(
   dataset: Dataset,
   input: Inputs,
 ) {
+  input = withFixedRules(id, input);
   const field =
     id === 'energy' ? '工序' : id === 'production' ? '产线' : '供应商';
   const scopeKey =
@@ -38,8 +43,14 @@ export function buildDashboard(
       : id === 'production'
         ? '全部产线'
         : '全部供应商';
-  const rows = dataset.rows.filter(
-    (r) => input[scopeKey] === all || r[field] === input[scopeKey],
+  const rows = filterScope(
+    dataset.rows,
+    input[scopeKey],
+    all,
+    (row) => String(row[field]),
+    id === 'supplier'
+      ? (name) => normalizeScopeName(name).replace(/^供应商/, '')
+      : normalizeScopeName,
   );
   const analysis = analyze(id, input, dataset);
   const issues = rows.flatMap((r) => {
@@ -59,28 +70,40 @@ export function buildDashboard(
       const completion =
         (n(r, '实际产量(万只)') / n(r, '计划产量(万只)')) * 100;
       const defect = (n(r, '不良数量') / n(r, '检验数量')) * 100;
-      if (completion < Number(input.completion))
+      if (
+        belowProduction(
+          n(r, '实际产量(万只)') * 100,
+          n(r, '计划产量(万只)') * Number(input.completion),
+        )
+      )
         reasons.push(
           `完成率 ${numberLabel(completion)}%，低于 ${input.completion}% 目标`,
         );
-      if (defect > Number(input.defect))
+      if (
+        belowProduction(
+          n(r, '检验数量') * Number(input.defect),
+          n(r, '不良数量') * 100,
+        )
+      )
         reasons.push(
           `不良率 ${numberLabel(defect, 2)}%，超过 ${input.defect}% 上限`,
         );
     } else {
-      if (n(r, '交付及时率(%)') < Number(input.deliveryTarget))
+      const risk = supplierRisk(r, input);
+      if (risk.delivery)
         reasons.push(
-          `交付及时率低于目标 ${numberLabel(Number(input.deliveryTarget) - n(r, '交付及时率(%)'))} 个百分点`,
+          `交付及时率 ${numberLabel(n(r, '交付及时率(%)'))}%，低于 ${input.deliveryTarget}% 目标`,
         );
-      if (n(r, '来料合格率(%)') < Number(input.qualityTarget))
+      if (risk.quality)
         reasons.push(
-          `来料合格率低于目标 ${numberLabel(Number(input.qualityTarget) - n(r, '来料合格率(%)'))} 个百分点`,
+          `来料合格率 ${numberLabel(n(r, '来料合格率(%)'))}%，低于 ${input.qualityTarget}% 目标`,
         );
     }
     return reasons.length
       ? [
           {
             name,
+            row: r,
             detail: reasons.join('；'),
             inputs: { ...input, [scopeKey]: name },
             question: `请分析${name}的${id === 'energy' ? '能耗异常，给出优化建议' : id === 'production' ? '生产异常，给出排查建议' : '交付与质量风险，给出改善建议'}。`,
@@ -151,7 +174,10 @@ export function buildDashboard(
               detail: `目标 ≥ ${input.completion}%`,
               warning:
                 planned > 0 &&
-                (actual / planned) * 100 < Number(input.completion),
+                belowProduction(
+                  actual * 100,
+                  planned * Number(input.completion),
+                ),
             },
             {
               label: '检验良率',
@@ -191,33 +217,25 @@ export function buildDashboard(
                   )
                 : '—',
               unit: '分',
-              detail: '交付 / 质量 / 响应加权',
+              detail: '各供应商综合评分的算术平均',
             },
             {
               label: '交付风险',
               value: String(
-                rows.filter(
-                  (r) => n(r, '交付及时率(%)') < Number(input.deliveryTarget),
-                ).length,
+                rows.filter((r) => supplierRisk(r, input).delivery).length,
               ),
               unit: '家',
               detail: `及时率低于 ${input.deliveryTarget}%`,
-              warning: rows.some(
-                (r) => n(r, '交付及时率(%)') < Number(input.deliveryTarget),
-              ),
+              warning: rows.some((r) => supplierRisk(r, input).delivery),
             },
             {
               label: '质量风险',
               value: String(
-                rows.filter(
-                  (r) => n(r, '来料合格率(%)') < Number(input.qualityTarget),
-                ).length,
+                rows.filter((r) => supplierRisk(r, input).quality).length,
               ),
               unit: '家',
               detail: `合格率低于 ${input.qualityTarget}%`,
-              warning: rows.some(
-                (r) => n(r, '来料合格率(%)') < Number(input.qualityTarget),
-              ),
+              warning: rows.some((r) => supplierRisk(r, input).quality),
             },
           ];
   return { analysis, rows, issues, metrics, field, scopeKey, all, energyTotal };

@@ -1730,15 +1730,6 @@ h2 {
 .data-mode-button .status-dot {
   background: var(--primary);
 }
-.application-footer {
-  padding: 20px 0;
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-top: 34px;
-  border-top: 1px solid var(--border);
-}
 .app-section {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -2117,10 +2108,6 @@ h2 {
   }
   .app-section-title > span {
     display: none;
-  }
-  .application-footer {
-    font-size: 12px;
-    gap: 20px;
   }
   .app-field input {
     font-size: 16px;

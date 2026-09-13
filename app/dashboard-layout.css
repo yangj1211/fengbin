@@ -1,0 +1,753 @@
+/* A blue-gray canvas with softly tinted reporting surfaces. */
+.application-main.is-dashboard,
+body:has(.application-main.is-dashboard) [data-slot='select-content'] {
+  --dashboard-canvas: oklch(0.948 0.022 255);
+  --dashboard-metric-surface: oklch(0.921 0.034 255);
+  --dashboard-chart-surface: oklch(0.968 0.016 255);
+  --dashboard-detail-surface: oklch(0.979 0.008 255);
+  --dashboard-table-header: oklch(0.932 0.026 255);
+  --dashboard-ink: oklch(0.29 0.044 255);
+  --dashboard-secondary: oklch(0.45 0.035 255);
+  --dashboard-control: oklch(0.979 0.008 255);
+  --dashboard-divider: oklch(0.835 0.025 255);
+  --dashboard-control-border: oklch(0.64 0.034 255);
+}
+.application-main.is-dashboard,
+.application-main.is-dashboard > .application-content {
+  background: var(--dashboard-canvas);
+}
+.business-dashboard {
+  container: dashboard / inline-size;
+  color-scheme: light;
+  --background: var(--dashboard-canvas);
+  --foreground: var(--dashboard-ink);
+  --muted-foreground: var(--dashboard-secondary);
+  --muted: var(--dashboard-control);
+  --border: var(--dashboard-divider);
+  --input: var(--dashboard-control-border);
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --dashboard-surface: var(--background);
+  --dashboard-accent: var(--dashboard-signal);
+  --dashboard-tint: oklch(0.87 0.025 255);
+  --dashboard-reference: oklch(0.52 0.045 250);
+  --dashboard-planned: oklch(0.61 0.07 250);
+  --dashboard-warning: oklch(0.51 0.145 48);
+  --destructive: var(--dashboard-warning);
+  --dashboard-signal: oklch(0.47 0.092 185);
+  --accent: var(--dashboard-control);
+  width: 100%;
+  min-height: 100svh;
+  max-width: 1840px;
+  padding: 28px 34px 24px;
+  color: var(--foreground);
+  background: var(--background);
+}
+.business-dashboard.dashboard-production {
+  --dashboard-signal: oklch(0.51 0.16 258);
+}
+.business-dashboard.dashboard-supplier {
+  --dashboard-signal: oklch(0.49 0.105 77);
+}
+.business-dashboard .dashboard-heading {
+  margin-bottom: 26px;
+  gap: 20px;
+}
+.business-dashboard .dashboard-heading h1 {
+  font-size: 25px;
+  letter-spacing: 0;
+  margin: 0 0 5px;
+}
+.business-dashboard .dashboard-eyebrow {
+  display: none;
+}
+.business-dashboard .dashboard-heading .agent-identity {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  color: var(--dashboard-accent);
+  border: 1px solid var(--border);
+  background: transparent;
+  box-shadow: none;
+}
+.business-dashboard .dashboard-heading .agent-identity::after {
+  display: none;
+}
+.business-dashboard .dashboard-heading .agent-identity svg {
+  width: 24px;
+  height: 24px;
+}
+.business-dashboard .dashboard-heading p {
+  margin: 0;
+  font-size: 13px;
+}
+.business-dashboard .dashboard-toolbar {
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.business-dashboard [data-slot='select-trigger'],
+.business-dashboard [data-slot='input'],
+.business-dashboard [data-slot='button'][data-variant='outline'] {
+  color: var(--foreground);
+  background: var(--muted);
+  border-color: var(--dashboard-control-border);
+  box-shadow: none;
+}
+.business-dashboard .dashboard-toolbar [data-slot='select-trigger'],
+.business-dashboard .dashboard-toolbar [data-slot='input'] {
+  height: 36px;
+  font-size: 13px;
+}
+.business-dashboard input::placeholder {
+  color: var(--muted-foreground);
+}
+.business-dashboard .dashboard-rule-note {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--muted-foreground);
+}
+.business-dashboard .dashboard-rule-note strong {
+  flex-shrink: 0;
+  color: var(--foreground);
+  font-weight: 500;
+}
+.business-dashboard .dashboard-rule-note p {
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .business-dashboard .dashboard-rule-note {
+    display: block;
+  }
+  .business-dashboard .dashboard-rule-note strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+}
+.business-dashboard .dashboard-metrics {
+  gap: 0;
+  padding: 24px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--dashboard-metric-surface);
+  margin: 22px 0;
+}
+.business-dashboard .dashboard-metrics > .dashboard-kpi {
+  container: metric / inline-size;
+  min-width: 0;
+  padding: 2px 26px;
+  border: 0;
+  border-inline-start: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+}
+.business-dashboard .dashboard-metrics > .dashboard-kpi:first-child {
+  border-inline-start: 0;
+  padding-left: 0;
+}
+.business-dashboard .dashboard-metrics > .dashboard-kpi:last-child {
+  padding-right: 0;
+}
+.dashboard-metrics .dashboard-kpi-label {
+  justify-content: space-between;
+  gap: 12px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+.dashboard-kpi-label > svg {
+  color: var(--dashboard-accent);
+  flex-shrink: 0;
+}
+.dashboard-kpi-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 70px;
+}
+.business-dashboard .dashboard-kpi-value strong {
+  font-size: 40px;
+  line-height: 1.2;
+  margin: 12px 0;
+  letter-spacing: -0.035em;
+}
+.business-dashboard .dashboard-kpi-value strong small {
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.business-dashboard
+  .dashboard-kpi.needs-attention
+  :is(strong, .dashboard-kpi-label > svg) {
+  color: var(--dashboard-warning);
+}
+.dashboard-kpi p {
+  min-height: 20px;
+  margin: 0;
+}
+.dashboard-kpi-progress {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+.dashboard-kpi-progress circle:first-of-type {
+  stroke: var(--dashboard-tint);
+}
+.dashboard-kpi-progress circle:last-of-type {
+  stroke: var(--dashboard-accent);
+}
+.dashboard-kpi.needs-attention .dashboard-kpi-progress circle:last-of-type {
+  stroke: var(--dashboard-warning);
+}
+.dashboard-kpi-spark {
+  width: 96px;
+  height: 38px;
+  flex-shrink: 0;
+}
+.dashboard-kpi-spark > div {
+  width: 100%;
+  height: 100%;
+}
+@container metric (max-width: 175px) {
+  .dashboard-kpi-progress,
+  .dashboard-kpi-spark {
+    display: none;
+  }
+}
+.business-dashboard .dashboard-chart-grid {
+  gap: 0;
+  --dashboard-surface: var(--dashboard-chart-surface);
+  background: var(--dashboard-surface);
+  border-radius: 12px;
+  overflow: visible;
+  margin: 0 0 22px;
+  --border: var(--dashboard-divider);
+  --muted: var(--dashboard-control);
+}
+.business-dashboard .dashboard-chart-grid > .dashboard-panel {
+  padding: 28px 26px;
+  border: 0;
+  border-inline-start: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.business-dashboard .dashboard-chart-grid > .dashboard-panel:first-child {
+  padding-left: 26px;
+  border-inline-start: 0;
+}
+.business-dashboard .dashboard-chart-grid > .dashboard-compact-chart {
+  padding-right: 26px;
+}
+.dashboard-overview-grid {
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1.05fr) minmax(0, 0.9fr);
+}
+.dashboard-overview-grid > .dashboard-compact-chart {
+  order: 3;
+}
+.dashboard-panel-heading h2 {
+  letter-spacing: 0;
+  font-size: 16px;
+}
+.business-dashboard .dashboard-panel-heading p {
+  margin: 7px 0 20px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.dashboard-chart-legend {
+  gap: 10px 16px;
+}
+.dashboard-chart-legend i.planned {
+  background: var(--dashboard-planned);
+}
+.chart-unit-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  margin: -3px 0 14px;
+}
+.chart-unit-row > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chart-unit-row i {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--dashboard-warning);
+}
+.chart-unit {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  display: block;
+  margin-bottom: 10px;
+}
+.tremor-chart {
+  min-width: 0;
+  width: 100%;
+}
+.dashboard-bar-chart,
+.dashboard-comparison-chart {
+  height: 280px;
+}
+.tremor-chart .recharts-cartesian-grid line {
+  stroke-dasharray: 3 5;
+}
+.tremor-chart .recharts-tooltip-wrapper {
+  z-index: 2;
+}
+.tremor-chart .recharts-tooltip-wrapper > div {
+  max-width: 260px;
+}
+.tremor-chart .recharts-tooltip-wrapper p {
+  line-height: 1.5;
+}
+.tremor-chart .recharts-label-list text,
+.tremor-chart .recharts-cartesian-axis-tick-value {
+  fill: var(--muted-foreground);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.tremor-chart :is(.recharts-surface, .tremor-bar-target):focus-visible {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 3px;
+}
+.tremor-bar-list {
+  width: 100%;
+  gap: 18px;
+  margin-top: 24px;
+}
+.tremor-bar-list > div:first-child {
+  min-width: 0;
+}
+.tremor-bar-list > div:last-child {
+  flex-shrink: 0;
+}
+.tremor-bar-list > div:first-child > button {
+  border: 0;
+  box-shadow: none;
+  text-align: left;
+  color: inherit;
+}
+.tremor-bar-list > div:first-child > :is(button, div) > div:first-child,
+.tremor-bar-list > div:last-child > div {
+  height: 42px;
+}
+.tremor-bar-list > div:first-child > :is(button, div) > div:first-child {
+  border-radius: 3px;
+}
+.tremor-bar-list p {
+  color: inherit;
+  font-size: 13px;
+}
+.business-dashboard .tremor-bar-list > div:first-child :is(p, a) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+.tremor-bar-list > div:last-child p {
+  font-size: 15px;
+  font-weight: 550;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.supplier-ranking-list > div:first-child > button > div:first-child,
+.supplier-ranking-list > div:last-child > div {
+  height: 68px;
+}
+.supplier-ranking-list.is-windowed > div:first-child > button > div:first-child,
+.supplier-ranking-list.is-windowed > div:last-child > div {
+  height: 44px;
+}
+.tremor-bar-list.is-windowed {
+  min-height: 304px;
+  align-items: flex-start;
+}
+.chart-window-controls,
+.chart-window-controls > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chart-window-controls {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.chart-window-controls [data-slot='button'] {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: var(--foreground);
+}
+.chart-window-controls [data-slot='button']:hover:not(:disabled) {
+  background: var(--dashboard-table-header);
+}
+@media (pointer: coarse) {
+  .chart-window-controls [data-slot='button'] {
+    width: 44px;
+    height: 44px;
+  }
+}
+.downtime-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 24px;
+}
+.downtime-total strong {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+.downtime-total span {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.risk-donut-wrap {
+  position: relative;
+  width: 180px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  margin: 14px auto 22px;
+}
+.risk-donut {
+  width: 100%;
+  height: 100%;
+}
+.risk-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  pointer-events: none;
+}
+.risk-donut-center strong {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+.risk-donut-center span {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.risk-distribution-legend {
+  display: grid;
+  gap: 12px;
+}
+.risk-distribution-legend > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.risk-distribution-legend i {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.risk-distribution-legend strong {
+  margin-left: auto;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 500;
+}
+/* Energy: a wide trend and forecast, then two equally sized comparisons. */
+.energy-overview-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-areas: 'trend trend trend trend prediction prediction' 'shift shift shift line line line';
+}
+.energy-trend-panel {
+  grid-area: trend;
+  display: flex;
+  flex-direction: column;
+}
+.energy-prediction-panel {
+  grid-area: prediction;
+}
+.energy-shift-panel {
+  grid-area: shift;
+}
+.energy-line-panel {
+  grid-area: line;
+}
+.business-dashboard
+  .energy-overview-grid
+  > :is(.energy-shift-panel, .energy-line-panel) {
+  border-top: 1px solid var(--border);
+}
+.business-dashboard .energy-overview-grid > .energy-shift-panel {
+  border-inline-start: 0;
+  padding-left: 26px;
+}
+.business-dashboard
+  .energy-overview-grid
+  > :is(.energy-prediction-panel, .energy-line-panel) {
+  padding-right: 26px;
+}
+.energy-series-view {
+  display: flex;
+  flex-direction: column;
+  height: 260px;
+  margin: 16px 0 12px;
+}
+.energy-series-view > .tremor-series-plot {
+  flex: 1;
+  min-height: 0;
+  height: calc(100% - 28px);
+}
+.energy-trend-panel > .energy-series-view {
+  flex: 1;
+  min-height: 270px;
+}
+.energy-prediction-panel .energy-forecast-inputs {
+  gap: 12px;
+  margin-top: 0;
+}
+.energy-prediction-panel .energy-plan-source {
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 12px 0 0;
+}
+.energy-prediction-panel .energy-projected-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+.energy-prediction-panel .energy-projected-total strong {
+  display: block;
+  font-size: 32px;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+.energy-prediction-panel .energy-projected-total p {
+  font-size: 12px;
+  margin: 0;
+}
+.energy-prediction-panel .energy-series-view {
+  height: 160px;
+  min-height: 160px;
+  margin-top: 16px;
+}
+.energy-overview-grid .dashboard-chart-note {
+  font-size: 12px;
+  line-height: 1.8;
+  margin-top: 12px;
+}
+.energy-overview-grid .energy-panel-title [data-slot='select-trigger'] {
+  color: inherit;
+}
+.energy-overview-grid .energy-comparison-plot {
+  height: 240px;
+}
+.energy-comparison-tooltip {
+  max-width: 260px;
+}
+/* Detail rows use a quieter surface and a clearly tinted table header. */
+.business-dashboard .dashboard-detail-panel {
+  color: inherit;
+  background: var(--dashboard-detail-surface);
+  border: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 0 0 18px;
+}
+.business-dashboard .dashboard-detail-heading,
+.business-dashboard .energy-anomaly-list {
+  padding: 22px 24px;
+}
+.business-dashboard .dashboard-detail-heading {
+  border: 0;
+}
+.business-dashboard .app-table {
+  color: var(--foreground);
+}
+.business-dashboard .app-table th {
+  background: var(--dashboard-table-header);
+  color: var(--muted-foreground);
+}
+.business-dashboard .app-table td {
+  border-color: var(--border);
+}
+.business-dashboard .app-table tr:hover {
+  background: var(--dashboard-table-header);
+}
+.business-dashboard .energy-anomaly-definition {
+  gap: 2px;
+}
+.business-dashboard .energy-anomaly-list .energy-anomaly-definition p {
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.8;
+}
+.business-dashboard .list-page-links [aria-current='page'] {
+  color: var(--dashboard-accent);
+  border-color: var(--dashboard-accent);
+  background: var(--muted);
+}
+.business-dashboard .list-pagination {
+  color: var(--foreground);
+}
+.business-dashboard
+  :is(.production-detail, .supplier-detail)
+  > .list-pagination {
+  margin: 0;
+  padding: 16px 24px;
+}
+/* Portaled selects inherit the same dashboard palette while a board is open. */
+body:has(.application-main.is-dashboard) [data-slot='select-content'] {
+  --background: var(--dashboard-canvas);
+  --foreground: var(--dashboard-ink);
+  --muted: var(--dashboard-control);
+  --muted-foreground: var(--dashboard-secondary);
+  --accent: var(--muted);
+  --border: var(--dashboard-control-border);
+  color: var(--foreground);
+  background: var(--background);
+  color-scheme: light;
+}
+@container dashboard (max-width: 1099px) {
+  .business-dashboard .dashboard-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dashboard-overview-grid .dashboard-primary-chart {
+    grid-column: 1 / -1;
+  }
+  .business-dashboard .dashboard-overview-grid > .dashboard-primary-chart {
+    padding-right: 26px;
+    border-bottom: 1px solid var(--border);
+  }
+  .business-dashboard
+    .dashboard-overview-grid
+    > .dashboard-panel:not(.dashboard-primary-chart):not(
+      .dashboard-compact-chart
+    ) {
+    padding-left: 26px;
+    border-inline-start: 0;
+  }
+  .energy-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas: 'trend trend' 'shift line' 'prediction prediction';
+  }
+  .business-dashboard .energy-overview-grid > .energy-trend-panel {
+    padding-right: 26px;
+  }
+  .business-dashboard .energy-overview-grid > .energy-prediction-panel {
+    padding-left: 26px;
+    border-inline-start: 0;
+    border-top: 1px solid var(--border);
+  }
+  .energy-trend-panel > .energy-series-view {
+    flex: auto;
+    min-height: 260px;
+  }
+  .energy-prediction-panel .energy-series-view {
+    height: 220px;
+  }
+}
+@container dashboard (max-width: 850px) {
+  .business-dashboard .dashboard-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 22px;
+  }
+  .business-dashboard .dashboard-metrics > .dashboard-kpi {
+    grid-column: auto;
+    padding: 0 20px;
+    border: 0;
+  }
+  .business-dashboard .dashboard-metrics > .dashboard-kpi:nth-child(odd) {
+    padding-left: 0;
+  }
+  .business-dashboard .dashboard-metrics > .dashboard-kpi:nth-child(even) {
+    border-inline-start: 1px solid var(--border);
+  }
+  .business-dashboard
+    .dashboard-metrics:is(.metrics-3, .metrics-5)
+    > .dashboard-kpi:last-child {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+  }
+}
+@container dashboard (max-width: 620px) {
+  .business-dashboard .dashboard-chart-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .energy-overview-grid {
+    grid-template-areas: 'trend' 'shift' 'line' 'prediction';
+  }
+  .business-dashboard .dashboard-chart-grid > .dashboard-panel {
+    padding: 24px 20px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .business-dashboard .dashboard-chart-grid > .dashboard-panel:last-child {
+    border-bottom: 0;
+  }
+  .business-dashboard .dashboard-kpi-value strong {
+    font-size: 32px;
+  }
+  .tremor-chart .recharts-tooltip-wrapper > div {
+    max-width: 230px;
+  }
+  .dashboard-bar-chart,
+  .dashboard-comparison-chart {
+    height: 260px;
+  }
+}
+@media (max-width: 650px) {
+  .business-dashboard {
+    padding: 22px 20px;
+  }
+  .business-dashboard .dashboard-heading {
+    flex-wrap: wrap;
+  }
+  .business-dashboard .dashboard-heading h1 {
+    font-size: 22px;
+  }
+  .business-dashboard .dashboard-toolbar-actions {
+    flex-wrap: wrap;
+  }
+  .business-dashboard .dashboard-metrics,
+  .business-dashboard .dashboard-detail-heading,
+  .business-dashboard .energy-anomaly-list {
+    padding: 20px;
+  }
+  .energy-prediction-panel .energy-projected-total {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [tremor-id] *,
+  [tremor-id] *::before,
+  [tremor-id] *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

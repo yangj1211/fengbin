@@ -1,5 +1,4 @@
 import {
-  analyze,
   modules,
   validateInputs,
   type ModuleId,
@@ -11,7 +10,19 @@ import { replyToCustomer, customerConditions } from './customer-engine';
 import { customerExamples } from './customer-data';
 import { energyAnswer } from './energy-answer';
 import { replyToMaintenance } from './maintenance-engine';
+import {
+  replyToProduction,
+  productionExamples,
+  productionDailyReportExample,
+} from './production-answer';
+import { replyToSupplier, supplierExamples } from './supplier-answer';
 import type { SourceReference, CustomerDecision } from './customer-types';
+import {
+  encodeScope,
+  scopeLabel,
+  normalizeScopeName,
+  mentionedScopeNames,
+} from './scope';
 export type ConversationTurn = {
   id: string;
   question: string;
@@ -25,11 +36,17 @@ export type ConversationTurn = {
   sources?: SourceReference[];
   missing?: string[];
   customerDecision?: CustomerDecision;
+  feedback?: 'like' | 'dislike' | null;
+  /** Public processing summary, separate from the answer copied by the user. */
+  processingSummary?: string;
+  status?: 'complete' | 'stopped';
 };
 export type ConversationSession = {
   id: string;
   module: ModuleId;
   title: string;
+  /** A manually edited name is retained when questions and drafts are saved. */
+  titleEdited?: boolean;
   createdAt: string;
   updatedAt: string;
   turns: ConversationTurn[];
@@ -65,42 +82,20 @@ export const suggestions: Record<
       question: '预计产量增长5%，预测未来7天全部工序的用电量。',
     },
     {
-      title: '查看重点工序',
-      question: '分析老化工序的能耗，哪些地方需要关注？',
+      title: '查看趋势与异常',
+      question: '查看每日用电趋势，列出需要关注的异常点。',
     },
     {
-      title: '调整生产计划',
-      question: '产量减少10%，未来14天全部工序预计用多少电？',
+      title: '对比班次与产线',
+      question: '比较白班、夜班和不同产线的用电及单位电耗。',
     },
   ],
   production: [
-    {
-      title: '查看产线异常',
-      question: '帮我检查全部产线的生产表现，找出需要关注的产线。',
-    },
-    {
-      title: '分析第三条产线',
-      question: '分析3号产线的产量达成情况和质量问题。',
-    },
-    {
-      title: '提高质量要求',
-      question: '把不良率阈值调整到1.5%，重新检查全部产线。',
-    },
+    productionDailyReportExample,
+    productionExamples[3],
+    productionExamples[4],
   ],
-  supplier: [
-    {
-      title: '评估全部供应商',
-      question: '评估全部供应商的交付与质量，哪些需要重点关注？',
-    },
-    {
-      title: '查看供应商 C',
-      question: '分析供应商C的绩效，给出后续跟进建议。',
-    },
-    {
-      title: '提高质量权重',
-      question: '交付权重30%，质量权重60%，重新评估全部供应商。',
-    },
-  ],
+  supplier: [supplierExamples[0], supplierExamples[1], supplierExamples[4]],
 };
 export function conditionSummary(id: ModuleId, input: Inputs): string[] {
   if (id === 'customer') return customerConditions(input);
@@ -110,18 +105,31 @@ export function conditionSummary(id: ModuleId, input: Inputs): string[] {
     );
   if (id === 'energy')
     return [
-      input.process,
+      scopeLabel(input.process, '全部工序'),
+      ...(input.line ? [scopeLabel(input.line, '全部产线')] : []),
+      ...(input.dateFrom || input.dateTo
+        ? [
+            `统计区间 ${input.dateFrom || '资料起日'}—${input.dateTo || '资料末日'}`,
+          ]
+        : []),
+      ...(input.granularity === 'month'
+        ? ['按月汇总']
+        : input.granularity === 'year'
+          ? ['按年汇总']
+          : []),
       '未来' + input.period + '天',
-      '产量变化 ' + input.change + '%',
+      input.plannedProduction?.trim()
+        ? '计划总产量 ' + input.plannedProduction + ' 千只'
+        : '产量变化 ' + input.change + '%',
     ];
   if (id === 'production')
     return [
-      input.line,
+      scopeLabel(input.line, '全部产线'),
       '完成率目标 ' + input.completion + '%',
       '不良率阈值 ' + input.defect + '%',
     ];
   return [
-    input.supplier,
+    scopeLabel(input.supplier, '全部供应商'),
     '交付目标 ' + input.deliveryTarget + '%',
     '质量目标 ' + input.qualityTarget + '%',
     '交付 / 质量权重 ' + input.deliveryWeight + ' / ' + input.qualityWeight,
@@ -141,18 +149,20 @@ export function replyToQuestion(
 } {
   if (id === 'customer') return replyToCustomer(question, current);
   if (id === 'maintenance') return replyToMaintenance(question, current);
+  if (id === 'production') return replyToProduction(question, current, dataset);
+  if (id === 'supplier') return replyToSupplier(question, current, dataset);
   const input: Inputs = { ...current, question };
   const q = question.replace(/％/g, '%');
   const m = modules.find((m) => m.id === id)!;
   if (/^(你好|您好|嗨|hello|hi|谢谢|感谢)[！!。\s]*$/i.test(q))
     return {
       inputs: input,
-      answer: `您好，我是${m.name}。${m.description}您可以直接描述需求，或选择下方的示例问题。`,
+      answer: `您好，我是${m.name}。${m.description}您可以直接描述需求，或选择下方的推荐问题。`,
     };
   if (/(能做什么|怎么用|如何使用|什么功能)/.test(q))
     return {
       inputs: input,
-      answer: `我可以${m.description}您可以参考“${suggestions[id][0].question}”来提问，${id === 'energy' ? '也可以直接在问题里说明工序、天数和产量变化。' : '也可以展开“分析条件”精确设置参数。'}当前根据本地资料与规则回答。`,
+      answer: `我可以${m.description}您可以参考“${suggestions[id][0].question}”来提问，${id === 'energy' ? '也可以直接在问题里说明工序、天数和产量变化。' : '也可以展开“分析条件”核对需求参数。'}`,
     };
   const compact = (value: string) => value.replace(/\s/g, '').toLowerCase();
   const scopeColumn = {
@@ -172,7 +182,7 @@ export function replyToQuestion(
       /电容|产品|型号|选型|推荐|规格|容量|电压|温度|寿命|工业|消费|小时|[vVμu]F?/,
     maintenance: /维修|设备|故障|排查|卷绕|含浸|老化|温度|真空|张力|断箔/,
     energy:
-      /用电|电量|能耗|能源|工序|产量|预测|增长|减少|趋势|班次|产线|设备|夜间|用水|水耗|用气|气耗|空压|空调|计算|公式|怎么算/,
+      /用电|电量|能耗|能源|工序|产量|预测|增长|增加|提高|变化|减少|下降|降低|不变|持平|计划|汇总|趋势|按[日月年]|[日月年]度|班次|白班|夜班|产线|设备|夜间|用水|水耗|用气|气耗|空压|空调|计算|公式|怎么算|异常|偏高/,
     production: /生产|产线|产量|达成|完成率|不良|质量|预警/,
     supplier: /供应商|交付|来料|绩效|评分|权重|合格率/,
   };
@@ -184,7 +194,7 @@ export function replyToQuestion(
   )
     return {
       inputs: input,
-      answer: `这条问题暂时无法转换为${m.name}的分析条件。请描述具体的${id === 'energy' ? '工序、预测周期或产量变化' : id === 'production' ? '产线、完成率或不良率阈值' : '供应商、目标或评分权重'}${id === 'energy' ? '，例如：产量增长5%，预测下周用电。' : '；也可展开“分析条件”后按条件分析。'}`,
+      answer: `这条问题暂时无法转换为${m.name}的分析条件。请描述具体的${id === 'energy' ? '工序、预测周期或产量变化' : '供应商、目标或评分权重'}${id === 'energy' ? '，例如：产量增长5%，预测下周用电。' : '；也可展开“分析条件”后按条件分析。'}`,
     };
   const capture = (key: string, pattern: RegExp) => {
     const hit = q.match(pattern);
@@ -194,43 +204,57 @@ export function replyToQuestion(
     const names = Array.from(
       new Set(dataset.rows.map((r) => String(r[column]))),
     ).sort((a, b) => b.length - a.length);
-    const match = names.find((v) => compact(q).includes(compact(v)));
-    if (match) input[key] = match;
-    return Boolean(match);
+    const matches = mentionedScopeNames(q, names);
+    if (matches.length) input[key] = encodeScope(matches, '全部工序', names);
+    return matches.length > 0;
   };
   if (id === 'energy') {
-    if (/产量不变|产量持平/.test(q)) input.change = '0';
     capture('period', /(\d+)\s*天/);
     if (/下周|未来一周/.test(q)) input.period = '7';
-    capture(
-      'change',
-      /(?:增长|增加|提高|变化|减少|下降|降低)\s*(?:到|为)?\s*([+-]?\d+(?:\.\d+)?)\s*%/,
+    const changes = Array.from(
+      q.matchAll(
+        /(增长|增加|提高|变化|减少|下降|降低)\s*(?:到|为)?\s*([+-]?\d+(?:\.\d+)?)\s*%/g,
+      ),
+      (hit) => ({
+        index: hit.index,
+        value: /减少|下降|降低/.test(hit[1])
+          ? String(-Math.abs(Number(hit[2])))
+          : hit[2],
+      }),
     );
-    if (/(?:减少|下降|降低)\s*(?:到|为)?\s*\d+(?:\.\d+)?\s*%/.test(q))
-      input.change = String(-Math.abs(Number(input.change)));
+    for (const hit of q.matchAll(/产量(?:保持)?(?:不变|持平)/g))
+      changes.push({ index: hit.index, value: '0' });
+    if (/^(?:保持)?(?:不变|持平)[。！!\s]*$/.test(q.trim()))
+      changes.push({ index: 0, value: '0' });
+    const lastChange = changes.sort((a, b) => a.index - b.index).at(-1);
+    if (lastChange) {
+      input.change = lastChange.value;
+      input.plannedProduction = '';
+    }
+    const plan = Array.from(
+      q.matchAll(
+        /(?:计划(?:总)?(?:产量|生产)|产量计划)\s*(?:为|是|约|共|达到)?\s*[:：]?\s*([+-]?\d+(?:\.\d+)?)\s*千只/g,
+      ),
+    ).at(-1);
+    if (plan && (!lastChange || plan.index > lastChange.index))
+      input.plannedProduction = plan[1];
+    if (/按月|每月|月度/.test(q)) input.granularity = 'month';
+    else if (/按年|每年|年度/.test(q)) input.granularity = 'year';
+    else if (/按日|每日|每天|日度/.test(q)) input.granularity = 'day';
     choose('process', '工序');
     if (/全部工序|所有工序/.test(q)) input.process = '全部工序';
-  } else if (id === 'production') {
-    choose('line', '产线');
-    if (/全部产线|所有产线/.test(q)) input.line = '全部产线';
-    capture(
-      'completion',
-      /完成率(?:目标)?[^\d+-]{0,8}?([+-]?\d+(?:\.\d+)?)\s*%/,
-    );
-    capture('defect', /不良率(?:阈值)?[^\d+-]{0,8}?([+-]?\d+(?:\.\d+)?)\s*%/);
-  } else {
-    choose('supplier', '供应商');
-    if (/全部供应商|所有供应商/.test(q)) input.supplier = '全部供应商';
-    capture(
-      'deliveryTarget',
-      /交付(?:及时率)?目标[^\d+-]{0,5}?([+-]?\d+(?:\.\d+)?)\s*%/,
-    );
-    capture(
-      'qualityTarget',
-      /质量(?:合格率)?目标[^\d+-]{0,5}?([+-]?\d+(?:\.\d+)?)\s*%/,
-    );
-    capture('deliveryWeight', /交付权重[^\d+-]{0,5}?([+-]?\d+(?:\.\d+)?)\s*%/);
-    capture('qualityWeight', /质量权重[^\d+-]{0,5}?([+-]?\d+(?:\.\d+)?)\s*%/);
+    const knownLines = [
+      ...new Set(dataset.energyDetails?.map((row) => row.line) ?? []),
+    ];
+    const lines = [
+      ...new Set([
+        ...mentionedScopeNames(q, knownLines),
+        ...(normalizeScopeName(q).match(/\d+号产线/g) ?? []),
+      ]),
+    ];
+    if (lines.length) input.line = encodeScope(lines, '全部产线', knownLines);
+    if (/未知产线|不存在的产线/.test(q)) input.line = '未知产线';
+    if (/全部产线|所有产线|各产线|不同产线/.test(q)) input.line = '全部产线';
   }
   const error = validateInputs(id, input);
   if (error)
@@ -238,12 +262,5 @@ export function replyToQuestion(
       inputs: input,
       answer: `还需要调整一个条件：${error}${id === 'energy' ? '请在问题里修改数值后再试。' : '修改问题中的数值，或在“分析条件”里调整后再试。'}`,
     };
-  if (id === 'energy')
-    return { inputs: input, answer: energyAnswer(question, input, dataset) };
-  const analysis = analyze(id, input, dataset);
-  return {
-    inputs: input,
-    analysis,
-    answer: `我已根据「${dataset.name}」完成本次分析。下方列出了采用的条件；未提及的参数沿用当前设置，您可以继续提问调整。`,
-  };
+  return { inputs: input, answer: energyAnswer(question, input, dataset) };
 }

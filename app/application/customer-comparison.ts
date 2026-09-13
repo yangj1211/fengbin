@@ -34,7 +34,7 @@ export function customerParameterComparison(
     const requirement =
       mode === 'equal' ? '为' : mode === 'min' ? '不低于' : '不超过';
     lines.push(
-      `${label}要求${requirement} ${number(requested)}${unit}，${key === 'leadDays' ? '产品示例交期为' : '产品参数为'} ${number(actual)}${unit}，${matches ? '符合' : '不符合'}。`,
+      `${label}要求${requirement} ${number(requested)}${unit}，${key === 'leadDays' ? '产品参考交期为' : '产品参数为'} ${number(actual)}${unit}，${matches ? '符合' : '不符合'}。`,
     );
   }
   return lines;
