@@ -41,11 +41,21 @@ export async function accountPayload(request: Request): Promise<Record<string, u
     return payload;
   } catch { throw new AccountError('请求格式不正确。'); }
 }
-// This preserves the existing per-worker request backoff; account records live in D1.
+// This preserves the existing per-instance request backoff; account records live in D1.
 const attempts = new Map<string, { count: number; until: number }>();
+export function authClientKey(request: Request): string {
+  if (typeof process !== 'undefined' && process.env.VERCEL === '1') {
+    // Vercel supplies this header at its edge; do not accept cf-connecting-ip
+    // or a client-supplied X-Forwarded-For chain on the Vercel deployment.
+    const address = request.headers.get('x-vercel-forwarded-for')?.trim();
+    return address && address.length <= 45 && /^[0-9a-f:.]+$/i.test(address)
+      ? address.toLowerCase() : 'unknown';
+  }
+  return request.headers.get('cf-connecting-ip') ?? 'unknown';
+}
 export function authAttempt(request: Request): string {
   const now = Date.now();
-  const key = request.headers.get('cf-connecting-ip') ?? 'unknown';
+  const key = authClientKey(request);
   for (const [id, value] of attempts) if (value.until <= now) attempts.delete(id);
   if (attempts.size > 2000) throw new AccountError('请求过于频繁，请稍后重试。', 429);
   const current = attempts.get(key);

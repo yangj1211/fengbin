@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/postcss';
 import vinext from 'vinext';
 import { defineConfig } from 'vite';
 import hostingConfig from './.openai/hosting.json';
+import { fileURLToPath } from 'node:url';
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   '00000000-0000-4000-8000-000000000000';
@@ -35,6 +36,27 @@ const localBindingConfig = {
 };
 
 export default defineConfig(async () => {
+  const useNitro = process.env.VERCEL === '1' || Boolean(process.env.NITRO_PRESET);
+  if (useNitro) {
+    const { nitro } = await import('nitro/vite');
+    return {
+      resolve: {
+        alias: [
+          {
+            find: /^\.\/account-runtime$/,
+            replacement: fileURLToPath(new URL('./lib/account-runtime-node.ts', import.meta.url)),
+          },
+          // CSS-only package exports must resolve as styles in the Node RSC build.
+          { find: /^tailwindcss$/, replacement: fileURLToPath(import.meta.resolve('tailwindcss/index.css')) },
+          { find: /^tw-animate-css$/, replacement: fileURLToPath(new URL('./node_modules/tw-animate-css/dist/tw-animate.css', import.meta.url)) },
+          { find: /^shadcn\/tailwind\.css$/, replacement: fileURLToPath(import.meta.resolve('shadcn/tailwind.css')) },
+        ],
+      },
+      css: { postcss: { plugins: [tailwindcss()] } },
+      plugins: [vinext(), nitro()],
+    };
+  }
+
   // Keep Wrangler and Miniflare state project-local. These are non-secret tool
   // settings; application environment belongs in ignored `.env*` files.
   process.env.WRANGLER_WRITE_LOGS ??= 'false';

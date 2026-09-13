@@ -1,4 +1,5 @@
 import { hashPassword, readUserSession, validConfig, verifyPasswordHash, type AdminConfig } from './admin-auth';
+import type { AccountDatabase } from './account-database';
 
 export const DEFAULT_ADMIN_ID = 'default-admin';
 export const DEFAULT_ADMIN_ACCOUNT = 'admin';
@@ -62,7 +63,7 @@ export function canAccessManagement(user: Pick<PublicUser, 'role'> | null): bool
   return user?.role === 'admin';
 }
 export class UserStore {
-  constructor(private db: D1Database, private config: AdminConfig) {}
+  constructor(private db: AccountDatabase, private config: AdminConfig) {}
   async initialize() {
     if (!this.db || !validConfig(this.config)) throw new AccountError('账号服务尚未准备好，请稍后重试。', 503);
     await this.db.prepare(`CREATE TABLE IF NOT EXISTS app_users (

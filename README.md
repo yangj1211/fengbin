@@ -30,7 +30,13 @@
 
 ## 开发与验证
 
-使用 Node.js 22.13+。启动：`npm run dev`；构建：`npm run build`；类型和静态检查：`npx tsc --noEmit`、`npx oxlint app lib middleware.ts`。
+使用 Node.js 22.13+。本地 Cloudflare 启动：`npm run dev`；构建：`npm run build`；Vercel 构建：`npm run build:vercel`；类型和静态检查：`npx tsc --noEmit`、`npx oxlint app lib proxy.ts`。
+
+## Vercel 部署
+
+仓库中的 `vercel.json` 使用 Nitro 生成 Vercel Build Output API 产物；`proxy.ts` 由 vinext 在应用内执行。Vercel 使用 Node 账号适配器，通过服务端 D1 API 访问持久账号库。本地 Cloudflare 继续使用原来的 `AUTH_DB` 绑定。
+
+首次部署需要设置账号和数据库环境变量，配置方法见 [Vercel 部署说明](docs/Vercel部署.md)。
 
 `app/workspace.tsx` 负责身份加载和工作区，`app/application/` 包含智能体、看板、会话、数据管理、用户管理及浏览器持久化。根页及 `app/[...path]/page.tsx` 保护直接访问；目录切换使用 History API 保留业务页面状态。`lib/user-store.ts` 和 `app/api/auth/`、`app/api/users/` 处理账号及会话。
 
