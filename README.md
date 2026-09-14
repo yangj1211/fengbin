@@ -34,7 +34,7 @@
 
 ## Vercel 部署
 
-仓库中的 `vercel.json` 使用 Nitro 生成 Vercel Build Output API 产物；`proxy.ts` 由 vinext 在应用内执行。Vercel 使用 Node 账号适配器，通过服务端 D1 API 访问持久账号库。本地 Cloudflare 继续使用原来的 `AUTH_DB` 绑定。
+仓库中的 `vercel.json` 使用 Nitro 生成 Vercel Build Output API 产物；`proxy.ts` 由 vinext 在应用内执行。Vercel 使用 Node 账号适配器，支持通过 Marketplace 接入 Turso 持久账号库，也兼容服务端 D1 API。本地 Cloudflare 使用原来的 `AUTH_DB` 绑定。
 
 首次部署需要设置账号和数据库环境变量，配置方法见 [Vercel 部署说明](docs/Vercel部署.md)。
 
