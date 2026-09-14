@@ -11,7 +11,6 @@ export const config = {
     '/login',
     '/apps/:path*',
     '/records/:path*',
-    '/data',
     '/api/auth/:path*',
   ],
 };

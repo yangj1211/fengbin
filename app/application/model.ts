@@ -4,7 +4,7 @@ import type {
   SourceReference,
   CustomerDecision,
 } from './customer-types';
-import { customerProducts } from './customer-data';
+import { specificationProducts } from './customer-data';
 import { maintenanceCases } from './maintenance-data';
 import { maintenanceDefaults } from './maintenance-engine';
 import { buildCustomerAnalysis, customerDefaults } from './customer-engine';
@@ -106,14 +106,17 @@ export const initialDatasets: Dataset[] = [
     'products',
     '电容器产品目录',
     'customer',
-    ['产品型号', '额定电压(V)', '容量(μF)', '温度(℃)', '寿命(h)', '应用'],
-    customerProducts.map((p) => [
+    ['产品型号', '额定电压(V)', '容量(μF)', '工作温区(℃)', '安装方式', 'Endurance(h)', 'Endurance测试条件', '本体最大直径(mm)', '本体最大长度(mm)'],
+    specificationProducts.map((p) => [
       p.model,
-      p.voltage,
-      p.capacity,
-      p.temperature,
-      p.life,
-      p.application,
+      p.ratedVoltageV,
+      p.capacitanceUf,
+      `${p.temperatureMinC}～${p.temperatureMaxC}`,
+      p.mountingType,
+      p.endurance.hours,
+      `${p.endurance.temperatureC}℃，额定电压${p.endurance.rippleApplied ? '和额定纹波' : ''}`,
+      p.diameterMaxMm ?? '未给出',
+      p.heightMaxMm ?? '未给出',
     ]),
   ),
   data(
@@ -283,7 +286,7 @@ export function validateInputs(id: ModuleId, input: Inputs): string | null {
       return '计划产量应为大于或等于 0 的有效数值。';
   }
   const numeric: Record<ModuleId, string[]> = {
-    customer: ['voltage', 'capacity', 'temperature', 'life'],
+    customer: ['voltage', 'capacity', 'temperature', 'life', 'diameter', 'height'].filter(key => Boolean(input[key])),
     maintenance: [],
     energy: ['change'],
     production: ['completion', 'defect'],
@@ -298,9 +301,8 @@ export function validateInputs(id: ModuleId, input: Inputs): string | null {
     if (!finite(input[key])) return '请填写有效的数值。';
   if (
     id === 'customer' &&
-    (['voltage', 'capacity', 'life'].some((k) => Number(input[k]) <= 0) ||
-      Number(input.temperature) < -55 ||
-      Number(input.temperature) > 200)
+    (['voltage', 'capacity', 'life', 'diameter', 'height'].some((k) => input[k] && Number(input[k]) <= 0) ||
+      (input.temperature && (Number(input.temperature) < -55 || Number(input.temperature) > 200)))
   )
     return '请检查电压、容量、温度与寿命要求。';
   if (
@@ -345,7 +347,7 @@ export function analyze(
     bars: [],
     chartTitle: '',
     steps: [],
-    recommendation: '检查数据管理中的可用条目。',
+    recommendation: '请调整筛选条件，确认所选范围内有可用数据。',
     basis: ['当前范围未找到数据，未进行计算。'],
     empty: true,
   };
@@ -371,7 +373,7 @@ export function analyze(
         : '未找到匹配的故障知识',
       summary: matches.length
         ? `当前现象：${input.symptom}。以下方案依据设备类型和故障知识生成，按步骤核查后记录结果。`
-        : '请调整设备与故障现象，或在数据管理中补充对应知识条目。',
+        : '请核对设备型号与故障现象，并补充现场检查结果。',
       empty: !matches.length,
       metrics: [
         { label: '设备', value: input.device, detail: type + '设备' },

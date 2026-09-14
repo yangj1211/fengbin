@@ -1,5 +1,5 @@
 'use client';
-import { Home, Database, Layers2, LogOut, UsersRound, KeyRound } from 'lucide-react';
+import { Home, Layers2, LogOut, UsersRound, KeyRound } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -106,18 +106,6 @@ export default function Navigation({
           {canManage && <div className="sidebar-workspace-links">
             <div className="workspace-label nav-group-label">平台管理</div>
             <SidebarMenu className="agent-menu">
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  className="agent-nav group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-0!"
-                  aria-label="数据管理"
-                  tooltip="数据管理"
-                  isActive={path === '/data'}
-                  onClick={() => go('/data')}
-                >
-                  <Database />
-                  <span>数据管理</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="agent-nav group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-0!"

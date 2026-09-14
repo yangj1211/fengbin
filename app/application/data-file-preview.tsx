@@ -64,7 +64,7 @@ export default function DataFilePreview({
         </>
       ) : (
         <p className="data-preview-empty">
-          当前资料已更新，无法预览此文件。请在数据管理中查看可用资料。
+          当前资料已更新，无法预览此文件。请重新提问以获取当前可用的来源。
         </p>
       )}
     </SourcePreviewPanel>

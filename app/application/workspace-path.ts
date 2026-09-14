@@ -2,7 +2,7 @@ export function isWorkspacePath(path: string): boolean {
   const [pathname, search, extra] = path.split('?');
   if (
     extra !== undefined ||
-    !/^(?:\/|\/(?:apps\/(?:customer|maintenance|energy|production|supplier)|data|users))$/.test(
+    !/^(?:\/|\/(?:apps\/(?:customer|maintenance|energy|production|supplier)|users))$/.test(
       pathname,
     )
   )

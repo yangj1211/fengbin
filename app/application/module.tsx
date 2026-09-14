@@ -5,7 +5,6 @@ import {
   ArrowUp,
   ArrowUpRight,
   SlidersHorizontal,
-  Paperclip,
   Save,
   ChevronDown,
   MessageSquareText,
@@ -38,11 +37,6 @@ import ConversationAnswer from './conversation-answer';
 import { answerText, processingSummary } from './answer-presentation';
 import { normalizeMaintenanceInputs } from './maintenance-engine';
 import { normalizeCustomerInputs } from './customer-engine';
-const customerWelcomeCards = [
-  { title: '工业电源选型', description: '450 V、470 μF，比较符合条件的型号。' },
-  { title: '小型化选型', description: '限定直径与高度，寻找合适的电容。' },
-  { title: '型号替代', description: '查找 OLD-450-220 的替代候选。' },
-];
 type StreamFrame = {
   turn: ConversationTurn;
   processing: string;
@@ -54,13 +48,11 @@ const emptyTurns: ConversationTurn[] = [];
 export default function ModuleWorkspace({
   id,
   state,
-  navigate,
   session,
   registerLeaveGuard,
 }: {
   id: ModuleId;
   state: WorkspaceState;
-  navigate: (path: string) => void;
   session?: ConversationSession;
   registerLeaveGuard: (guard: ((discard?: boolean) => boolean) | null) => void;
 }) {
@@ -431,7 +423,7 @@ export default function ModuleWorkspace({
                   : 'chat-prompt-grid'
               }
             >
-              {welcomeSuggestions.map((p, index) => (
+              {welcomeSuggestions.map((p) => (
                 <button
                   key={p.title}
                   onClick={() => send(p.question)}
@@ -441,16 +433,8 @@ export default function ModuleWorkspace({
                     <MessageSquareText size={17} />
                     <ArrowUpRight size={15} />
                   </span>
-                  <strong>
-                    {id === 'customer'
-                      ? customerWelcomeCards[index].title
-                      : p.title}
-                  </strong>
-                  <span>
-                    {id === 'customer'
-                      ? customerWelcomeCards[index].description
-                      : p.question}
-                  </span>
+                  <strong>{p.title}</strong>
+                  <span>{p.question}</span>
                 </button>
               ))}
             </div>
@@ -546,7 +530,7 @@ export default function ModuleWorkspace({
               }}
               placeholder={
                 id === 'customer'
-                  ? '描述客户需求，例如：工业电源用，450V、470μF，推荐哪些型号？'
+                  ? '例如：需要100μF、额定电压不低于35V的电容，有哪些型号符合？'
                   : id === 'maintenance'
                     ? '描述设备、告警或现象，也可以补充已检查的结果…'
                     : id === 'energy'
@@ -561,21 +545,8 @@ export default function ModuleWorkspace({
             />
             <div className="composer-toolbar">
               <div>
-                {sampleLibrary ? (
+                {sampleLibrary && (
                   <SourceLibrary module={id as 'customer' | 'maintenance'} />
-                ) : id === 'energy' ||
-                  id === 'production' ||
-                  id === 'supplier' ? null : (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    aria-label="管理资料与导入文件"
-                    title="管理资料与导入文件"
-                    onClick={() => navigate('/data')}
-                  >
-                    <Paperclip size={17} />
-                    <span>资料</span>
-                  </Button>
                 )}
                 {id !== 'maintenance' &&
                   id !== 'energy' &&

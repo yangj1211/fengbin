@@ -45,12 +45,23 @@
 }
 .user-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 16px;
   padding: 22px 24px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
 }
 .user-toolbar .search-field {
+  flex: 1 1 240px;
   max-width: 360px;
+  margin-right: 0;
+}
+.user-management-notice {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 16px;
+  color: var(--muted-foreground);
 }
 .user-toolbar .search-field input {
   padding-right: 42px;

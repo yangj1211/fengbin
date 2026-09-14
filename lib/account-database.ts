@@ -1,5 +1,5 @@
 // The account store only needs this subset of the D1 binding API. Node uses
-// the same prepared SQL statements through Cloudflare's authenticated D1 API.
+// the same prepared SQL statements through its Turso or D1 adapter.
 export type AccountSqlValue = string | number | null;
 export interface AccountStatement {
   bind(...values: AccountSqlValue[]): AccountStatement;

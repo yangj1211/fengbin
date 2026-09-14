@@ -8,7 +8,9 @@ export const sourceDocuments: SourceDocument[] = [
   ...maintenance.documents,
 ];
 export function documentsFor(module: 'customer' | 'maintenance') {
-  return module === 'customer' ? customer.documents : maintenance.documents;
+  return module === 'customer'
+    ? customer.documents.filter(document => document.id.startsWith('spec-'))
+    : maintenance.documents;
 }
 export function findSourceDocument(href: string) {
   let path: string;

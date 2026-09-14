@@ -3,6 +3,7 @@ import type { CustomerFixtures, SourceReference } from './customer-types';
 
 export const customerFixtures = fixtures as CustomerFixtures;
 export const customerProducts = customerFixtures.products;
+export const specificationProducts = customerFixtures.specifications ?? [];
 export const customerExamples = customerFixtures.cases;
 export function sourceReference(
   documentId: string,

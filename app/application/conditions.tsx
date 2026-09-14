@@ -34,9 +34,9 @@ export default function AnalysisConditions({
     <Choice
       name={id + '-' + key}
       label={label}
-      value={input[key]}
-      options={Array.from(new Set(options))}
-      onChange={(v) => change(key, v)}
+      value={input[key] || (options.includes('') ? '未指定' : '')}
+      options={Array.from(new Set(options.map(value => value || '未指定')))}
+      onChange={(v) => change(key, v === '未指定' ? '' : v)}
     />
   );
   return (
@@ -64,20 +64,15 @@ export default function AnalysisConditions({
           </div>
           <div className="field-pair">
             {numeric('temperature', '工作温度', '℃')}
-            {numeric('life', '最低寿命', 'h')}
+            {numeric('life', '最低试验时间（选填）', 'h')}
           </div>
           <div className="field-pair">
-            {numeric('diameter', '最大直径（选填）', 'mm')}
-            {numeric('height', '最大高度（选填）', 'mm')}
+            {numeric('diameter', '本体直径上限（含公差）', 'mm')}
+            {numeric('height', '本体长度上限（不含引脚）', 'mm')}
           </div>
           <div className="field-pair">
-            {numeric('leadDays', '交期上限（选填）', '天')}
-            {choice('priority', '优先考虑', [
-              '综合匹配',
-              '小型化优先',
-              '交期优先',
-              '寿命优先',
-            ])}
+            {choice('lifeType', '寿命测试类型', ['', 'Endurance', 'Useful Life'])}
+            {choice('mounting', '安装方式', ['', 'THT', 'SMD', 'Snap-In'])}
           </div>
           <Field
             name="customer-replacement"
@@ -96,7 +91,7 @@ export default function AnalysisConditions({
           {choice('period', '预测周期（天）', ['7', '14', '30'])}
           {numeric('change', '计划产量变化', '%')}
           <div className="form-inline-note">
-            以数据管理中的近 7 天用电为基准，按产量变化估算。
+            以当前资料中的近 7 天用电为基准，按产量变化估算。
           </div>
         </>
       )}

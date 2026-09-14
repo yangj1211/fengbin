@@ -82,188 +82,119 @@ try {
     'Do not invent unstated requirements',
   );
   const checkReferences = (result) => {
-    assert.ok(result.sources.length > 0, 'Every reply needs a real source');
-    for (const ref of result.sources)
+    for (const ref of result.sources) {
+      assert.ok(ref.documentId.startsWith('spec-'));
       assert.ok(resolveSource(ref), JSON.stringify(ref));
-    for (const candidate of result.analysis?.customerCandidates ?? []) {
-      assert.ok(candidate.reasons.length > 0);
-      for (const ref of candidate.sources) assert.ok(resolveSource(ref));
     }
+    assert.doesNotMatch(result.answer, /参考交期|历史需求案例/);
     return result;
   };
+  const ask = (q, inputs = defaults) => checkReferences(reply(q, inputs));
+  const selected = (result) => result.answer.split('未匹配原因：')[0];
+  assert.equal(fixtures.specifications.length, 15);
   for (const example of fixtures.cases) {
-    const result = checkReferences(reply(example.question, defaults));
-    assert.ok(result.analysis, example.id);
-    assert.deepEqual(
-      result.analysis.rows.map((r) => r[0]).sort((a, b) => a.localeCompare(b)),
-      [...example.recommendedModels].sort((a, b) => a.localeCompare(b)),
-      example.id,
-    );
-    assert.ok(
-      result.sources.some((s) => s.sectionId === example.id),
-      'Exact example includes its historical case',
-    );
+    const result = ask(example.question);
+    assert.doesNotMatch(result.answer, /FB-/);
+    assert.ok(result.sources.length > 0, example.id);
+    for (const model of example.recommendedModels)
+      assert.ok(selected(result).includes(model), example.id);
   }
-  const first = checkReferences(reply(fixtures.cases[0].question, defaults));
+  const first = ask(fixtures.cases[0].question);
+  assert.match(first.answer, /有 2 款/);
   assert.deepEqual(
-    first.analysis.rows.map((r) => r[0]),
-    ['FB-LS470', 'FB-LH470'],
+    first.missing,
+    undefined,
+    'Do not require unstated temperature or life',
   );
-  const partial = checkReferences(reply('工业电源，450V、470μF', defaults));
-  assert.equal(partial.analysis, undefined);
-  assert.deepEqual(partial.missing, ['工作温度', '最低寿命']);
-  const completed = checkReferences(reply('105℃，3000小时', partial.inputs));
-  assert.equal(completed.analysis.rows.length, 2);
-  const longer = checkReferences(reply('寿命提高到5000小时', completed.inputs));
-  assert.deepEqual(
-    longer.analysis.rows.map((r) => r[0]),
-    ['FB-LH470'],
+  const hotter = ask('还要能在105℃工作。', first.inputs);
+  assert.match(hotter.answer, /有 1 款/);
+  assert.match(selected(hotter), /DV101M050G105ETRU/);
+  assert.doesNotMatch(selected(hotter), /GS101M035E110ETC/);
+  const tht = ask('同时必须是THT插件式。', hotter.inputs);
+  assert.match(tht.answer, /没有可确认满足全部条件/);
+  assert.match(tht.answer, /SMD/);
+  assert.match(tht.answer, /85℃/);
+  assert.equal(tht.inputs.capacity, '100');
+  const industrial = ask(fixtures.cases[3].question);
+  assert.match(industrial.answer, /有 2 款/);
+  assert.match(industrial.answer, /8000 h/);
+  assert.match(industrial.answer, /10000 h/);
+  const shorter = ask(
+    '其他条件不变，本体长度含公差不能超过18mm，不算引脚。',
+    industrial.inputs,
   );
-  assert.equal(longer.inputs.voltage, '450');
-  const compact = checkReferences(reply(fixtures.cases[1].question, defaults));
-  assert.ok(
-    compact.analysis.customerCandidates.every(
-      (c) => c.product.diameter <= 22 && c.product.height <= 40,
-    ),
+  assert.match(shorter.answer, /有 1 款/);
+  assert.match(selected(shorter), /FK100M160G160ETA/);
+  assert.doesNotMatch(selected(shorter), /KH100M400G200ETA/);
+  assert.match(shorter.answer, /17.5/);
+  assert.match(shorter.answer, /21.5/);
+  assert.ok(shorter.sources.some((ref) => ref.page === 2));
+  const comparison = ask(fixtures.cases[1].question);
+  assert.match(comparison.answer, /不能.*直接替换/);
+  const board = ask('我原来的板子就是插件焊孔，不能改板。', comparison.inputs);
+  assert.match(board.answer, /SMD 型号不满足安装条件/);
+  const ripple = ask('UK821M200O300AP4的纹波电流至少要3A，它符合吗？');
+  assert.deepEqual(ripple.missing, ['纹波频率', '温度']);
+  const highFrequency = ask('100kHz、105℃。', ripple.inputs);
+  assert.match(highFrequency.answer, /有 1 款/);
+  assert.match(highFrequency.answer, /3.51 A/);
+  const lowFrequency = ask('改成120Hz，其他不变。', highFrequency.inputs);
+  assert.match(lowFrequency.answer, /没有可确认满足全部条件/);
+  assert.match(lowFrequency.answer, /2.34 A/);
+  assert.equal(lowFrequency.inputs.ripple, '3');
+  assert.equal(lowFrequency.inputs.temperature, '105');
+  assert.match(
+    ask('改成1kHz，其他不变。', highFrequency.inputs).answer,
+    /无法确认/,
   );
-  const mini = checkReferences(
-    reply('尺寸再小一点，有哪些候选？', compact.inputs),
+  const ambiguousLife = ask(fixtures.cases[4].question);
+  assert.deepEqual(ambiguousLife.missing, ['寿命测试类型']);
+  const useful = ask(
+    '按Useful Life，采用规格书的额定电压和额定纹波测试条件。',
+    ambiguousLife.inputs,
   );
-  assert.equal(mini.analysis.rows[0][0], 'FB-SM220');
-  const delivery = checkReferences(
-    reply('交期7天以内，有哪些候选？', completed.inputs),
+  assert.match(useful.answer, /有 1 款/);
+  assert.match(useful.answer, /8000 h/);
+  const endurance = ask('改成Endurance，其他不变。', useful.inputs);
+  assert.match(endurance.answer, /没有可确认满足全部条件/);
+  assert.match(endurance.answer, /3000 h/);
+  assert.equal(endurance.inputs.life, '5000');
+  const diameter = ask(fixtures.cases[5].question);
+  assert.match(diameter.answer, /没有可确认满足全部条件/);
+  assert.match(diameter.answer, /31 mm/);
+  assert.ok(diameter.sources.some((ref) => ref.page === 2));
+  const relaxed = ask('那外径上限放宽到31mm。', diameter.inputs);
+  assert.match(relaxed.answer, /有 1 款/);
+  assert.equal(relaxed.inputs.diameter, '31');
+  const fresh = ask(fixtures.cases[0].question, relaxed.inputs);
+  assert.match(fresh.answer, /有 2 款/);
+  assert.equal(fresh.inputs.focusModels, '');
+  assert.equal(fresh.inputs.diameter, '');
+  assert.match(ask('查一下FB-LH470的参数').answer, /未找到/);
+  assert.match(ask('需要-10μF、35V').answer, /参数无效/);
+  assert.match(
+    ask('UK821M200O300AP4有没有库存？').answer,
+    /没有报价、库存或交期/,
   );
-  assert.deepEqual(
-    delivery.analysis.rows.map((r) => r[0]),
-    ['FB-LS470'],
-  );
-  const impossible = checkReferences(
-    reply('寿命至少100000小时', completed.inputs),
-  );
-  assert.ok(impossible.analysis.empty);
-  assert.equal(impossible.analysis.rows.length, 0);
-  assert.ok(
-    impossible.analysis.customerExclusions.every(
-      (c) => c.reason && resolveSource(c.source),
-    ),
-  );
-  assert.ok(impossible.sources.some((s) => s.documentId === 'catalog'));
-  const replacement = checkReferences(reply('替代 OLD-450-220', defaults));
-  assert.equal(replacement.analysis.rows.length, 3);
-  assert.ok(replacement.sources.some((s) => s.documentId === 'replacements'));
-  const strongerReplacement = checkReferences(
-    reply('125℃，10000小时', replacement.inputs),
-  );
-  const repeatedReplacement = checkReferences(
-    reply('作为 OLD-450-220 的替代型号呢？', strongerReplacement.inputs),
-  );
-  assert.equal(repeatedReplacement.inputs.temperature, '125');
-  assert.equal(repeatedReplacement.inputs.life, '10000');
-  assert.deepEqual(
-    repeatedReplacement.analysis.rows.map((r) => r[0]),
-    ['FB-HT220'],
-  );
-  const highRequirements = reply(
-    '工业电源，450V、220μF、125℃、10000小时',
-    defaults,
-  );
-  assert.equal(
-    reply('作为 OLD-450-220 的替代型号呢？', highRequirements.inputs).inputs
-      .life,
-    '10000',
-  );
-  const unknown = checkReferences(reply('替代 OLD-999-999', defaults));
-  assert.equal(unknown.analysis, undefined);
-  assert.match(unknown.answer, /没有/);
-  for (const model of ['ABC-123', 'UPM1H471MPD']) {
-    const result = checkReferences(reply(`替代 ${model}`, completed.inputs));
-    assert.equal(result.analysis, undefined);
-    assert.match(result.answer, new RegExp(model));
-  }
-  const noOriginal = checkReferences(reply('查找替代型号', completed.inputs));
-  assert.equal(noOriginal.analysis, undefined);
-  assert.deepEqual(noOriginal.missing, ['原型号']);
-  const lookup = checkReferences(reply('查看 FB-LH470 规格', defaults));
-  assert.equal(lookup.analysis.rows[0][0], 'FB-LH470');
-  const oldInputs = {
-    application: '工业电源',
+  const legacy = normalizeCustomerInputs({
+    customer: '客户甲',
     voltage: '450',
-    capacity: '470',
-    temperature: '105',
-    life: '3000',
-    customer: '样例客户甲',
-    notes: '需确认安装空间',
-    question: '之前的问题',
-  };
-  const restored = normalizeCustomerInputs(oldInputs);
-  for (const [key, value] of Object.entries(oldInputs))
-    assert.equal(restored[key], value);
-  assert.equal(restored.needsConfirmation, '1');
-  const legacy = checkReferences(reply('帮我推荐电容', oldInputs));
-  assert.equal(
-    legacy.analysis,
-    undefined,
-    'Old implicit defaults must not silently become confirmed requirements',
-  );
-  assert.equal(legacy.inputs.customer, oldInputs.customer);
-  assert.equal(legacy.inputs.notes, oldInputs.notes);
-  const confirmed = checkReferences(
-    reply('请按当前分析条件完成分析。', legacy.inputs),
-  );
-  assert.equal(confirmed.analysis.rows.length, 2);
+    notes: '保留备注',
+    customerVersion: '2',
+  });
+  assert.equal(legacy.needsConfirmation, '1');
+  assert.equal(legacy.notes, '保留备注');
+  assert.deepEqual(ask('继续选型', legacy).missing, ['确认历史条件']);
+  const confirmed = ask('按这些条件分析', legacy);
   assert.equal(confirmed.inputs.needsConfirmation, '');
-  const certification = checkReferences(
-    reply(
-      '工业电源，450V、470μF、105℃、3000小时，AEC-Q200认证，推荐型号',
-      defaults,
-    ),
-  );
-  assert.equal(
-    certification.analysis,
-    undefined,
-    'Listed certification constraints cannot be silently ignored',
-  );
-  for (const question of [
-    '你好',
-    '怎么用',
-    '资料来源是什么',
-    '价格是多少',
-    '今天天气如何',
-    '要求AEC认证',
-    '电压-50V',
-  ]) {
-    checkReferences(reply(question, completed.inputs));
-  }
-  const reset = checkReferences(
-    reply('换个需求：消费电子，50V、470μF、105℃、2000小时', replacement.inputs),
-  );
-  assert.equal(reset.inputs.replacement, '');
-  assert.deepEqual(
-    reset.analysis.rows.map((r) => r[0]),
-    ['FB-LV470'],
-  );
-  for (const document of fixtures.documents) {
-    assert.ok(fs.existsSync('public' + document.url), document.fileName);
-    assert.ok(document.sections.length);
-    assert.deepEqual(
-      document.pages.map((page) => page.page),
-      Array.from({ length: document.pages.length }, (_, index) => index + 1),
-    );
-    for (const page of document.pages) {
-      assert.ok(fs.existsSync('public' + page.image), page.image);
-      assert.ok(page.width > 0 && page.height > 0);
-      assert.ok(
-        document.sections.some((section) => section.page === page.page),
-      );
-    }
-    for (const section of document.sections)
-      assert.ok(
-        document.pages.some((page) => page.page === section.page),
-        section.id,
-      );
-  }
+  const resolved = resolveSource({
+    documentId: 'catalog',
+    sectionId: 'catalog-fb-lh470',
+    page: 1,
+  });
+  assert.ok(resolved, 'Historical references still resolve');
   console.log(
-    'Customer flow checks passed: five examples, follow-ups, constraints, missing inputs, substitutions, no-match explanations, and original-file citations.',
+    'Customer tests passed: six real-spec scenarios, multi-turn constraints, ambiguity, dimensions, sources and legacy inputs.',
   );
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });

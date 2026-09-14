@@ -85,6 +85,38 @@ try {
     moduleViews: { production: 'chat' },
     deletedDataResourceIds: ['file:legacy-deleted'],
   };
+  // An earlier browser stores the six-column catalog, before specification fields were introduced.
+  const oldCatalog = {
+    id: 'products', name: '电容器产品目录', module: 'customer', origin: 'sample',
+    columns: ['产品型号', '额定电压(V)', '容量(μF)', '温度(℃)', '寿命(h)', '应用'],
+    rows: [{ '产品型号': 'FB-LH470', '额定电压(V)': 450, '容量(μF)': 470, '温度(℃)': 105, '寿命(h)': 5000, '应用': '工业电源' }],
+  };
+  const oldWorkspace = clone(legacy);
+  oldWorkspace.datasets = oldWorkspace.datasets.map(dataset => dataset.id === 'products'
+    ? oldCatalog
+    : dataset.id === 'production' ? { ...dataset, origin: 'local', fileName: '工厂报表.csv' } : dataset);
+  for (const split of [false, true]) {
+    const { datasets, deletedDataResourceIds, ...personal } = oldWorkspace;
+    const entries = split
+      ? [[STORAGE_KEY, JSON.stringify({ version: 1, datasets, deletedDataResourceIds })], [adminKey, JSON.stringify(personal)]]
+      : [[STORAGE_KEY, JSON.stringify(oldWorkspace)]];
+    const historicalStorage = memoryStorage(entries);
+    const restored = load(historicalStorage);
+    assert.equal(restored.setWorkspaceUser('admin-id', true), true, `${split ? 'Account-isolated' : 'Legacy shared'} history survives catalog schema upgrades`);
+    const state = restored.read();
+    assert.deepEqual(state.sessions, oldWorkspace.sessions, 'Answers, drafts and feedback survive the sample-data refresh');
+    assert.deepEqual(state.activeSessionIds, oldWorkspace.activeSessionIds);
+    assert.deepEqual(state.datasets.find(dataset => dataset.id === 'products'), initialDatasets.find(dataset => dataset.id === 'products'));
+    assert.deepEqual(state.datasets.find(dataset => dataset.id === 'production'), oldWorkspace.datasets.find(dataset => dataset.id === 'production'), 'Imported business data is preserved');
+    assert.deepEqual(state.deletedDataResourceIds, oldWorkspace.deletedDataResourceIds);
+    assert.equal(load(historicalStorage).setWorkspaceUser('admin-id', true), true, 'Reload stays recoverable');
+  }
+  const importedOldCatalog = { ...oldWorkspace, datasets: oldWorkspace.datasets.map(dataset => dataset.id === 'products' ? { ...dataset, origin: 'local', fileName: '旧产品目录.csv' } : dataset) };
+  const importedRaw = JSON.stringify(importedOldCatalog);
+  const importedStorage = memoryStorage([[STORAGE_KEY, importedRaw]]);
+  assert.equal(load(importedStorage).setWorkspaceUser('admin-id', true), false, 'An incompatible imported catalog is not silently replaced with samples');
+  assert.equal(importedStorage.getItem(STORAGE_KEY), importedRaw);
+  assert.equal(importedStorage.getItem(adminKey), null);
   const storage = memoryStorage([[STORAGE_KEY, JSON.stringify(legacy)]]);
   let store = load(storage);
   assert.equal(store.read().sessions.length, 0, 'Unbound first render is empty');

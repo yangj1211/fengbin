@@ -168,12 +168,23 @@ function normalizeWorkspace(parsed: WorkspaceState): WorkspaceState {
       parsed.version !== 1 ||
       !Array.isArray(parsed.datasets) ||
       parsed.datasets.length !== 5 ||
-      parsed.datasets.some((d) => validateDataset(d)) ||
-      new Set(parsed.datasets.map((d) => d.id)).size !== 5 ||
       !Array.isArray(parsed.records) ||
       parsed.records.length > 100 ||
       !parsed.drafts ||
       typeof parsed.drafts !== 'object'
+    )
+      throw new Error();
+    // Built-in datasets can change columns between releases. Refresh them
+    // before validating against today's schema; imported data stays untouched.
+    parsed.datasets = parsed.datasets.map((d) =>
+      d?.origin === 'sample' &&
+      (d.id === 'products' || d.id === 'maintenance' || d.id === 'energy')
+        ? initialDatasets.find((item) => item.id === d.id)!
+        : d,
+    );
+    if (
+      parsed.datasets.some((d) => validateDataset(d)) ||
+      new Set(parsed.datasets.map((d) => d.id)).size !== 5
     )
       throw new Error();
     parsed.deletedDataResourceIds = Array.isArray(parsed.deletedDataResourceIds)
@@ -314,12 +325,6 @@ function normalizeWorkspace(parsed: WorkspaceState): WorkspaceState {
       }),
     );
     parsed.drafts = {};
-    parsed.datasets = parsed.datasets.map((d) =>
-      (d.id === 'products' || d.id === 'maintenance' || d.id === 'energy') &&
-      d.origin === 'sample'
-        ? initialDatasets.find((item) => item.id === d.id)!
-        : d,
-    );
     return parsed;
 }
 

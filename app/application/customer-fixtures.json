@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-demo",
+  "version": "2026-09-14-customer-specs-v1",
   "documents": [
     {
       "id": "catalog",
@@ -259,6 +259,786 @@
           "height": 2263
         }
       ]
+    },
+    {
+      "id": "spec-DV101M010E055ETRZU",
+      "fileName": "DV101M010E055ETRZU-产品规格书.pdf",
+      "url": "/data/customer/specs/DV101M010E055ETRZU/source.pdf",
+      "kind": "产品规格书",
+      "summary": "DV101M010E055ETRZU；SMD；100 μF；10 V；工作温度 -55～105℃；标称本体尺寸 Φ6.3×5.5 mm；Endurance 2000 h（105℃）。",
+      "pdfVersion": "001-2024-10-25",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/DV101M010E055ETRZU/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/DV101M010E055ETRZU/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/DV101M010E055ETRZU/page-3.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 4,
+          "image": "/data/customer/specs/DV101M010E055ETRZU/page-4.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-DV101M010E055ETRZU-page-1",
+          "title": "DV101M010E055ETRZU · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                    Document Number: DV101M010E055ETRZU \n 1                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nDV SERIES ▪ LOW IMPEDANCE, 105° C TYPE \n  \n  \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ SMD type \n Low impedance and long life \nSPECIFICATIONS \nPart Number DV101M010E055ETRZU Unit Conditions \nCapacitance  CR 100 µF  \nRated Voltage VR 10 V DC  \nSurge Voltage VS 12 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20° C \nRipple Current IR 156 mA 120Hz ▪ 105°C \nRipple Current IR 240 mA 100KHz ▪ 105°C \nDissipation Factor tanδ 19 % 120Hz ▪ 20° C \nLeakage Current ILEAK 10 µA 2 min ▪ 20° C \nMax. ESR ESR 0.5 Ω 100KHz ▪ 20° C \nSize D x L 6.3X5.5 mm  \nOperating Temperature Range -55~105 °C  \n \nAEC-Q200 Qualified NO   \nVibration Proof Version NO   \n \nLifetime Test  \nEndurance \nVR applied \nTest 2000 h 105°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 105°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nResistance to  \nSoldering Heat \nΔC/CR ≤ ±10 % of initial measured value \ntanδ  Less than specified value \nILEAK Less than specified value \nThe capacitors shall be kept on a hot plate maintained at 250° C for 30 seconds. After removing from the hot \nplate and restored at room temperature, they meet the characteristic requirements listed below \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nDV 101 M 010 E 055 E TR ZU \n 100 -20~20 10 6.3 5.5 With lead treatment Process code Z=ESR or Imp. \n        U=Package"
+        },
+        {
+          "id": "spec-DV101M010E055ETRZU-page-2",
+          "title": "DV101M010E055ETRZU · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                    Document Number: DV101M010E055ETRZU \n 2                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nDIMENSIONS ▪ In mm \n \n \n \nø D L a A B C F W P±0.2 \n6.3 5.5 ±0.2 6.6 6.6 7.2 0.3 max. 0.5~0.8 2.2 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.52 0.65 0.65 0.65 0.8 0.89 0.89 0.97 1 1 1 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n     \nGeneral Precautions \n&Guidelines \nPackaging                     \nInformation \nVibration Test             \nProfiles 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer 's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and prope r CapXon product. Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suita ble designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor.Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, promise any other warranty \nor guaranty for any CapXon product.  \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly"
+        },
+        {
+          "id": "spec-DV101M010E055ETRZU-page-3",
+          "title": "DV101M010E055ETRZU · 附加规格与包装资料",
+          "page": 3,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                    Document Number: DV101M010E055ETRZU \n 3                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \n \nADDITIONAL SPECIFICATION \n \na. Tape information \n \n \nAll dimensions in mm \nØ  D x L 4 x 5.5 5 x 5.5 6.3 x 5.5 6.3 x 6.1 6.3 x 7.7 8 x 6.5 8 x 10.5 10 x 10.5 12.5 x 14 16 x 17 16 x 21.5 18 x 16.5 18 x21.5 \nW 12 12 16 16 16 16 24 24 32 44 44 44 44 \nP 8 12 12 12 12 12 16 16 24 28 32 32 32 \nF 5.5 5.5 7.5 7.5 7.5 7.5 11.5 11.5 14.2 20.2 20.2 20.2 20.2 \nA1 4.7 5.7 7 7 7 8.7 8.7 10.7 13.9 17.5 17.5 19.5 19.5 \nB1 4.7 5.7 7 7 7 8.7 8.7 10.7 13.9 17.5 17.5 19.5 19.5 \nT1 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.5 0.5 0.5 0.5 0.5 \nT2 5.7 5.7 5.7 6.2 8.1 7 11 11 14.5 17.5 23 17.5 23 \n \nb. Reel information"
+        },
+        {
+          "id": "spec-DV101M010E055ETRZU-page-4",
+          "title": "DV101M010E055ETRZU · 附加规格与包装资料",
+          "page": 4,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                    Document Number: DV101M010E055ETRZU \n 4                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nAll reel dimensions in mm \nØ  D 4 5 5 6.3 6.3 6.3 6.3 8 8 8 8 10 10 10 10 12.5 16 16 18 18 \nL 5.5 5.5 5.8 5.5 5.8 6.1 7.7 6.5 7.7 10.5 11.7 8.7 10.5 12.4 16.5 14 17 21.5 16.5 21.5 \nA 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 \nB 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 \nC 14 14 14 18 18 18 18 18 18 26 26 26 26 26 26 34 46 46 46 46 \nD 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 \nE 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 \nF 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 \nRemark: Standard = Paper reel \n \nAll reel dimensions in mm \nØ  D 4 5 5 6.3 6.3 6.3 6.3 8 8 8 8 10 10 10 10 12.5 16 16 18 18 \nL 5.5 5.5 5.8 5.5 5.8 6.1 7.7 6.5 7.7 10.5 11.7 8.7 10.5 12.4 16.5 14 17 21.5 16.5 21.5 \nA 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 \nB 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 \nC 14 14 14 18 18 18 18 18 18 26 26 26 26 26 26 34 46 46 46 46 \nD 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 \nE 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 \nF 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 \nRemark: Plastic reel = Add code \"U\" at the end of the part number \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-10-25 TBAKA-2410000068 Xu XiaoJun Initial specification \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-DV101M050G105ETRU",
+      "fileName": "DV101M050G105ETRU-产品规格书.pdf",
+      "url": "/data/customer/specs/DV101M050G105ETRU/source.pdf",
+      "kind": "产品规格书",
+      "summary": "DV101M050G105ETRU；SMD；100 μF；50 V；工作温度 -55～105℃；标称本体尺寸 Φ10×10.5 mm；Endurance 2000 h（105℃）。",
+      "pdfVersion": "001-2024-10-25",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/DV101M050G105ETRU/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/DV101M050G105ETRU/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/DV101M050G105ETRU/page-3.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 4,
+          "image": "/data/customer/specs/DV101M050G105ETRU/page-4.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-DV101M050G105ETRU-page-1",
+          "title": "DV101M050G105ETRU · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                     Document Number: DV101M050G105ETRU \n 1                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nDV SERIES ▪ LOW IMPEDANCE, 105° C TYPE \n  \n  \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ SMD type \n Low impedance and long life \nSPECIFICATIONS \nPart Number DV101M050G105ETRU Unit Conditions \nCapacitance  CR 100 µF  \nRated Voltage VR 50 V DC  \nSurge Voltage VS 58 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20° C \nRipple Current IR 228 mA 120Hz ▪ 105°C \nRipple Current IR 350 mA 100KHz ▪ 105°C \nDissipation Factor tanδ 12 % 120Hz ▪ 20° C \nLeakage Current ILEAK 50 µA 2 min ▪ 20° C \nMax. ESR ESR 0.4 Ω 100KHz ▪ 20° C \nSize D x L 10X10.5 mm  \nOperating Temperature Range -55~105 °C  \n \nAEC-Q200 Qualified NO   \nVibration Proof Version NO   \n \nLifetime Test  \nEndurance \nVR applied \nTest 2000 h 105°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 105°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nResistance to  \nSoldering Heat \nΔC/CR ≤ ±10 % of initial measured value \ntanδ  Less than specified value \nILEAK Less than specified value \nThe capacitors shall be kept on a hot plate maintained at 250° C for 30 seconds. After removing from the hot \nplate and restored at room temperature, they meet the characteristic requirements listed below \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nDV 101 M 050 G 105 E TR U \n 100 -20~20 50 10 10.5 With lead treatment Process code U=Package"
+        },
+        {
+          "id": "spec-DV101M050G105ETRU-page-2",
+          "title": "DV101M050G105ETRU · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                     Document Number: DV101M050G105ETRU \n 2                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nDIMENSIONS ▪ In mm \n \n \n \nø D L a A B C F W P±0.2 \n10 10.5 max 10.3 10.3 11 0.3 max. 0.7~1.1 4.5 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.52 0.65 0.65 0.65 0.8 0.89 0.89 0.97 1 1 1 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n     \nGeneral Precautions \n&Guidelines \nPackaging                     \nInformation \nVibration Test             \nProfiles 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer 's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and prope r CapXon product. Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suita ble designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor.Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, promise any other warranty \nor guaranty for any CapXon product.  \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly"
+        },
+        {
+          "id": "spec-DV101M050G105ETRU-page-3",
+          "title": "DV101M050G105ETRU · 附加规格与包装资料",
+          "page": 3,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                     Document Number: DV101M050G105ETRU \n 3                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \n \nADDITIONAL SPECIFICATION \n \na. Tape information \n \n \nAll dimensions in mm \nØ  D x L 4 x 5.5 5 x 5.5 6.3 x 5.5 6.3 x 6.1 6.3 x 7.7 8 x 6.5 8 x 10.5 10 x 10.5 12.5 x 14 16 x 17 16 x 21.5 18 x 16.5 18 x21.5 \nW 12 12 16 16 16 16 24 24 32 44 44 44 44 \nP 8 12 12 12 12 12 16 16 24 28 32 32 32 \nF 5.5 5.5 7.5 7.5 7.5 7.5 11.5 11.5 14.2 20.2 20.2 20.2 20.2 \nA1 4.7 5.7 7 7 7 8.7 8.7 10.7 13.9 17.5 17.5 19.5 19.5 \nB1 4.7 5.7 7 7 7 8.7 8.7 10.7 13.9 17.5 17.5 19.5 19.5 \nT1 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.5 0.5 0.5 0.5 0.5 \nT2 5.7 5.7 5.7 6.2 8.1 7 11 11 14.5 17.5 23 17.5 23 \n \nb. Reel information"
+        },
+        {
+          "id": "spec-DV101M050G105ETRU-page-4",
+          "title": "DV101M050G105ETRU · 附加规格与包装资料",
+          "page": 4,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                     Document Number: DV101M050G105ETRU \n 4                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nAll reel dimensions in mm \nØ  D 4 5 5 6.3 6.3 6.3 6.3 8 8 8 8 10 10 10 10 12.5 16 16 18 18 \nL 5.5 5.5 5.8 5.5 5.8 6.1 7.7 6.5 7.7 10.5 11.7 8.7 10.5 12.4 16.5 14 17 21.5 16.5 21.5 \nA 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 \nB 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 \nC 14 14 14 18 18 18 18 18 18 26 26 26 26 26 26 34 46 46 46 46 \nD 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 \nE 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 \nF 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 \nRemark: Standard = Paper reel \n \nAll reel dimensions in mm \nØ  D 4 5 5 6.3 6.3 6.3 6.3 8 8 8 8 10 10 10 10 12.5 16 16 18 18 \nL 5.5 5.5 5.8 5.5 5.8 6.1 7.7 6.5 7.7 10.5 11.7 8.7 10.5 12.4 16.5 14 17 21.5 16.5 21.5 \nA 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 \nB 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 \nC 14 14 14 18 18 18 18 18 18 26 26 26 26 26 26 34 46 46 46 46 \nD 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 \nE 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 \nF 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 \nRemark: Plastic reel = Add code \"U\" at the end of the part number \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-10-25 TBAKA-2410000068 Xu XiaoJun Initial specification \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-DV470M063F105ETRU",
+      "fileName": "DV470M063F105ETRU-产品规格书.pdf",
+      "url": "/data/customer/specs/DV470M063F105ETRU/source.pdf",
+      "kind": "产品规格书",
+      "summary": "DV470M063F105ETRU；SMD；47 μF；63 V；工作温度 -55～105℃；标称本体尺寸 Φ8×10.5 mm；Endurance 2000 h（105℃）。",
+      "pdfVersion": "001-2024-10-25",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/DV470M063F105ETRU/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/DV470M063F105ETRU/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/DV470M063F105ETRU/page-3.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 4,
+          "image": "/data/customer/specs/DV470M063F105ETRU/page-4.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-DV470M063F105ETRU-page-1",
+          "title": "DV470M063F105ETRU · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                      Document Number: DV470M063F105ETRU \n 1                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nDV SERIES ▪ LOW IMPEDANCE, 105° C TYPE \n  \n  \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ SMD type \n Low impedance and long life \nSPECIFICATIONS \nPart Number DV470M063F105ETRU Unit Conditions \nCapacitance  CR 47 µF  \nRated Voltage VR 63 V DC  \nSurge Voltage VS 72 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20° C \nRipple Current IR 169 mA 120Hz ▪ 105°C \nRipple Current IR 260 mA 100KHz ▪ 105°C \nDissipation Factor tanδ 10 % 120Hz ▪ 20° C \nLeakage Current ILEAK 30 µA 2 min ▪ 20° C \nMax. ESR ESR 0.55 Ω 100KHz ▪ 20° C \nSize D x L 8X10.5 mm  \nOperating Temperature Range -55~105 °C  \n \nAEC-Q200 Qualified NO   \nVibration Proof Version NO   \n \nLifetime Test  \nEndurance \nVR applied \nTest 2000 h 105°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 105°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nResistance to  \nSoldering Heat \nΔC/CR ≤ ±10 % of initial measured value \ntanδ  Less than specified value \nILEAK Less than specified value \nThe capacitors shall be kept on a hot plate maintained at 250° C for 30 seconds. After removing from the hot \nplate and restored at room temperature, they meet the characteristic requirements listed below \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nDV 470 M 063 F 105 E TR U \n 47 -20~20 63 8 10.5 With lead treatment Process code U=Package"
+        },
+        {
+          "id": "spec-DV470M063F105ETRU-page-2",
+          "title": "DV470M063F105ETRU · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                      Document Number: DV470M063F105ETRU \n 2                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nDIMENSIONS ▪ In mm \n \n \n \nø D L a A B C F W P±0.2 \n8 10.5 max 8.3 8.3 9 0.3 max. 0.7~1.1 3.1 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.52 0.65 0.65 0.65 0.8 0.89 0.89 0.97 1 1 1 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n     \nGeneral Precautions \n&Guidelines \nPackaging                     \nInformation \nVibration Test             \nProfiles 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer 's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and prope r CapXon product. Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suita ble designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor.Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, promise any other warranty \nor guaranty for any CapXon product.  \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly"
+        },
+        {
+          "id": "spec-DV470M063F105ETRU-page-3",
+          "title": "DV470M063F105ETRU · 附加规格与包装资料",
+          "page": 3,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                      Document Number: DV470M063F105ETRU \n 3                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \n \nADDITIONAL SPECIFICATION \n \na. Tape information \n \n \nAll dimensions in mm \nØ  D x L 4 x 5.5 5 x 5.5 6.3 x 5.5 6.3 x 6.1 6.3 x 7.7 8 x 6.5 8 x 10.5 10 x 10.5 12.5 x 14 16 x 17 16 x 21.5 18 x 16.5 18 x21.5 \nW 12 12 16 16 16 16 24 24 32 44 44 44 44 \nP 8 12 12 12 12 12 16 16 24 28 32 32 32 \nF 5.5 5.5 7.5 7.5 7.5 7.5 11.5 11.5 14.2 20.2 20.2 20.2 20.2 \nA1 4.7 5.7 7 7 7 8.7 8.7 10.7 13.9 17.5 17.5 19.5 19.5 \nB1 4.7 5.7 7 7 7 8.7 8.7 10.7 13.9 17.5 17.5 19.5 19.5 \nT1 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.5 0.5 0.5 0.5 0.5 \nT2 5.7 5.7 5.7 6.2 8.1 7 11 11 14.5 17.5 23 17.5 23 \n \nb. Reel information"
+        },
+        {
+          "id": "spec-DV470M063F105ETRU-page-4",
+          "title": "DV470M063F105ETRU · 附加规格与包装资料",
+          "page": 4,
+          "text": "CapXon_Ver.: 001-2024-10-25                                                                                                                                                      Document Number: DV470M063F105ETRU \n 4                                                                           Process Number:  TBAKA-2410000068 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nAll reel dimensions in mm \nØ  D 4 5 5 6.3 6.3 6.3 6.3 8 8 8 8 10 10 10 10 12.5 16 16 18 18 \nL 5.5 5.5 5.8 5.5 5.8 6.1 7.7 6.5 7.7 10.5 11.7 8.7 10.5 12.4 16.5 14 17 21.5 16.5 21.5 \nA 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 \nB 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 \nC 14 14 14 18 18 18 18 18 18 26 26 26 26 26 26 34 46 46 46 46 \nD 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 \nE 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 \nF 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 \nRemark: Standard = Paper reel \n \nAll reel dimensions in mm \nØ  D 4 5 5 6.3 6.3 6.3 6.3 8 8 8 8 10 10 10 10 12.5 16 16 18 18 \nL 5.5 5.5 5.8 5.5 5.8 6.1 7.7 6.5 7.7 10.5 11.7 8.7 10.5 12.4 16.5 14 17 21.5 16.5 21.5 \nA 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 \nB 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 \nC 14 14 14 18 18 18 18 18 18 26 26 26 26 26 26 34 46 46 46 46 \nD 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 \nE 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 \nF 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 \nRemark: Plastic reel = Add code \"U\" at the end of the part number \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-10-25 TBAKA-2410000068 Xu XiaoJun Initial specification \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-DV681M6R3F105ETRU",
+      "fileName": "DV681M6R3F105ETRU-产品规格书.pdf",
+      "url": "/data/customer/specs/DV681M6R3F105ETRU/source.pdf",
+      "kind": "产品规格书",
+      "summary": "DV681M6R3F105ETRU；SMD；680 μF；6.3 V；工作温度 -55～105℃；标称本体尺寸 Φ8×10.5 mm；Endurance 2000 h（105℃）。",
+      "pdfVersion": "001-2024-11-02",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/DV681M6R3F105ETRU/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/DV681M6R3F105ETRU/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/DV681M6R3F105ETRU/page-3.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 4,
+          "image": "/data/customer/specs/DV681M6R3F105ETRU/page-4.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-DV681M6R3F105ETRU-page-1",
+          "title": "DV681M6R3F105ETRU · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_Ver.: 001-2024-11-02                                                                                                                                                      Document Number: DV681M6R3F105ETRU \n 1                                                                           Process Number:  TBAKA-2411000002 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nDV SERIES ▪ LOW IMPEDANCE, 105° C TYPE \n  \n  \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ SMD type \n Low impedance and long life \nSPECIFICATIONS \nPart Number DV681M6R3F105ETRU Unit Conditions \nCapacitance  CR 680 µF  \nRated Voltage VR 6.3 V DC  \nSurge Voltage VS 7.2 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20° C \nRipple Current IR 325 mA 120Hz ▪ 105°C \nRipple Current IR 500 mA 100KHz ▪ 105°C \nDissipation Factor tanδ 24 % 120Hz ▪ 20° C \nLeakage Current ILEAK 43 µA 2 min ▪ 20° C \nMax. ESR ESR 0.25 Ω 100KHz ▪ 20° C \nSize D x L 8X10.5 mm  \nOperating Temperature Range -55~105 °C  \n \nAEC-Q200 Qualified NO   \nVibration Proof Version NO   \n \nLifetime Test  \nEndurance \nVR applied \nTest 2000 h 105°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 105°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nResistance to  \nSoldering Heat \nΔC/CR ≤ ±10 % of initial measured value \ntanδ  Less than specified value \nILEAK Less than specified value \nThe capacitors shall be kept on a hot plate maintained at 250° C for 30 seconds. After removing from the hot \nplate and restored at room temperature, they meet the characteristic requirements listed below \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nDV 681 M 6R3 F 105 E TR U \n 680 -20~20 6.3 8 10.5 With lead treatment Process code U=Package"
+        },
+        {
+          "id": "spec-DV681M6R3F105ETRU-page-2",
+          "title": "DV681M6R3F105ETRU · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_Ver.: 001-2024-11-02                                                                                                                                                      Document Number: DV681M6R3F105ETRU \n 2                                                                           Process Number:  TBAKA-2411000002 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nDIMENSIONS ▪ In mm \n \n \n \nø D L a A B C F W P±0.2 \n8 10.5 max 8.3 8.3 9 0.3 max. 0.7~1.1 3.1 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.52 0.65 0.65 0.65 0.8 0.89 0.89 0.97 1 1 1 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n     \nGeneral Precautions \n&Guidelines \nPackaging                     \nInformation \nVibration Test             \nProfiles 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer 's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and prope r CapXon product. Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suita ble designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor.Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, promise any other warranty \nor guaranty for any CapXon product.  \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly"
+        },
+        {
+          "id": "spec-DV681M6R3F105ETRU-page-3",
+          "title": "DV681M6R3F105ETRU · 附加规格与包装资料",
+          "page": 3,
+          "text": "CapXon_Ver.: 001-2024-11-02                                                                                                                                                      Document Number: DV681M6R3F105ETRU \n 3                                                                           Process Number:  TBAKA-2411000002 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \n \nADDITIONAL SPECIFICATION \n \na. Tape information \n \n \nAll dimensions in mm \nØ  D x L 4 x 5.5 5 x 5.5 6.3 x 5.5 6.3 x 6.1 6.3 x 7.7 8 x 6.5 8 x 10.5 10 x 10.5 12.5 x 14 16 x 17 16 x 21.5 18 x 16.5 18 x21.5 \nW 12 12 16 16 16 16 24 24 32 44 44 44 44 \nP 8 12 12 12 12 12 16 16 24 28 32 32 32 \nF 5.5 5.5 7.5 7.5 7.5 7.5 11.5 11.5 14.2 20.2 20.2 20.2 20.2 \nA1 4.7 5.7 7 7 7 8.7 8.7 10.7 13.9 17.5 17.5 19.5 19.5 \nB1 4.7 5.7 7 7 7 8.7 8.7 10.7 13.9 17.5 17.5 19.5 19.5 \nT1 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.5 0.5 0.5 0.5 0.5 \nT2 5.7 5.7 5.7 6.2 8.1 7 11 11 14.5 17.5 23 17.5 23 \n \nb. Reel information"
+        },
+        {
+          "id": "spec-DV681M6R3F105ETRU-page-4",
+          "title": "DV681M6R3F105ETRU · 附加规格与包装资料",
+          "page": 4,
+          "text": "CapXon_Ver.: 001-2024-11-02                                                                                                                                                      Document Number: DV681M6R3F105ETRU \n 4                                                                           Process Number:  TBAKA-2411000002 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ DV SERIES \n \nAll reel dimensions in mm \nØ  D 4 5 5 6.3 6.3 6.3 6.3 8 8 8 8 10 10 10 10 12.5 16 16 18 18 \nL 5.5 5.5 5.8 5.5 5.8 6.1 7.7 6.5 7.7 10.5 11.7 8.7 10.5 12.4 16.5 14 17 21.5 16.5 21.5 \nA 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 \nB 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 \nC 14 14 14 18 18 18 18 18 18 26 26 26 26 26 26 34 46 46 46 46 \nD 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 \nE 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 \nF 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 \nRemark: Standard = Paper reel \n \nAll reel dimensions in mm \nØ  D 4 5 5 6.3 6.3 6.3 6.3 8 8 8 8 10 10 10 10 12.5 16 16 18 18 \nL 5.5 5.5 5.8 5.5 5.8 6.1 7.7 6.5 7.7 10.5 11.7 8.7 10.5 12.4 16.5 14 17 21.5 16.5 21.5 \nA 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 \nB 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 \nC 14 14 14 18 18 18 18 18 18 26 26 26 26 26 26 34 46 46 46 46 \nD 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 \nE 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 \nF 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 \nRemark: Plastic reel = Add code \"U\" at the end of the part number \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-11-02 TBAKA-2411000002 Xu XiaoJun Initial specification \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-FH100M050C110ETB",
+      "fileName": "FH100M050C110ETB-产品规格书.pdf",
+      "url": "/data/customer/specs/FH100M050C110ETB/source.pdf",
+      "kind": "产品规格书",
+      "summary": "FH100M050C110ETB；THT；10 μF；50 V；工作温度 -40～105℃；标称本体尺寸 Φ5×11 mm；Endurance 5000 h（105℃）。",
+      "pdfVersion": "001-2024-11-19",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/FH100M050C110ETB/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/FH100M050C110ETB/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/FH100M050C110ETB/page-3.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-FH100M050C110ETB-page-1",
+          "title": "FH100M050C110ETB · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_ver.: 001- 2024-11-19                                                                                   1                                                   Document Number: FH100M050C110ETB \n                                                                                                                                                                                                                       Process Number TBAKA-2411000036    \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ FH SERIES \n \nFH SERIES ▪ HIGH RIPPLE CURRENT, 105° C TYPE \n \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ THT type \n Low impedance, high ripple current \nSPECIFICATIONS  \nPart Number FH100M050C110ETB Unit Conditions \nCapacitance  CR 10 µF  \nRated Voltage VR 50 V DC  \nSurge Voltage VS 58 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20°C \nRipple Current IR 103 mA 120Hz ▪ 105°C \nRipple Current IR 175 mA 100KHz ▪ 105°C \nDissipation Factor tanδ 10 % 120Hz ▪ 20°C \nLeakage Current ILEAK 5 µA 2 min ▪ 20°C \nMax. Impedance Z 1 Ω 100KHz ▪ 20°C \nSize D x L 5X11  mm  \nPitch F 2 mm  \nOperating Temperature Range -40~105 °C  \n \nAEC-Q200 Qualified NO   \n \nLifetime Test  \nEndurance \nVR & IR applied \n \nTest 5000 h 105°C \nΔC/CR ≤ ±25 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 105°C \nΔC/CR ≤ ±25 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nFH 100 M 050 C 110 E TB  \n 10µF -20~20% 50V 5mm 11mm With lead treatment Tape / Ammo"
+        },
+        {
+          "id": "spec-FH100M050C110ETB-page-2",
+          "title": "FH100M050C110ETB · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_ver.: 001- 2024-11-19                                                                                   2                                                   Document Number: FH100M050C110ETB \n                                                                                                                                                                                                                       Process Number TBAKA-2411000036    \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ FH SERIES \n \nDIMENSIONS ▪ In mm. For TAPED VERSIONS, please see our packaging information in the table below. \n \n \nø D b L a F c ø d \n5 ±0.5 11 ±1.5 2 0.5 0.5 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.47 0.59 0.59 0.76 0.76 0.85 0.85 0.97 0.97 1 1 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n    \nGeneral Precautions & \nGuidelines Packaging Information 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and proper CapXon product . Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suitable designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor. Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, p romise any other warranty \nor guaranty for any CapXon product.  \n \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly."
+        },
+        {
+          "id": "spec-FH100M050C110ETB-page-3",
+          "title": "FH100M050C110ETB · 附加规格、修订记录及客户签核",
+          "page": 3,
+          "text": "CapXon_ver.: 001- 2024-11-19                                                                                   3                                                   Document Number: FH100M050C110ETB \n                                                                                                                                                                                                                       Process Number TBAKA-2411000036    \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ FH SERIES \n \nADDITIONAL SPECIFICATION \n \n \n \n \n \n \n \n \n \n \n \n P P0 P1 P2 F F1 W W0 W1 W2 H D0 Δh Δp t \nTol ±1.0 ±0.2 ±0.7 ±1.3 +0.4 ±0.5 ±0.5 ±0.5 ±0.5 Max +0.75 ±0.2 Max Max Max -0.2 -0.5 \nItem \n \n12.7 \n \n12.7 \n \n5.35 \n \n6.35 \n \n2 \n \n5 \n \n18 \n \n11 \n \n9 \n \n2 \n \n18.5 \n \n4 \n \n1 \n \n1 \n \n1.5 \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-11-19 TBAKA-2411000036 Xu XiaoJun Initial specification  \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-FK100M160G160ETA",
+      "fileName": "FK100M160G160ETA-产品规格书.pdf",
+      "url": "/data/customer/specs/FK100M160G160ETA/source.pdf",
+      "kind": "产品规格书",
+      "summary": "FK100M160G160ETA；THT；10 μF；160 V；工作温度 -40～105℃；标称本体尺寸 Φ10×16 mm；Endurance 8000 h（105℃）。",
+      "pdfVersion": "001-2024-11-02",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/FK100M160G160ETA/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/FK100M160G160ETA/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/FK100M160G160ETA/page-3.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-FK100M160G160ETA-page-1",
+          "title": "FK100M160G160ETA · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_ver.: 001-2024-11-02                                                                                                                          \n                                                                                                                   1                                                         \n \nFor further information please contact sales@capxon.org \n \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ FK SERIES \nProcess Number: TBAKA-2411000002 \nDocument Number: FK100M160G160ETA \nFK SERIES ▪ HIGH VOLTAGE, 105° C TYPE \n \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ THT type \n High voltage, high reliability \nSPECIFICATIONS  \nPart Number FK100M160G160ETA Unit Conditions \nCapacitance  CR 10 µF  \nRated Voltage VR 160 V DC  \nSurge Voltage VS 184 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20°C \nRipple Current IR 147 mA 120Hz ▪ 105°C \nRipple Current IR 368 mA 100KHz ▪ 105°C \nDissipation Factor tanδ 15 % 120Hz ▪ 20°C \nLeakage Current ILEAK 164 µA 1 min ▪ 20°C \nSize D x L 10X16  mm  \nPitch F 5 mm  \nOperating Temperature Range -40~105 °C  \n \nAEC-Q200 Qualified NO   \n \nLifetime Test  \nEndurance \nVR & IR applied \n \nTest 8000 h 105°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 105°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nFK 100 M 160 G 160 E TA  \n 10µF -20~20% 160V 10mm 16mm With lead treatment Tape / Ammo"
+        },
+        {
+          "id": "spec-FK100M160G160ETA-page-2",
+          "title": "FK100M160G160ETA · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_ver.: 001-2024-11-02                                                                                                                          \n                                                                                                                   2                                                         \n \nFor further information please contact sales@capxon.org \n \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ FK SERIES \nProcess Number: TBAKA-2411000002 \nDocument Number: FK100M160G160ETA \nDIMENSIONS ▪ In mm. For TAPED VERSIONS, please see our packaging information in the table below. \n \n \nø D b L a F c ø d \n10 ±0.5 16 ±1.5 5 0.5 0.6 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf  1 1 1 1 1.75 1.75 2.25 2.25 2.5 2.5 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n    \nGeneral Precautions & \nGuidelines Packaging Information 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and proper CapXon product . Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suitable designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor. Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, p romise any other warranty \nor guaranty for any CapXon product.  \n \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly."
+        },
+        {
+          "id": "spec-FK100M160G160ETA-page-3",
+          "title": "FK100M160G160ETA · 附加规格、修订记录及客户签核",
+          "page": 3,
+          "text": "CapXon_ver.: 001-2024-11-02                                                                                                                          \n                                                                                                                   3                                                         \n \nFor further information please contact sales@capxon.org \n \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ FK SERIES \nProcess Number: TBAKA-2411000002 \nDocument Number: FK100M160G160ETA \nADDITIONAL SPECIFICATION \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n P P0 P1 P2 F W W0 W1 W2 H D0 Δh Δp t \nTol ±1.0 ±0.2 ±0.7 ±1.3 +0.4 ±0.5 ±0.5 ±0.5 Max +0.75 ±0.2 Max Max Max -0.2 -0.5 \nItem 12.7 12.7 3.85 6.35 5 18 11 9 2 18.5 4 1 1 1.5 \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-11-02 TBAKA-2411000002 Xu XiaoJun Initial specification  \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-GH152M063K355A",
+      "fileName": "GH152M063K355A-产品规格书.pdf",
+      "url": "/data/customer/specs/GH152M063K355A/source.pdf",
+      "kind": "产品规格书",
+      "summary": "GH152M063K355A；THT；1500 μF；63 V；工作温度 -55～105℃；标称本体尺寸 Φ18×35.5 mm；Endurance 10000 h（105℃）。",
+      "pdfVersion": "001-2024-10-30",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/GH152M063K355A/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/GH152M063K355A/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/GH152M063K355A/page-3.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-GH152M063K355A-page-1",
+          "title": "GH152M063K355A · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_ver.: 001-2024-10-30                                                                                     1 \n                                                                       \nFor further information please contact sales@capxon.org \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ GH SERIES \nProcess Number: TBAKA-2410000083 \nDocument Number: GH152M063K355A \nGH SERIES ▪ LOW IMPEDANCE, 105° C TYPE \n \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ THT type \n Low impedance, high ripple current \nSPECIFICATIONS  \nPart Number GH152M063K355A Unit Conditions \nCapacitance  CR 1500 µF  \nRated Voltage VR 63 V DC  \nSurge Voltage VS 73 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20°C \nRipple Current IR 2670 mA 120Hz ▪ 105°C \nRipple Current IR 3256 mA 100KHz ▪ 105°C \nDissipation Factor tanδ 9 % 120Hz ▪ 20°C \nLeakage Current ILEAK 945 µA 2 min ▪ 20°C \nMax. Impedance Z 0.048 Ω 100KHz ▪ 20°C \nSize D x L 18X35.5  mm  \nPitch F 7.5 mm  \nOperating Temperature Range -55~105 °C  \n \nAEC-Q200 Qualified NO   \n \nLifetime Test  \nEndurance \nVR & IR applied \n \nTest 10000 h 105°C \nΔC/CR ≤ ±25 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 105°C \nΔC/CR ≤ ±25 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nGH 152 M 063 K 355 A   \n 1500µF -20~20% 63V 18mm 35.5mm Without lead treatment"
+        },
+        {
+          "id": "spec-GH152M063K355A-page-2",
+          "title": "GH152M063K355A · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_ver.: 001-2024-10-30                                                                                     2 \n                                                                       \nFor further information please contact sales@capxon.org \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ GH SERIES \nProcess Number: TBAKA-2410000083 \nDocument Number: GH152M063K355A \nDIMENSIONS ▪ In mm. For TAPED VERSIONS, please see our packaging information in the table below. \n \n \nø D b L a F c ø d \n18 ±0.5 35.5 ±2 7.5 0.5 0.8 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf  0.82 0.82 0.87 0.87 0.92 0.92 0.95 0.95 1 1 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n    \nGeneral Precautions & \nGuidelines Packaging Information 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. It is  necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is cus tomer's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and proper CapXon product . Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suitable designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor. Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, p romise any other warranty \nor guaranty for any CapXon product.  \n \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly."
+        },
+        {
+          "id": "spec-GH152M063K355A-page-3",
+          "title": "GH152M063K355A · 附加规格、修订记录及客户签核",
+          "page": 3,
+          "text": "CapXon_ver.: 001-2024-10-30                                                                                     3 \n                                                                       \nFor further information please contact sales@capxon.org \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ GH SERIES \nProcess Number: TBAKA-2410000083 \nDocument Number: GH152M063K355A \nADDITIONAL SPECIFICATION \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-10-30 TBAKA-2410000083 Xu XiaoJun Initial specification  \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-GS101M035E110ETC",
+      "fileName": "GS101M035E110ETC-产品规格书.pdf",
+      "url": "/data/customer/specs/GS101M035E110ETC/source.pdf",
+      "kind": "产品规格书",
+      "summary": "GS101M035E110ETC；THT；100 μF；35 V；工作温度 -40～85℃；标称本体尺寸 Φ6.3×11 mm；Endurance 2000 h（85℃）。",
+      "pdfVersion": "001-2024-11-19",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/GS101M035E110ETC/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/GS101M035E110ETC/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/GS101M035E110ETC/page-3.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-GS101M035E110ETC-page-1",
+          "title": "GS101M035E110ETC · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_ver.: 001-2024-11-19                                                                                  1                                                      Document Number: GS101M035E110ETC \n                                                                                                                                                                                                                    Process Number :TBAKA-2411000037  \n \nFor further information please contact sales@capxon.org \n \n  ALUMINUM ELECTROLYTIC CAPACITOR ▪ GS SERIES \n \nGS SERIES ▪ STANDARD, 85° C TYPE \n \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ THT type \n High capacitance, cost effective \nSPECIFICATIONS  \nPart Number GS101M035E110ETC Unit Conditions \nCapacitance  CR 100 µF  \nRated Voltage VR 35 V DC  \nSurge Voltage VS 40 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20°C \nRipple Current IR 231 mA 120Hz ▪ 85°C \nRipple Current IR 353 mA 100KHz ▪ 85°C \nDissipation Factor tanδ 12 % 120Hz ▪ 20°C \nLeakage Current ILEAK 35 µA 1 min ▪ 20°C \nSize D x L 6.3X11  mm  \nPitch F 2.5 mm  \nOperating Temperature Range -40~85 °C  \n \nAEC-Q200 Qualified NO   \n \nLifetime Test  \nEndurance \nVR & IR applied \n \nTest 2000 h 85°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 85°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nGS 101 M 035 E 110 E TC  \n 100µF -20~20% 35V 6.3mm 11mm With lead treatment Tape / Ammo"
+        },
+        {
+          "id": "spec-GS101M035E110ETC-page-2",
+          "title": "GS101M035E110ETC · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_ver.: 001-2024-11-19                                                                                  2                                                      Document Number: GS101M035E110ETC \n                                                                                                                                                                                                                    Process Number :TBAKA-2411000037  \n \nFor further information please contact sales@capxon.org \n \n  ALUMINUM ELECTROLYTIC CAPACITOR ▪ GS SERIES \n \nDIMENSIONS ▪ In mm. For TAPED VERSIONS, please see our packaging information in the table below. \n \n \nø D b L a F c ø d \n6.3 ±0.5 11 ±1.5 2.5 0.5 0.5 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.8 1 1 1.23 1.23 1.36 1.36 1.48 1.53 1.53 1.53 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n    \nGeneral Precautions & \nGuidelines Packaging Information 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. It is  necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is cus tomer's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and proper CapXon product . Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suitable designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor. Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, p romise any other warranty \nor guaranty for any CapXon product.  \n \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly."
+        },
+        {
+          "id": "spec-GS101M035E110ETC-page-3",
+          "title": "GS101M035E110ETC · 附加规格、修订记录及客户签核",
+          "page": 3,
+          "text": "CapXon_ver.: 001-2024-11-19                                                                                  3                                                      Document Number: GS101M035E110ETC \n                                                                                                                                                                                                                    Process Number :TBAKA-2411000037  \n \nFor further information please contact sales@capxon.org \n \n  ALUMINUM ELECTROLYTIC CAPACITOR ▪ GS SERIES \n \nADDITIONAL SPECIFICATION \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n P P0 P1 P2 F W W0 W1 W2 H D0 Δh Δp t \nTol ±1.0 ±0.2 ±0.7 ±1.3 +0.4 ±0.5 ±0.5 ±0.5 Max \n+0.75 ±0.2 Max Max Max -0.2 -0.5 \nItem 12.7 12.7 5.1 6.35 2.5 18 11 9 2 18.5 4 1 1 1.5 \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-11-19 TBAKA-2411000037 Xu XiaoJun Initial specification  \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-KH100M400G200ETA",
+      "fileName": "KH100M400G200ETA-产品规格书.pdf",
+      "url": "/data/customer/specs/KH100M400G200ETA/source.pdf",
+      "kind": "产品规格书",
+      "summary": "KH100M400G200ETA；THT；10 μF；400 V；工作温度 -40～105℃；标称本体尺寸 Φ10×20 mm；Endurance 10000 h（105℃）。",
+      "pdfVersion": "001-2024-11-19",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/KH100M400G200ETA/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/KH100M400G200ETA/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/KH100M400G200ETA/page-3.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-KH100M400G200ETA-page-1",
+          "title": "KH100M400G200ETA · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_ver.: 001-2024-11-19                                                                                                                          \n                                                                                                                   1                                                         \n \nFor further information please contact sales@capxon.org \n \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ KH SERIES \nProcess Number: TBAKA-2411000037 \nDocument Number: KH100M400G200ETA \nKH SERIES ▪ LONG LIFE, 105° C TYPE \n \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ THT type \n High ripple current, high reliability \nSPECIFICATIONS  \nPart Number KH100M400G200ETA Unit Conditions \nCapacitance  CR 10 µF  \nRated Voltage VR 400 V DC  \nSurge Voltage VS 440 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20°C \nRipple Current IR 180 mA 120Hz ▪ 105°C \nRipple Current IR 360 mA 100KHz ▪ 105°C \nDissipation Factor tanδ 20 % 120Hz ▪ 20°C \nLeakage Current ILEAK 260 µA 1 min ▪ 20°C \nSize D x L 10X20  mm  \nPitch F 5 mm  \nOperating Temperature Range -40~105 °C  \n \nAEC-Q200 Qualified NO   \n \nLifetime Test  \nEndurance \nVR & IR applied \n \nTest 10000 h 105°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 105°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nKH 100 M 400 G 200 E TA  \n 10µF -20~20% 400V 10mm 20mm With lead treatment Tape / Ammo"
+        },
+        {
+          "id": "spec-KH100M400G200ETA-page-2",
+          "title": "KH100M400G200ETA · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_ver.: 001-2024-11-19                                                                                                                          \n                                                                                                                   2                                                         \n \nFor further information please contact sales@capxon.org \n \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ KH SERIES \nProcess Number: TBAKA-2411000037 \nDocument Number: KH100M400G200ETA \nDIMENSIONS ▪ In mm. For TAPED VERSIONS, please see our packaging information in the table below. \n \n \nø D b L a F c ø d \n10 ±0.5 20 ±1.5 5 0.5 0.6 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf  0.5 0.5 0.5 0.5 0.8 0.8 0.85 0.85 1 1 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n    \nGeneral Precautions & \nGuidelines Packaging Information 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and proper CapXon product . Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suitable designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor. Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, p romise any other warranty \nor guaranty for any CapXon product.  \n \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly."
+        },
+        {
+          "id": "spec-KH100M400G200ETA-page-3",
+          "title": "KH100M400G200ETA · 附加规格、修订记录及客户签核",
+          "page": 3,
+          "text": "CapXon_ver.: 001-2024-11-19                                                                                                                          \n                                                                                                                   3                                                         \n \nFor further information please contact sales@capxon.org \n \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ KH SERIES \nProcess Number: TBAKA-2411000037 \nDocument Number: KH100M400G200ETA \nADDITIONAL SPECIFICATION \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n P P0 P1 P2 F W W0 W1 W2 H D0 Δh Δp t \nTol ±1.0 ±0.2 ±0.7 ±1.3 +0.4 ±0.5 ±0.5 ±0.5 Max +0.75 ±0.2 Max Max Max -0.2 -0.5 \nItem 12.7 12.7 3.85 6.35 5 18 11 9 2 18.5 4 1 1 1.5 \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-11-19 TBAKA-2411000037 Xu XiaoJun Initial specification  \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-LP103M080P500AP4",
+      "fileName": "LP103M080P500AP4-产品规格书.pdf",
+      "url": "/data/customer/specs/LP103M080P500AP4/source.pdf",
+      "kind": "产品规格书",
+      "summary": "LP103M080P500AP4；Snap-In；10000 μF；80 V；工作温度 -40～85℃；标称本体尺寸 Φ35×50 mm；Endurance 2000 h（85℃）。",
+      "pdfVersion": "001-2024-10-25",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/LP103M080P500AP4/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/LP103M080P500AP4/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/LP103M080P500AP4/page-3.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-LP103M080P500AP4-page-1",
+          "title": "LP103M080P500AP4 · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_ver. : 001- 2024-10-25                                                                                1                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ LP SERIES \n \nProcess Number: TBAKA-2410000097 \nDocument Number: LP103M080P500AP4 \nLP SERIES ▪ STANDARD, 85° C TYPE \n \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ Snap-In type \n Wide capacitance range, miniature dimensions \nSPECIFICATIONS \nPart Number LP103M080P500AP4 Unit Conditions \nCapacitance  CR 10000 µF  \nRated Voltage VR 80 V DC  \nSurge Voltage VS 92 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20°C \nRipple Current IR 6.65 A 120Hz ▪ 85°C \nRipple Current IR 7.65 A 100KHz ▪ 85°C \nDissipation Factor tanδ 20 % 120Hz ▪ 20°C \nLeakage Current ILEAK 2683 µA 5 min ▪ 20°C \nMax. ESR ESR 26.5 mΩ 120Hz ▪ 20°C \nSize D x L 35X50  mm  \nOperating Temperature Range -40~85 °C  \n \nAEC-Q200 Qualified NO   \nVibration Proof Version NO   \n \nLifetime Test  \nUseful Life \nVR & IR applied \nTest 3000 h 85°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nDeviation Rate Useful Life: 100 FIT = 0.01%/1000h with 60% confidence level ▪ parts show higher drift as test criteria \nEndurance \nVR & IR applied \nTest 2000 h 85°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 85°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nLP 103 M 080 P 500 A P4  \n 10000µF -20~20% 80V 35mm 50mm Without lead treatment H4mm / 2Pin"
+        },
+        {
+          "id": "spec-LP103M080P500AP4-page-2",
+          "title": "LP103M080P500AP4 · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_ver. : 001- 2024-10-25                                                                                2                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ LP SERIES \n \nProcess Number: TBAKA-2410000097 \nDocument Number: LP103M080P500AP4 \nDIMENSIONS ▪ In mm \n \n \n \n \nø D b L a H h \n35 +1 max 50 ±2 4 1.5 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.88 1 1.07 1.07 1.07 1.15 1.15 1.15 1.15 1.15 1.15 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n     \nGeneral Precautions \n&Guidelines \nPackaging                      \nInformation \nVibration Test                     \nProfiles 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and proper CapXon product . Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suitable designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor. Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, p romise any other warranty \nor guaranty for any CapXon product.  \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly\nH±1"
+        },
+        {
+          "id": "spec-LP103M080P500AP4-page-3",
+          "title": "LP103M080P500AP4 · 附加规格、修订记录及客户签核",
+          "page": 3,
+          "text": "CapXon_ver. : 001- 2024-10-25                                                                                3                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ LP SERIES \n \nProcess Number: TBAKA-2410000097 \nDocument Number: LP103M080P500AP4 \nADDITIONAL SPECIFICATION \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-10-25 TBAKA-2410000097 Xu XiaoJun Initial specification  \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-LP271M400N400AP6",
+      "fileName": "LP271M400N400AP6-产品规格书.pdf",
+      "url": "/data/customer/specs/LP271M400N400AP6/source.pdf",
+      "kind": "产品规格书",
+      "summary": "LP271M400N400AP6；Snap-In；270 μF；400 V；工作温度 -25～85℃；标称本体尺寸 Φ25×40 mm；Endurance 2000 h（85℃）。",
+      "pdfVersion": "001-2024-11-20",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/LP271M400N400AP6/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/LP271M400N400AP6/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/LP271M400N400AP6/page-3.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-LP271M400N400AP6-page-1",
+          "title": "LP271M400N400AP6 · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_ver. : 001- 2024-11-20                                                                                1                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ LP SERIES \n \nProcess Number: TBAKA-2411000040 \nDocument Number: LP271M400N400AP6 \nLP SERIES ▪ STANDARD, 85° C TYPE \n \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ Snap-In type \n Wide capacitance range, miniature dimensions \nSPECIFICATIONS \nPart Number LP271M400N400AP6 Unit Conditions \nCapacitance  CR 270 µF  \nRated Voltage VR 400 V DC  \nSurge Voltage VS 440 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20°C \nRipple Current IR 2.12 A 120Hz ▪ 85°C \nRipple Current IR 3.03 A 100KHz ▪ 85°C \nDissipation Factor tanδ 15 % 120Hz ▪ 20°C \nLeakage Current ILEAK 986 µA 5 min ▪ 20°C \nMax. ESR ESR 740 mΩ 120Hz ▪ 20°C \nSize D x L 25X40  mm  \nOperating Temperature Range -25~85 °C  \n \nAEC-Q200 Qualified NO   \nVibration Proof Version NO   \n \nLifetime Test  \nUseful Life \nVR & IR applied \nTest 5000 h 85°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nDeviation Rate Useful Life: 100 FIT = 0.01%/1000h with 60% confidence level ▪ parts show higher drift as test criteria \nEndurance \nVR & IR applied \nTest 2000 h 85°C \nΔC/CR ≤ ±15 % of initial measured value \ntanδ ≤ 175 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 85°C \nΔC/CR ≤ ±15 % of initial measured value \ntanδ ≤ 175 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nLP 271 M 400 N 400 A P6  \n 270µF -20~20% 400V 25mm 40mm Without lead treatment H6mm / 2Pin"
+        },
+        {
+          "id": "spec-LP271M400N400AP6-page-2",
+          "title": "LP271M400N400AP6 · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_ver. : 001- 2024-11-20                                                                                2                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ LP SERIES \n \nProcess Number: TBAKA-2411000040 \nDocument Number: LP271M400N400AP6 \nDIMENSIONS ▪ In mm \n \n \n \n \nø D b L a H h \n25 +1 max 40 ±2 6 2.5 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.77 1 1.16 1.16 1.16 1.3 1.3 1.41 1.43 1.43 1.43 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n     \nGeneral Precautions \n&Guidelines \nPackaging                      \nInformation \nVibration Test                     \nProfiles 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and proper CapXon product . Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suitable designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor. Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, p romise any other warranty \nor guaranty for any CapXon product.  \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly\nH±1"
+        },
+        {
+          "id": "spec-LP271M400N400AP6-page-3",
+          "title": "LP271M400N400AP6 · 附加规格、修订记录及客户签核",
+          "page": 3,
+          "text": "CapXon_ver. : 001- 2024-11-20                                                                                3                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ LP SERIES \n \nProcess Number: TBAKA-2411000040 \nDocument Number: LP271M400N400AP6 \nADDITIONAL SPECIFICATION \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-11-20 TBAKA-2411000040 Xu XiaoJun Initial specification  \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-TV3R3M400F105ETRHLRZ",
+      "fileName": "TV3R3M400F105ETRHLRZ-产品规格书.pdf",
+      "url": "/data/customer/specs/TV3R3M400F105ETRHLRZ/source.pdf",
+      "kind": "产品规格书",
+      "summary": "TV3R3M400F105ETRHLRZ；SMD；3.3 μF；400 V；工作温度 -40～125℃；标称本体尺寸 Φ8×10.5 mm；Endurance 4000 h（125℃）。",
+      "pdfVersion": "001-2025-03-17",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/TV3R3M400F105ETRHLRZ/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/TV3R3M400F105ETRHLRZ/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/TV3R3M400F105ETRHLRZ/page-3.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 4,
+          "image": "/data/customer/specs/TV3R3M400F105ETRHLRZ/page-4.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-TV3R3M400F105ETRHLRZ-page-1",
+          "title": "TV3R3M400F105ETRHLRZ · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_Ver.: 001-2025-03-17                                                                                                                                                Document Number: TV3R3M400F105ETRHLRZ \n 1                                                                           Process Number:  TBAKA-2503000036 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ TV SERIES \n \nTV SERIES ▪ HIGH TEMPERATURE, 125° C TYPE \n  \n  \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ SMD type \n High temperature and high voltage \nSPECIFICATIONS \nPart Number TV3R3M400F105ETRHLRZ Unit Conditions \nCapacitance  CR 3.3 µF  \nRated Voltage VR 400 V DC  \nSurge Voltage VS 440 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20° C \nRipple Current IR 30 mA 120Hz ▪ 125°C \nRipple Current IR 45 mA 100KHz ▪ 125°C \nDissipation Factor tanδ 25 % 120Hz ▪ 20° C \nLeakage Current ILEAK 153 µA 1 min ▪ 20° C \nMax. ESR ESR 100 Ω 120Hz ▪ 25°C \nSize D x L 8X10.5 mm  \nOperating Temperature Range -40~125 °C  \n \nAEC-Q200 Qualified NO   \nVibration Proof Version NO   \n \nLifetime Test  \nEndurance \nVR applied \nTest 4000 h 125°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 125°C \nΔC/CR ≤ ±30 % of initial measured value \ntanδ ≤ 300 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nResistance to  \nSoldering Heat \nΔC/CR ≤ ±10 % of initial measured value \ntanδ  Less than specified value \nILEAK Less than specified value \nThe capacitors shall be kept on a hot plate maintained at 250° C for 30 seconds. After removing from the hot \nplate and restored at room temperature, they meet the characteristic requirements listed below \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nTV 3R3 M 400 F 105 E TR HLRZ \n 3.3 -20~20 400 8 10.5 With lead treatment Process code H=Height \n        L=Life \n        R=RC. \n        Z=ESR or Imp."
+        },
+        {
+          "id": "spec-TV3R3M400F105ETRHLRZ-page-2",
+          "title": "TV3R3M400F105ETRHLRZ · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_Ver.: 001-2025-03-17                                                                                                                                                Document Number: TV3R3M400F105ETRHLRZ \n 2                                                                           Process Number:  TBAKA-2503000036 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ TV SERIES \n \nDIMENSIONS ▪ In mm \n \n \n \n \nø D L a A B C F W P±0.2 \n8 10.5 ±0.5 8.3 8.3 9 0.3 max. 0.7~1.1 3.1 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.8 1 1 1 1.2 1.3 1.3 1.5 1.5 1.5 1.5 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n     \nGeneral Precautions \n&Guidelines \nPackaging                     \nInformation \nVibration Test             \nProfiles 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer 's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and prope r CapXon product. Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suita ble designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor.Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, promise any other warranty \nor guaranty for any CapXon product.  \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly"
+        },
+        {
+          "id": "spec-TV3R3M400F105ETRHLRZ-page-3",
+          "title": "TV3R3M400F105ETRHLRZ · 附加规格与包装资料",
+          "page": 3,
+          "text": "CapXon_Ver.: 001-2025-03-17                                                                                                                                                Document Number: TV3R3M400F105ETRHLRZ \n 3                                                                           Process Number:  TBAKA-2503000036 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ TV SERIES \n \n \nADDITIONAL SPECIFICATION \n \na. Tape information \n \n \nAll dimensions in mm \nØ  D x L 4 x 5.5 5 x 5.5 6.3 x 5.5 6.3 x 6.1 6.3 x 7.7 8 x 6.5 8 x 10.5 10 x 10.5 12.5 x 14 16 x 17 16 x 21.5 18 x 16.5 18 x21.5 \nW 12 12 16 16 16 16 24 24 32 44 44 44 44 \nP 8 12 12 12 12 12 16 16 24 28 32 32 32 \nF 5.5 5.5 7.5 7.5 7.5 7.5 11.5 11.5 14.2 20.2 20.2 20.2 20.2 \nA1 4.7 5.7 7 7 7 8.7 8.7 10.7 13.9 17.5 17.5 19.5 19.5 \nB1 4.7 5.7 7 7 7 8.7 8.7 10.7 13.9 17.5 17.5 19.5 19.5 \nT1 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.5 0.5 0.5 0.5 0.5 \nT2 5.7 5.7 5.7 6.2 8.1 7 11 11 14.5 17.5 23 17.5 23 \n \nb. Reel information"
+        },
+        {
+          "id": "spec-TV3R3M400F105ETRHLRZ-page-4",
+          "title": "TV3R3M400F105ETRHLRZ · 附加规格与包装资料",
+          "page": 4,
+          "text": "CapXon_Ver.: 001-2025-03-17                                                                                                                                                Document Number: TV3R3M400F105ETRHLRZ \n 4                                                                           Process Number:  TBAKA-2503000036 \n  \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ TV SERIES \n \nAll reel dimensions in mm \nØ  D 4 5 5 6.3 6.3 6.3 6.3 8 8 8 8 10 10 10 10 12.5 16 16 18 18 \nL 5.5 5.5 5.8 5.5 5.8 6.1 7.7 6.5 7.7 10.5 11.7 8.7 10.5 12.4 16.5 14 17 21.5 16.5 21.5 \nA 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 \nB 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 \nC 14 14 14 18 18 18 18 18 18 26 26 26 26 26 26 34 46 46 46 46 \nD 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 \nE 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 \nF 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 \nRemark: Standard = Paper reel \n \nAll reel dimensions in mm \nØ  D 4 5 5 6.3 6.3 6.3 6.3 8 8 8 8 10 10 10 10 12.5 16 16 18 18 \nL 5.5 5.5 5.8 5.5 5.8 6.1 7.7 6.5 7.7 10.5 11.7 8.7 10.5 12.4 16.5 14 17 21.5 16.5 21.5 \nA 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 13.2 \nB 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 21.5 \nC 14 14 14 18 18 18 18 18 18 26 26 26 26 26 26 34 46 46 46 46 \nD 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 \nE 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 \nF 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 380 \nRemark: Plastic reel = Add code \"U\" at the end of the part number \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2025-03-17 TBAKA-2503000036 Xu XiaoJun Initial specification \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-UD221M450O300AP6",
+      "fileName": "UD221M450O300AP6-产品规格书.pdf",
+      "url": "/data/customer/specs/UD221M450O300AP6/source.pdf",
+      "kind": "产品规格书",
+      "summary": "UD221M450O300AP6；Snap-In；220 μF；450 V；工作温度 -40～85℃；标称本体尺寸 Φ30×30 mm；Endurance 5000 h（85℃）。",
+      "pdfVersion": "001-2024-10-23",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/UD221M450O300AP6/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/UD221M450O300AP6/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/UD221M450O300AP6/page-3.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-UD221M450O300AP6-page-1",
+          "title": "UD221M450O300AP6 · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_ver. : 001- 2024-10-23                                                                                1                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ UD SERIES \n \nProcess Number: TBAKA-2410000078 \nDocument Number: UD221M450O300AP6 \nUD SERIES ▪ ULTRA LONG LIFE, 85°C TYPE \n \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ Snap-In type \n Ultra stable dissipation factor, low leakage current \nSPECIFICATIONS \nPart Number UD221M450O300AP6 Unit Conditions \nCapacitance  CR 220 µF  \nRated Voltage VR 450 V DC  \nSurge Voltage VS 495 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20°C \nRipple Current IR 1.62 A 120Hz ▪ 85°C \nRipple Current IR 2.32 A 100KHz ▪ 85°C \nDissipation Factor tanδ 20 % 120Hz ▪ 20°C \nLeakage Current ILEAK 944 µA 5 min ▪ 20°C \nMax. ESR ESR 1210 mΩ 120Hz ▪ 20°C \nSize D x L 30X30  mm  \nOperating Temperature Range -40~85 °C  \n \nAEC-Q200 Qualified NO   \nVibration Proof Version NO   \n \nLifetime Test  \nUseful Life \nVR & IR applied \nTest 10000 h 85°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nDeviation Rate Useful Life: 100 FIT = 0.01%/1000h with 60% confidence level ▪ parts show higher drift as test criteria \nEndurance \nVR & IR applied \nTest 5000 h 85°C \nΔC/CR ≤ ±15 % of initial measured value \ntanδ ≤ 175 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 85°C \nΔC/CR ≤ ±15 % of initial measured value \ntanδ ≤ 175 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nUD 221 M 450 O 300 A P6  \n 220µF -20~20% 450V 30mm 30mm Without lead treatment H6mm / 2Pin"
+        },
+        {
+          "id": "spec-UD221M450O300AP6-page-2",
+          "title": "UD221M450O300AP6 · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_ver. : 001- 2024-10-23                                                                                2                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ UD SERIES \n \nProcess Number: TBAKA-2410000078 \nDocument Number: UD221M450O300AP6 \nDIMENSIONS ▪ In mm \n \n \n \n \nø D b L a H h \n30 +1 max 30 ±2 6 2.5 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.77 1 1.16 1.16 1.16 1.3 1.3 1.41 1.43 1.43 1.43 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n     \nGeneral Precautions \n&Guidelines \nPackaging                      \nInformation \nVibration Test                     \nProfiles 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and proper CapXon product . Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suitable designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor. Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, p romise any other warranty \nor guaranty for any CapXon product.  \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly\nH±1"
+        },
+        {
+          "id": "spec-UD221M450O300AP6-page-3",
+          "title": "UD221M450O300AP6 · 附加规格、修订记录及客户签核",
+          "page": 3,
+          "text": "CapXon_ver. : 001- 2024-10-23                                                                                3                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ UD SERIES \n \nProcess Number: TBAKA-2410000078 \nDocument Number: UD221M450O300AP6 \nADDITIONAL SPECIFICATION \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-10-23 TBAKA-2410000078 Xu XiaoJun Initial specification  \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-UJ681M450P500AP4",
+      "fileName": "UJ681M450P500AP4-产品规格书.pdf",
+      "url": "/data/customer/specs/UJ681M450P500AP4/source.pdf",
+      "kind": "产品规格书",
+      "summary": "UJ681M450P500AP4；Snap-In；680 μF；450 V；工作温度 -40～105℃；标称本体尺寸 Φ35×50 mm；Endurance 2000 h（105℃）。",
+      "pdfVersion": "001-2025-02-06",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/UJ681M450P500AP4/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/UJ681M450P500AP4/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/UJ681M450P500AP4/page-3.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-UJ681M450P500AP4-page-1",
+          "title": "UJ681M450P500AP4 · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_ver. : 001- 2025-02-06                                                                                1                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ UJ SERIES \n \nProcess Number: TBAKA-2502000003 \nDocument Number: UJ681M450P500AP4 \nUJ SERIES ▪ LONG LIFE, 105° C TYPE \n \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ Snap-In type \n Ultra stable dissipation factor, leakage current \nSPECIFICATIONS \nPart Number UJ681M450P500AP4 Unit Conditions \nCapacitance  CR 680 µF  \nRated Voltage VR 450 V DC  \nSurge Voltage VS 495 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20°C \nRipple Current IR 2.58 A 120Hz ▪ 105°C \nRipple Current IR 3.69 A 100KHz ▪ 105°C \nDissipation Factor tanδ 20 % 120Hz ▪ 20°C \nLeakage Current ILEAK 1660 µA 5 min ▪ 20°C \nMax. ESR ESR 390 mΩ 120Hz ▪ 20°C \nSize D x L 35X50  mm  \nOperating Temperature Range -40~105 °C  \n \nAEC-Q200 Qualified NO   \nVibration Proof Version NO   \n \nLifetime Test  \nUseful Life \nVR & IR applied \nTest 5000 h 105°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nDeviation Rate Useful Life: 100 FIT = 0.01%/1000h with 60% confidence level ▪ parts show higher drift as test criteria \nEndurance \nVR & IR applied \nTest 2000 h 105°C \nΔC/CR ≤ ±15 % of initial measured value \ntanδ ≤ 175 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 105°C \nΔC/CR ≤ ±15 % of initial measured value \ntanδ ≤ 175 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nUJ 681 M 450 P 500 A P4  \n 680µF -20~20% 450V 35mm 50mm Without lead treatment H4mm / 2Pin"
+        },
+        {
+          "id": "spec-UJ681M450P500AP4-page-2",
+          "title": "UJ681M450P500AP4 · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_ver. : 001- 2025-02-06                                                                                2                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ UJ SERIES \n \nProcess Number: TBAKA-2502000003 \nDocument Number: UJ681M450P500AP4 \nDIMENSIONS ▪ In mm \n \n \n \n \nø D b L a H h \n35 +1 max 50 ±2 4 1.5 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.77 1 1.16 1.16 1.16 1.3 1.3 1.41 1.43 1.43 1.43 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n     \nGeneral Precautions \n&Guidelines \nPackaging                      \nInformation \nVibration Test                     \nProfiles 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and proper CapXon product . Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suitable designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor. Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, p romise any other warranty \nor guaranty for any CapXon product.  \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly\nH±1"
+        },
+        {
+          "id": "spec-UJ681M450P500AP4-page-3",
+          "title": "UJ681M450P500AP4 · 附加规格、修订记录及客户签核",
+          "page": 3,
+          "text": "CapXon_ver. : 001- 2025-02-06                                                                                3                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ UJ SERIES \n \nProcess Number: TBAKA-2502000003 \nDocument Number: UJ681M450P500AP4 \nADDITIONAL SPECIFICATION \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2025-02-06 TBAKA-2502000003 Xu XiaoJun Initial specification  \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
+    },
+    {
+      "id": "spec-UK821M200O300AP4",
+      "fileName": "UK821M200O300AP4-产品规格书.pdf",
+      "url": "/data/customer/specs/UK821M200O300AP4/source.pdf",
+      "kind": "产品规格书",
+      "summary": "UK821M200O300AP4；Snap-In；820 μF；200 V；工作温度 -40～105℃；标称本体尺寸 Φ30×30 mm；Endurance 3000 h（105℃）。",
+      "pdfVersion": "001-2024-10-25",
+      "pages": [
+        {
+          "page": 1,
+          "image": "/data/customer/specs/UK821M200O300AP4/page-1.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 2,
+          "image": "/data/customer/specs/UK821M200O300AP4/page-2.png",
+          "width": 1132,
+          "height": 1600
+        },
+        {
+          "page": 3,
+          "image": "/data/customer/specs/UK821M200O300AP4/page-3.png",
+          "width": 1132,
+          "height": 1600
+        }
+      ],
+      "sections": [
+        {
+          "id": "spec-UK821M200O300AP4-page-1",
+          "title": "UK821M200O300AP4 · 电气参数、寿命试验及料号编码",
+          "page": 1,
+          "text": "CapXon_ver. : 001- 2024-10-25                                                                                1                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ UK SERIES \n \nProcess Number: TBAKA-2410000097 \nDocument Number: UK821M200O300AP4 \nUK SERIES ▪ ULTRA LONG LIFE, 105° C TYPE \n \nKEY FEATURES \n ALUMINUM ELECTROLYTIC CAPACITOR ▪ Snap-In type \n Ultra stable dissipation factor, low leakage current \nSPECIFICATIONS \nPart Number UK821M200O300AP4 Unit Conditions \nCapacitance  CR 820 µF  \nRated Voltage VR 200 V DC  \nSurge Voltage VS 230 V DC  \nCap. Tolerance ΔC -20~20 % 120Hz ▪ 20°C \nRipple Current IR 2.34 A 120Hz ▪ 105°C \nRipple Current IR 3.51 A 100KHz ▪ 105°C \nDissipation Factor tanδ 15 % 120Hz ▪ 20°C \nLeakage Current ILEAK 1215 µA 5 min ▪ 20°C \nMax. ESR ESR 240 mΩ 120Hz ▪ 20°C \nSize D x L 30X30  mm  \nOperating Temperature Range -40~105 °C  \n \nAEC-Q200 Qualified NO   \nVibration Proof Version NO   \n \nLifetime Test  \nUseful Life \nVR & IR applied \nTest 8000 h 105°C \nΔC/CR ≤ ±20 % of initial measured value \ntanδ ≤ 200 % of initial specified value \nILEAK ≤  the initial specified value \nDeviation Rate Useful Life: 100 FIT = 0.01%/1000h with 60% confidence level ▪ parts show higher drift as test criteria \nEndurance \nVR & IR applied \nTest 3000 h 105°C \nΔC/CR ≤ ±15 % of initial measured value \ntanδ ≤ 175 % of initial specified value \nILEAK ≤  the initial specified value \nShelf Life \nVR = 0 \nTest 1000 h 105°C \nΔC/CR ≤ ±15 % of initial measured value \ntanδ ≤ 175 % of initial specified value \nILEAK ≤  the initial specified value \nBefore measurement: Restore capacitor to 20° C, apply VR for 30 min according JIS-C-5101-4 \nPART NUMBER SYSTEM \nSeries CR \n(µF) \nΔC \n(%) \nVR \n(V) \nD \n(mm) \nL \n(mm) Type Lead Treatment Special \n1_2 3_4_5 6 7_8_9 10 11_12_13 14 15_16 17_18_19_20 \nUK 821 M 200 O 300 A P4  \n 820µF -20~20% 200V 30mm 30mm Without lead treatment H4mm / 2Pin"
+        },
+        {
+          "id": "spec-UK821M200O300AP4-page-2",
+          "title": "UK821M200O300AP4 · 外形尺寸及纹波频率系数",
+          "page": 2,
+          "text": "CapXon_ver. : 001- 2024-10-25                                                                                2                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ UK SERIES \n \nProcess Number: TBAKA-2410000097 \nDocument Number: UK821M200O300AP4 \nDIMENSIONS ▪ In mm \n \n \n \n \nø D b L a H h \n30 +1 max 30 ±2 4 1.5 \nMULTIPLIER Kf for RIPPLE CURRENT vs. FREQUENCY \nFrequency (Hz) 60 120 300 400 500 1k 3k 10k 50k 100k 300k \nKf 0.81 1 1.17 1.17 1.17 1.32 1.32 1.45 1.5 1.5 1.5 \nPRECAUTIONS, GUIDELINES AND PACKAGING INFORMATON \nUnless otherwise agreed in individual specifications, all products are subject to our “General Precautions \nand Guidelines” as well as our “Packaging Information”. Please refer to the following links in the table. \n     \nGeneral Precautions \n&Guidelines \nPackaging                      \nInformation \nVibration Test                     \nProfiles 3D Models Reliability Tests \n \nDISCLAIMER \nAll product related data (e.g. specification, statements and general information) are subject to change without any notice. I t is necessary that the customer \nobserves all product related technical / application information and handling instructions.  \n \nCapXon products are designed and manufactured according to severe quality and safety standards. Under no circumstance, CapXon warrants that any \nCapXon product is suitable for the purposes intended for your application, even CapXon knows the application. It is customer's duty and obligation to check \nand make sure that CapXon products are suitable for the purposes intended and select the correct and proper CapXon product . Customers are requested to \nperform a sufficient validation and reliability evaluation to assure needed safety level and reliability performance by suitable designs and to apply proper \nsafeguards (e.g. redundancies, protective circuits). \n \nParticular operating conditions (ambient temperature, ripple current, voltage, thermal resistance, etc.) as well as storage, production or assembly may affect \nthe performance and the lifetime of the capacitor. Please consult CapXon for lifetime estimation, failure mode considerations or worst-case scenarios ac-\ncording to the product technology, product tolerances / deviations or change of the characteristics of the capacitor due to shipment, storage, handling, \nproduction and usage. \n \nFor aerospace or military application, life‐saving, life‐sustaining, safety critical applications or any application where failure may cause severe personal injury \nor death, please consult us before design‐in the capacitor in your application. \n \nExcept for the written expressed warranties, CapXon does not impliedly, by assumption or whatever else, warrant, undertake, p romise any other warranty \nor guaranty for any CapXon product.  \nFor further information, please visit our website www.capxongroup.com or contact CapXon directly\nH±1"
+        },
+        {
+          "id": "spec-UK821M200O300AP4-page-3",
+          "title": "UK821M200O300AP4 · 附加规格、修订记录及客户签核",
+          "page": 3,
+          "text": "CapXon_ver. : 001- 2024-10-25                                                                                3                                                                                                                                                                                                      \n                                                                                                                                                                                       \nFor further information please contact sales@capxon.org \nALUMINUM ELECTROLYTIC CAPACITOR ▪ UK SERIES \n \nProcess Number: TBAKA-2410000097 \nDocument Number: UK821M200O300AP4 \nADDITIONAL SPECIFICATION \n \nREVISION RECORDS \nVer. Date Process Number Changed by Description \n001 2024-10-25 TBAKA-2410000097 Xu XiaoJun Initial specification  \n002     \n003     \n004     \n005     \n006     \n \nCUSTOMER APPROVAL \nDate Name Department Signature"
+        }
+      ]
     }
   ],
   "products": [
@@ -436,7 +1216,11 @@
   "replacements": [
     {
       "from": "OLD-450-220",
-      "to": ["FB-LH220", "FB-SM220", "FB-HT220"],
+      "to": [
+        "FB-LH220",
+        "FB-SM220",
+        "FB-HT220"
+      ],
       "requirements": {
         "application": "工业电源",
         "voltage": 450,
@@ -453,7 +1237,10 @@
     },
     {
       "from": "OLD-450-470",
-      "to": ["FB-LH470", "FB-LS470"],
+      "to": [
+        "FB-LH470",
+        "FB-LS470"
+      ],
       "requirements": {
         "application": "工业电源",
         "voltage": 450,
@@ -471,57 +1258,766 @@
   ],
   "cases": [
     {
-      "id": "case-industrial-470",
-      "title": "工业电源 / 450 V、470 μF",
-      "question": "我们要为工业电源选择电容，要求额定电压不低于450 V、标称容量470 μF、温度不低于105℃、寿命不低于3000 h，尺寸暂无限制。请给出符合条件的候选，并按参考交期从短到长展示。",
-      "recommendedModels": ["FB-LS470", "FB-LH470"],
+      "id": "parameter-selection",
+      "title": "按参数找型号",
+      "question": "需要100μF、额定电压不低于35V的电容，有哪些型号符合？",
+      "recommendedModels": [
+        "GS101M035E110ETC",
+        "DV101M050G105ETRU"
+      ],
       "source": {
-        "documentId": "cases",
-        "sectionId": "case-industrial-470",
+        "documentId": "spec-GS101M035E110ETC",
+        "sectionId": "spec-GS101M035E110ETC-page-1",
         "page": 1
       }
     },
     {
-      "id": "case-compact-220",
-      "title": "小型化工业电源 / 尺寸上限",
-      "question": "我们在做小型化工业电源，需要额定电压不低于450 V、标称容量220 μF、温度不低于105℃、寿命不低于3000 h的电容，最大直径22 mm、最大高度40 mm。有哪些候选？",
-      "recommendedModels": ["FB-LH220", "FB-SM220"],
+      "id": "model-comparison",
+      "title": "比较两款型号",
+      "question": "比较GS101M035E110ETC和DV101M050G105ETRU的电压、安装方式和温度范围。DV能直接替代GS吗？",
+      "recommendedModels": [
+        "GS101M035E110ETC",
+        "DV101M050G105ETRU"
+      ],
       "source": {
-        "documentId": "cases",
-        "sectionId": "case-compact-220",
+        "documentId": "spec-GS101M035E110ETC",
+        "sectionId": "spec-GS101M035E110ETC-page-1",
         "page": 1
       }
     },
     {
-      "id": "case-replace-220",
-      "title": "外部型号替代 / OLD-450-220",
-      "question": "我们要替换工业电源上的OLD-450-220，原型号额定电压450 V、标称容量220 μF、温度105℃、寿命3000 h，尺寸暂未限定。请列出有依据的替代候选，并说明还需要人工核对哪些条件。",
-      "recommendedModels": ["FB-LH220", "FB-SM220", "FB-HT220"],
+      "id": "ripple-current",
+      "title": "核对纹波电流",
+      "question": "UK821M200O300AP4在100kHz、105℃下的纹波电流至少要3A，符合吗？",
+      "recommendedModels": [
+        "UK821M200O300AP4"
+      ],
       "source": {
-        "documentId": "cases",
-        "sectionId": "case-replace-220",
+        "documentId": "spec-UK821M200O300AP4",
+        "sectionId": "spec-UK821M200O300AP4-page-1",
         "page": 1
       }
     },
     {
-      "id": "case-high-temperature-330",
-      "title": "工业电源 / 高温长寿命",
-      "question": "我们需要工业电源用电容，额定电压不低于450 V、标称容量330 μF、温度不低于125℃、寿命不低于10000 h，尺寸和交期暂不限。请推荐满足这些要求的型号。",
-      "recommendedModels": ["FB-HT330"],
+      "id": "endurance-selection",
+      "title": "按耐久条件筛选",
+      "question": "找10μF、额定电压至少100V、THT插件式的型号；工作温度覆盖105℃，Endurance在105℃、施加额定电压和额定纹波条件下至少8000小时。",
+      "recommendedModels": [
+        "FK100M160G160ETA",
+        "KH100M400G200ETA"
+      ],
       "source": {
-        "documentId": "cases",
-        "sectionId": "case-high-temperature-330",
+        "documentId": "spec-FK100M160G160ETA",
+        "sectionId": "spec-FK100M160G160ETA-page-1",
+        "page": 1
+      }
+    },
+    {
+      "id": "lifetime-meaning",
+      "title": "核对寿命测试",
+      "question": "UK821M200O300AP4在105℃下寿命至少5000小时，满足吗？",
+      "recommendedModels": [],
+      "source": {
+        "documentId": "spec-UK821M200O300AP4",
+        "sectionId": "spec-UK821M200O300AP4-page-1",
+        "page": 1
+      }
+    },
+    {
+      "id": "dimension-limit",
+      "title": "核对尺寸公差",
+      "question": "UK821M200O300AP4首页写30×30mm。如果产品外径不能超过30mm，这款符合吗？依据在哪？",
+      "recommendedModels": [],
+      "source": {
+        "documentId": "spec-UK821M200O300AP4",
+        "sectionId": "spec-UK821M200O300AP4-page-2",
+        "page": 2
+      }
+    }
+  ],
+  "specifications": [
+    {
+      "model": "DV101M010E055ETRZU",
+      "mountingType": "SMD",
+      "capacitanceUf": 100,
+      "ratedVoltageV": 10,
+      "temperatureMinC": -55,
+      "temperatureMaxC": 105,
+      "diameterNominalMm": 6.3,
+      "diameterMaxMm": 6.8,
+      "heightNominalMm": 5.5,
+      "heightMaxMm": 5.7,
+      "pitchMm": null,
+      "smdTerminalGapMm": 2.2,
+      "endurance": {
+        "hours": 2000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": false
+      },
+      "usefulLife": null,
+      "ripple": [
+        {
+          "currentA": 0.156,
+          "frequencyHz": 120,
+          "temperatureC": 105
+        },
+        {
+          "currentA": 0.24,
+          "frequencyHz": 100000,
+          "temperatureC": 105
+        }
+      ],
+      "pdfVersion": "001-2024-10-25",
+      "source": {
+        "documentId": "spec-DV101M010E055ETRZU",
+        "sectionId": "spec-DV101M010E055ETRZU-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-DV101M010E055ETRZU",
+        "sectionId": "spec-DV101M010E055ETRZU-page-2",
         "page": 2
       }
     },
     {
-      "id": "case-consumer-470",
-      "title": "消费电子 / 50 V、470 μF",
-      "question": "我们开发消费电子产品，需要额定电压不低于50 V、标称容量470 μF、温度不低于105℃、寿命不低于2000 h的电容，尺寸和交期暂无限制。请给出符合条件的候选。",
-      "recommendedModels": ["FB-LV470"],
+      "model": "DV101M050G105ETRU",
+      "mountingType": "SMD",
+      "capacitanceUf": 100,
+      "ratedVoltageV": 50,
+      "temperatureMinC": -55,
+      "temperatureMaxC": 105,
+      "diameterNominalMm": 10,
+      "diameterMaxMm": 10.5,
+      "heightNominalMm": 10.5,
+      "heightMaxMm": 10.5,
+      "pitchMm": null,
+      "smdTerminalGapMm": 4.5,
+      "endurance": {
+        "hours": 2000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": false
+      },
+      "usefulLife": null,
+      "ripple": [
+        {
+          "currentA": 0.228,
+          "frequencyHz": 120,
+          "temperatureC": 105
+        },
+        {
+          "currentA": 0.35,
+          "frequencyHz": 100000,
+          "temperatureC": 105
+        }
+      ],
+      "pdfVersion": "001-2024-10-25",
       "source": {
-        "documentId": "cases",
-        "sectionId": "case-consumer-470",
+        "documentId": "spec-DV101M050G105ETRU",
+        "sectionId": "spec-DV101M050G105ETRU-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-DV101M050G105ETRU",
+        "sectionId": "spec-DV101M050G105ETRU-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "DV470M063F105ETRU",
+      "mountingType": "SMD",
+      "capacitanceUf": 47,
+      "ratedVoltageV": 63,
+      "temperatureMinC": -55,
+      "temperatureMaxC": 105,
+      "diameterNominalMm": 8,
+      "diameterMaxMm": 8.5,
+      "heightNominalMm": 10.5,
+      "heightMaxMm": 10.5,
+      "pitchMm": null,
+      "smdTerminalGapMm": 3.1,
+      "endurance": {
+        "hours": 2000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": false
+      },
+      "usefulLife": null,
+      "ripple": [
+        {
+          "currentA": 0.169,
+          "frequencyHz": 120,
+          "temperatureC": 105
+        },
+        {
+          "currentA": 0.26,
+          "frequencyHz": 100000,
+          "temperatureC": 105
+        }
+      ],
+      "pdfVersion": "001-2024-10-25",
+      "source": {
+        "documentId": "spec-DV470M063F105ETRU",
+        "sectionId": "spec-DV470M063F105ETRU-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-DV470M063F105ETRU",
+        "sectionId": "spec-DV470M063F105ETRU-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "DV681M6R3F105ETRU",
+      "mountingType": "SMD",
+      "capacitanceUf": 680,
+      "ratedVoltageV": 6.3,
+      "temperatureMinC": -55,
+      "temperatureMaxC": 105,
+      "diameterNominalMm": 8,
+      "diameterMaxMm": 8.5,
+      "heightNominalMm": 10.5,
+      "heightMaxMm": 10.5,
+      "pitchMm": null,
+      "smdTerminalGapMm": 3.1,
+      "endurance": {
+        "hours": 2000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": false
+      },
+      "usefulLife": null,
+      "ripple": [
+        {
+          "currentA": 0.325,
+          "frequencyHz": 120,
+          "temperatureC": 105
+        },
+        {
+          "currentA": 0.5,
+          "frequencyHz": 100000,
+          "temperatureC": 105
+        }
+      ],
+      "pdfVersion": "001-2024-11-02",
+      "source": {
+        "documentId": "spec-DV681M6R3F105ETRU",
+        "sectionId": "spec-DV681M6R3F105ETRU-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-DV681M6R3F105ETRU",
+        "sectionId": "spec-DV681M6R3F105ETRU-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "FH100M050C110ETB",
+      "mountingType": "THT",
+      "capacitanceUf": 10,
+      "ratedVoltageV": 50,
+      "temperatureMinC": -40,
+      "temperatureMaxC": 105,
+      "diameterNominalMm": 5,
+      "diameterMaxMm": 5.5,
+      "heightNominalMm": 11,
+      "heightMaxMm": 12.5,
+      "pitchMm": 2,
+      "smdTerminalGapMm": null,
+      "endurance": {
+        "hours": 5000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "usefulLife": null,
+      "ripple": [
+        {
+          "currentA": 0.103,
+          "frequencyHz": 120,
+          "temperatureC": 105
+        },
+        {
+          "currentA": 0.175,
+          "frequencyHz": 100000,
+          "temperatureC": 105
+        }
+      ],
+      "pdfVersion": "001-2024-11-19",
+      "source": {
+        "documentId": "spec-FH100M050C110ETB",
+        "sectionId": "spec-FH100M050C110ETB-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-FH100M050C110ETB",
+        "sectionId": "spec-FH100M050C110ETB-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "FK100M160G160ETA",
+      "mountingType": "THT",
+      "capacitanceUf": 10,
+      "ratedVoltageV": 160,
+      "temperatureMinC": -40,
+      "temperatureMaxC": 105,
+      "diameterNominalMm": 10,
+      "diameterMaxMm": 10.5,
+      "heightNominalMm": 16,
+      "heightMaxMm": 17.5,
+      "pitchMm": 5,
+      "smdTerminalGapMm": null,
+      "endurance": {
+        "hours": 8000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "usefulLife": null,
+      "ripple": [
+        {
+          "currentA": 0.147,
+          "frequencyHz": 120,
+          "temperatureC": 105
+        },
+        {
+          "currentA": 0.368,
+          "frequencyHz": 100000,
+          "temperatureC": 105
+        }
+      ],
+      "pdfVersion": "001-2024-11-02",
+      "source": {
+        "documentId": "spec-FK100M160G160ETA",
+        "sectionId": "spec-FK100M160G160ETA-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-FK100M160G160ETA",
+        "sectionId": "spec-FK100M160G160ETA-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "GH152M063K355A",
+      "mountingType": "THT",
+      "capacitanceUf": 1500,
+      "ratedVoltageV": 63,
+      "temperatureMinC": -55,
+      "temperatureMaxC": 105,
+      "diameterNominalMm": 18,
+      "diameterMaxMm": 18.5,
+      "heightNominalMm": 35.5,
+      "heightMaxMm": 37.5,
+      "pitchMm": 7.5,
+      "smdTerminalGapMm": null,
+      "endurance": {
+        "hours": 10000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "usefulLife": null,
+      "ripple": [
+        {
+          "currentA": 2.67,
+          "frequencyHz": 120,
+          "temperatureC": 105
+        },
+        {
+          "currentA": 3.256,
+          "frequencyHz": 100000,
+          "temperatureC": 105
+        }
+      ],
+      "pdfVersion": "001-2024-10-30",
+      "source": {
+        "documentId": "spec-GH152M063K355A",
+        "sectionId": "spec-GH152M063K355A-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-GH152M063K355A",
+        "sectionId": "spec-GH152M063K355A-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "GS101M035E110ETC",
+      "mountingType": "THT",
+      "capacitanceUf": 100,
+      "ratedVoltageV": 35,
+      "temperatureMinC": -40,
+      "temperatureMaxC": 85,
+      "diameterNominalMm": 6.3,
+      "diameterMaxMm": 6.8,
+      "heightNominalMm": 11,
+      "heightMaxMm": 12.5,
+      "pitchMm": 2.5,
+      "smdTerminalGapMm": null,
+      "endurance": {
+        "hours": 2000,
+        "temperatureC": 85,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "usefulLife": null,
+      "ripple": [
+        {
+          "currentA": 0.231,
+          "frequencyHz": 120,
+          "temperatureC": 85
+        },
+        {
+          "currentA": 0.353,
+          "frequencyHz": 100000,
+          "temperatureC": 85
+        }
+      ],
+      "pdfVersion": "001-2024-11-19",
+      "source": {
+        "documentId": "spec-GS101M035E110ETC",
+        "sectionId": "spec-GS101M035E110ETC-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-GS101M035E110ETC",
+        "sectionId": "spec-GS101M035E110ETC-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "KH100M400G200ETA",
+      "mountingType": "THT",
+      "capacitanceUf": 10,
+      "ratedVoltageV": 400,
+      "temperatureMinC": -40,
+      "temperatureMaxC": 105,
+      "diameterNominalMm": 10,
+      "diameterMaxMm": 10.5,
+      "heightNominalMm": 20,
+      "heightMaxMm": 21.5,
+      "pitchMm": 5,
+      "smdTerminalGapMm": null,
+      "endurance": {
+        "hours": 10000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "usefulLife": null,
+      "ripple": [
+        {
+          "currentA": 0.18,
+          "frequencyHz": 120,
+          "temperatureC": 105
+        },
+        {
+          "currentA": 0.36,
+          "frequencyHz": 100000,
+          "temperatureC": 105
+        }
+      ],
+      "pdfVersion": "001-2024-11-19",
+      "source": {
+        "documentId": "spec-KH100M400G200ETA",
+        "sectionId": "spec-KH100M400G200ETA-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-KH100M400G200ETA",
+        "sectionId": "spec-KH100M400G200ETA-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "LP103M080P500AP4",
+      "mountingType": "Snap-In",
+      "capacitanceUf": 10000,
+      "ratedVoltageV": 80,
+      "temperatureMinC": -40,
+      "temperatureMaxC": 85,
+      "diameterNominalMm": 35,
+      "diameterMaxMm": 36,
+      "heightNominalMm": 50,
+      "heightMaxMm": 52,
+      "pitchMm": 10,
+      "smdTerminalGapMm": null,
+      "endurance": {
+        "hours": 2000,
+        "temperatureC": 85,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "usefulLife": {
+        "hours": 3000,
+        "temperatureC": 85,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "ripple": [
+        {
+          "currentA": 6.65,
+          "frequencyHz": 120,
+          "temperatureC": 85
+        },
+        {
+          "currentA": 7.65,
+          "frequencyHz": 100000,
+          "temperatureC": 85
+        }
+      ],
+      "pdfVersion": "001-2024-10-25",
+      "source": {
+        "documentId": "spec-LP103M080P500AP4",
+        "sectionId": "spec-LP103M080P500AP4-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-LP103M080P500AP4",
+        "sectionId": "spec-LP103M080P500AP4-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "LP271M400N400AP6",
+      "mountingType": "Snap-In",
+      "capacitanceUf": 270,
+      "ratedVoltageV": 400,
+      "temperatureMinC": -25,
+      "temperatureMaxC": 85,
+      "diameterNominalMm": 25,
+      "diameterMaxMm": 26,
+      "heightNominalMm": 40,
+      "heightMaxMm": 42,
+      "pitchMm": 10,
+      "smdTerminalGapMm": null,
+      "endurance": {
+        "hours": 2000,
+        "temperatureC": 85,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "usefulLife": {
+        "hours": 5000,
+        "temperatureC": 85,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "ripple": [
+        {
+          "currentA": 2.12,
+          "frequencyHz": 120,
+          "temperatureC": 85
+        },
+        {
+          "currentA": 3.03,
+          "frequencyHz": 100000,
+          "temperatureC": 85
+        }
+      ],
+      "pdfVersion": "001-2024-11-20",
+      "source": {
+        "documentId": "spec-LP271M400N400AP6",
+        "sectionId": "spec-LP271M400N400AP6-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-LP271M400N400AP6",
+        "sectionId": "spec-LP271M400N400AP6-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "TV3R3M400F105ETRHLRZ",
+      "mountingType": "SMD",
+      "capacitanceUf": 3.3,
+      "ratedVoltageV": 400,
+      "temperatureMinC": -40,
+      "temperatureMaxC": 125,
+      "diameterNominalMm": 8,
+      "diameterMaxMm": 8.5,
+      "heightNominalMm": 10.5,
+      "heightMaxMm": 11,
+      "pitchMm": null,
+      "smdTerminalGapMm": 3.1,
+      "endurance": {
+        "hours": 4000,
+        "temperatureC": 125,
+        "voltageApplied": true,
+        "rippleApplied": false
+      },
+      "usefulLife": null,
+      "ripple": [
+        {
+          "currentA": 0.03,
+          "frequencyHz": 120,
+          "temperatureC": 125
+        },
+        {
+          "currentA": 0.045,
+          "frequencyHz": 100000,
+          "temperatureC": 125
+        }
+      ],
+      "pdfVersion": "001-2025-03-17",
+      "source": {
+        "documentId": "spec-TV3R3M400F105ETRHLRZ",
+        "sectionId": "spec-TV3R3M400F105ETRHLRZ-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-TV3R3M400F105ETRHLRZ",
+        "sectionId": "spec-TV3R3M400F105ETRHLRZ-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "UD221M450O300AP6",
+      "mountingType": "Snap-In",
+      "capacitanceUf": 220,
+      "ratedVoltageV": 450,
+      "temperatureMinC": -40,
+      "temperatureMaxC": 85,
+      "diameterNominalMm": 30,
+      "diameterMaxMm": 31,
+      "heightNominalMm": 30,
+      "heightMaxMm": 32,
+      "pitchMm": 10,
+      "smdTerminalGapMm": null,
+      "endurance": {
+        "hours": 5000,
+        "temperatureC": 85,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "usefulLife": {
+        "hours": 10000,
+        "temperatureC": 85,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "ripple": [
+        {
+          "currentA": 1.62,
+          "frequencyHz": 120,
+          "temperatureC": 85
+        },
+        {
+          "currentA": 2.32,
+          "frequencyHz": 100000,
+          "temperatureC": 85
+        }
+      ],
+      "pdfVersion": "001-2024-10-23",
+      "source": {
+        "documentId": "spec-UD221M450O300AP6",
+        "sectionId": "spec-UD221M450O300AP6-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-UD221M450O300AP6",
+        "sectionId": "spec-UD221M450O300AP6-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "UJ681M450P500AP4",
+      "mountingType": "Snap-In",
+      "capacitanceUf": 680,
+      "ratedVoltageV": 450,
+      "temperatureMinC": -40,
+      "temperatureMaxC": 105,
+      "diameterNominalMm": 35,
+      "diameterMaxMm": 36,
+      "heightNominalMm": 50,
+      "heightMaxMm": 52,
+      "pitchMm": 10,
+      "smdTerminalGapMm": null,
+      "endurance": {
+        "hours": 2000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "usefulLife": {
+        "hours": 5000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "ripple": [
+        {
+          "currentA": 2.58,
+          "frequencyHz": 120,
+          "temperatureC": 105
+        },
+        {
+          "currentA": 3.69,
+          "frequencyHz": 100000,
+          "temperatureC": 105
+        }
+      ],
+      "pdfVersion": "001-2025-02-06",
+      "source": {
+        "documentId": "spec-UJ681M450P500AP4",
+        "sectionId": "spec-UJ681M450P500AP4-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-UJ681M450P500AP4",
+        "sectionId": "spec-UJ681M450P500AP4-page-2",
+        "page": 2
+      }
+    },
+    {
+      "model": "UK821M200O300AP4",
+      "mountingType": "Snap-In",
+      "capacitanceUf": 820,
+      "ratedVoltageV": 200,
+      "temperatureMinC": -40,
+      "temperatureMaxC": 105,
+      "diameterNominalMm": 30,
+      "diameterMaxMm": 31,
+      "heightNominalMm": 30,
+      "heightMaxMm": 32,
+      "pitchMm": 10,
+      "smdTerminalGapMm": null,
+      "endurance": {
+        "hours": 3000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "usefulLife": {
+        "hours": 8000,
+        "temperatureC": 105,
+        "voltageApplied": true,
+        "rippleApplied": true
+      },
+      "ripple": [
+        {
+          "currentA": 2.34,
+          "frequencyHz": 120,
+          "temperatureC": 105
+        },
+        {
+          "currentA": 3.51,
+          "frequencyHz": 100000,
+          "temperatureC": 105
+        }
+      ],
+      "pdfVersion": "001-2024-10-25",
+      "source": {
+        "documentId": "spec-UK821M200O300AP4",
+        "sectionId": "spec-UK821M200O300AP4-page-1",
+        "page": 1
+      },
+      "dimensionsSource": {
+        "documentId": "spec-UK821M200O300AP4",
+        "sectionId": "spec-UK821M200O300AP4-page-2",
         "page": 2
       }
     }

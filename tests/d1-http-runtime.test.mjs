@@ -7,11 +7,11 @@ import { DatabaseSync } from 'node:sqlite';
 import ts from 'typescript';
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'fengbin-d1-http-'));
-const environmentNames = ['CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_D1_DATABASE_ID', 'CLOUDFLARE_D1_API_TOKEN', 'VERCEL'];
+const environmentNames = ['CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_D1_DATABASE_ID', 'CLOUDFLARE_D1_API_TOKEN', 'TURSO_DATABASE_URL', 'TURSO_AUTH_TOKEN', 'VERCEL'];
 const originalEnvironment = Object.fromEntries(environmentNames.map(name => [name, process.env[name]]));
 let sqlite;
 try {
-  for (const name of ['admin-auth', 'user-store', 'account-http', 'd1-http-database', 'account-runtime-node', 'admin-server']) {
+  for (const name of ['admin-auth', 'user-store', 'account-http', 'd1-http-database', 'libsql-database', 'account-runtime-node', 'admin-server']) {
     const source = fs.readFileSync(`lib/${name}.ts`, 'utf8')
       .replace("'./account-runtime'", "'./account-runtime-node'");
     fs.writeFileSync(path.join(temp, `${name}.js`), ts.transpileModule(source, {
@@ -19,6 +19,7 @@ try {
     }).outputText);
   }
   fs.mkdirSync(path.join(temp, 'node_modules/next'), { recursive: true });
+  fs.symlinkSync(path.resolve('node_modules/@libsql'), path.join(temp, 'node_modules/@libsql'), 'dir');
   fs.writeFileSync(path.join(temp, 'node_modules/next/headers.js'), 'exports.cookies = async () => ({ get: () => undefined });');
   const require = createRequire(path.join(temp, 'check.cjs'));
   const { createD1HttpDatabase } = require('./d1-http-database.js');
@@ -36,6 +37,17 @@ try {
   for (const name of environmentNames) delete process.env[name];
   assert.throws(() => runtime.accountDatabase(), isUnavailable);
   assert.equal(await server.currentUser(), null);
+  process.env.CLOUDFLARE_ACCOUNT_ID = credentials.accountId;
+  process.env.CLOUDFLARE_D1_DATABASE_ID = credentials.databaseId;
+  process.env.CLOUDFLARE_D1_API_TOKEN = credentials.apiToken;
+  assert.equal(typeof runtime.accountDatabase().prepare, 'function');
+  process.env.TURSO_DATABASE_URL = 'https://test-accounts.turso.io';
+  assert.throws(() => runtime.accountDatabase(), isUnavailable, 'Partial Turso configuration must not silently use another database');
+  process.env.TURSO_AUTH_TOKEN = 'test-only-turso-token';
+  assert.equal(typeof runtime.accountDatabase().prepare, 'function');
+  process.env.TURSO_DATABASE_URL = 'file:/tmp/not-a-remote-account-database';
+  assert.throws(() => runtime.accountDatabase(), isUnavailable);
+  for (const name of environmentNames) delete process.env[name];
   for (const missing of Object.keys(credentials)) {
     assert.throws(() => createD1HttpDatabase({ ...credentials, [missing]: '' }), isUnavailable);
   }

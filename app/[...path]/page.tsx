@@ -14,7 +14,7 @@ async function ProtectedPage({
   const segments = (await params).path;
   const path = '/' + segments.join('/');
   if (!isWorkspacePath(path)) notFound();
-  if ((path === '/data' || path === '/users') && !canAccessManagement(user)) redirect('/');
+  if (path === '/users' && !canAccessManagement(user)) redirect('/');
   return <Workspace path={path} />;
 }
 export default function ApplicationPage({

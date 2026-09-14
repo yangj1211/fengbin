@@ -124,7 +124,9 @@ export function processingSummary(
         ? turn.analysis.title === '产品规格查询'
           ? '整理目录中的型号参数，并保留选型核对说明。'
           : '整理条件匹配、未入选原因及需人工确认的事项。'
-        : '整理已知条件和需要继续补充的信息。',
+        : turn.sources?.some(source => source.documentId.startsWith('spec-'))
+          ? '按规格书核对已明确的参数及测试条件，并关联原文页码。'
+          : '整理已知条件和需要继续补充的信息。',
     ].join('\n');
   }
   if (id === 'maintenance') {

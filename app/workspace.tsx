@@ -33,7 +33,6 @@ import Navigation from './application/navigation';
 import AgentPlaza from './application/home';
 import ModuleWorkspace from './application/module';
 import ConversationLayout from './application/conversation-layout';
-import DataManager from './application/data-manager';
 import UserManagement from './application/user-management';
 import ChangePassword from './application/change-password';
 import type { AccountUser } from './application/account-types';
@@ -254,7 +253,6 @@ function WorkspaceContent({
         session={session}
         registerLeaveGuard={registerLeaveGuard}
         state={state}
-        navigate={navigate}
       />
     </ConversationLayout>
   ) : null;
@@ -312,14 +310,12 @@ function WorkspaceContent({
             ) : (
               conversation
             )
-          ) : (path === '/data' || path === '/users') && user.role !== 'admin' ? (
+          ) : path === '/users' && user.role !== 'admin' ? (
             <section className="account-bootstrap">
               <strong>无访问权限</strong>
               <p>平台管理仅管理员可访问。</p>
               <Button onClick={() => navigate('/')}>返回智能体广场</Button>
             </section>
-          ) : path === '/data' ? (
-            <DataManager state={state} />
           ) : path === '/users' ? (
             <UserManagement currentUser={user} onUserChange={onUserChange} />
           ) : (
