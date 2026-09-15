@@ -149,9 +149,9 @@ export default function UserManagement({ currentUser, onUserChange }: {
   }
   return <>
     <AppHeading title="用户管理" description="创建平台账号，维护用户资料、角色和登录密码。" action={<Button onClick={() => openEditor('new')} disabled={loading || Boolean(loadError)}><Plus size={17} />新增用户</Button>} />
-    {notice && <output className="data-resource-message">{notice}</output>}
+    {notice && <output className="user-management-notice">{notice}</output>}
     <section className="app-section user-management" aria-label="平台用户" aria-busy={loading}>
-      <div className="data-resource-toolbar user-toolbar">
+      <div className="user-toolbar">
         <div className="search-field">
           <Search size={17} />
           <Input aria-label="搜索姓名或账号" placeholder="搜索姓名或账号" value={query} disabled={loading} onChange={(event) => { setQuery(event.target.value); setPage(1); }} />

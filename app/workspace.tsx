@@ -10,11 +10,7 @@ import {
 import { usePathname } from 'next/navigation';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import {
-  modules,
-  defaultInputs,
-  type Inputs,
-} from './application/model';
+import { modules, defaultInputs, type Inputs } from './application/model';
 import { hasDashboard } from './application/dashboard-data';
 import BusinessDashboard from './application/dashboard';
 import {
@@ -28,12 +24,12 @@ import {
   startConversation,
   selectConversation,
   removeConversation,
+  applyDashboardConditions,
 } from './application/sessions';
 import Navigation from './application/navigation';
 import AgentPlaza from './application/home';
 import ModuleWorkspace from './application/module';
 import ConversationLayout from './application/conversation-layout';
-import DataManager from './application/data-manager';
 import UserManagement from './application/user-management';
 import ChangePassword from './application/change-password';
 import type { AccountUser } from './application/account-types';
@@ -44,6 +40,7 @@ import {
   readWorkspaceSearch,
   subscribeWorkspaceNavigation,
 } from './application/workspace-path';
+import { normalizeFinalInput } from './application/final-data';
 import { monitorAdminSession } from './application/session-monitor';
 
 // Mount a board only after it is requested, then retain its filters while this
@@ -63,11 +60,7 @@ function DeferredDashboard({
     </section>
   ) : null;
 }
-export default function Workspace({
-  path = '/',
-}: {
-  path?: string;
-}) {
+export default function Workspace({ path = '/' }: { path?: string }) {
   const [user, setUser] = useState<AccountUser | null>(null);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
@@ -84,22 +77,55 @@ export default function Workspace({
     const controller = new AbortController();
     void (async () => {
       try {
-        const response = await fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal });
-        if (response.status === 401) { window.location.replace('/login'); return; }
-        const result = await response.json() as { user?: AccountUser };
+        const response = await fetch('/api/auth/session', {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        if (response.status === 401) {
+          window.location.replace('/login');
+          return;
+        }
+        const result = (await response.json()) as { user?: AccountUser };
         if (!response.ok || !result.user) throw new Error();
         if (!controller.signal.aborted) acceptUser(result.user);
       } catch {
-        if (!controller.signal.aborted) setError('登录信息暂时无法加载，请检查网络后重试。');
+        if (!controller.signal.aborted)
+          setError('登录信息暂时无法加载，请检查网络后重试。');
       }
     })();
     return () => controller.abort();
   }, [retry, acceptUser]);
-  if (!user) return <main className="account-bootstrap" aria-busy={!error}>
-    <strong>丰宾电子 · 智能制造平台</strong>
-    {error ? <><p role="alert">{error}</p><Button variant="outline" onClick={() => { setError(''); setRetry((old) => old + 1); }}>重试</Button></> : <output>正在进入工作区…</output>}
-  </main>;
-  return <WorkspaceContent key={user.id} path={path} user={user} onUserChange={acceptUser} />;
+  if (!user)
+    return (
+      <main className="account-bootstrap" aria-busy={!error}>
+        <strong>丰宾电子 · 智能制造平台</strong>
+        {error ? (
+          <>
+            <p role="alert">{error}</p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setError('');
+                setRetry((old) => old + 1);
+              }}
+            >
+              重试
+            </Button>
+          </>
+        ) : (
+          <output>正在进入工作区…</output>
+        )}
+      </main>
+    );
+  return (
+    <WorkspaceContent
+      key={user.id}
+      path={path}
+      user={user}
+      onUserChange={acceptUser}
+    />
+  );
 }
 function WorkspaceContent({
   path: initialPath = '/',
@@ -125,9 +151,9 @@ function WorkspaceContent({
   }
   const [loggingOut, setLoggingOut] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
-  const [energyInput, setEnergyInput] = useState<Inputs>(() =>
-    ({ ...defaultInputs.energy }),
-  );
+  const [energyInput, setEnergyInput] = useState<Inputs>(() => ({
+    ...defaultInputs.energy,
+  }));
   const leaveGuard = useRef<((discard?: boolean) => boolean) | null>(null);
   const registerLeaveGuard = useCallback(
     (guard: ((discard?: boolean) => boolean) | null) => {
@@ -185,9 +211,7 @@ function WorkspaceContent({
   }
   function newConversation() {
     if (!activeModule || !canLeave()) return false;
-    const ok = updateWorkspace((s) =>
-      startConversation(s, activeModule.id),
-    );
+    const ok = updateWorkspace((s) => startConversation(s, activeModule.id));
     if (!ok) setMessage(storageMessage());
     else {
       setMessage('');
@@ -218,6 +242,25 @@ function WorkspaceContent({
     if (value === 'dashboard' && !hasDashboard(activeModule.id)) return false;
     if (value === view) return true;
     if (!canLeave()) return false;
+    if (
+      value === 'dashboard' &&
+      (activeModule.id === 'energy' || activeModule.id === 'production') &&
+      session
+    ) {
+      const id = activeModule.id;
+      if (
+        !updateWorkspace((s) => ({
+          ...s,
+          dashboardInputs: {
+            ...s.dashboardInputs,
+            [id]: normalizeFinalInput(id, session.draft),
+          },
+        }))
+      ) {
+        setMessage(storageMessage());
+        return false;
+      }
+    }
     setMessage('');
     return navigateView(value);
   }
@@ -254,7 +297,6 @@ function WorkspaceContent({
         session={session}
         registerLeaveGuard={registerLeaveGuard}
         state={state}
-        navigate={navigate}
       />
     </ConversationLayout>
   ) : null;
@@ -274,9 +316,15 @@ function WorkspaceContent({
         loggingOut={loggingOut}
         username={user.name}
         canManage={user.role === 'admin'}
-        onChangePassword={() => { if (canLeave()) setPasswordOpen(true); }}
+        onChangePassword={() => {
+          if (canLeave()) setPasswordOpen(true);
+        }}
       />
-      <ChangePassword open={passwordOpen} onOpenChange={setPasswordOpen} account={user.account} />
+      <ChangePassword
+        open={passwordOpen}
+        onOpenChange={setPasswordOpen}
+        account={user.account}
+      />
       <main
         className={
           'application-main' + (dashboardVisible ? ' is-dashboard' : '')
@@ -301,7 +349,23 @@ function WorkspaceContent({
                   <BusinessDashboard
                     id={activeModule.id}
                     state={state}
-                    onOpenChat={() => changeView('chat')}
+                    onOpenChat={(input) => {
+                      if (!input) return changeView('chat');
+                      if (!canLeave()) return false;
+                      const id = activeModule.id as
+                        | 'energy'
+                        | 'production'
+                        | 'supplier';
+                      if (
+                        !updateWorkspace((s) =>
+                          applyDashboardConditions(s, id, input),
+                        )
+                      ) {
+                        setMessage(storageMessage());
+                        return false;
+                      }
+                      return navigateView('chat');
+                    }}
                     navigate={navigate}
                     energyInput={energyInput}
                     onEnergyInputChange={setEnergyInput}
@@ -312,14 +376,12 @@ function WorkspaceContent({
             ) : (
               conversation
             )
-          ) : (path === '/data' || path === '/users') && user.role !== 'admin' ? (
+          ) : path === '/users' && user.role !== 'admin' ? (
             <section className="account-bootstrap">
               <strong>无访问权限</strong>
               <p>平台管理仅管理员可访问。</p>
               <Button onClick={() => navigate('/')}>返回智能体广场</Button>
             </section>
-          ) : path === '/data' ? (
-            <DataManager state={state} />
           ) : path === '/users' ? (
             <UserManagement currentUser={user} onUserChange={onUserChange} />
           ) : (

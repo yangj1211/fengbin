@@ -3,6 +3,29 @@ export type SourceReference = {
   sectionId: string;
   page: number;
 };
+export type SpecificationProduct = {
+  model: string;
+  mountingType: string;
+  capacitanceUf: number;
+  ratedVoltageV: number;
+  temperatureMinC: number;
+  temperatureMaxC: number;
+  diameterNominalMm: number;
+  diameterMaxMm: number | null;
+  heightNominalMm: number;
+  heightMaxMm: number | null;
+  pitchMm: number | null;
+  endurance: LifetimeSpecification;
+  usefulLife: LifetimeSpecification | null;
+  ripple: { currentA: number; frequencyHz: number; temperatureC: number }[];
+  source: SourceReference;
+};
+export type LifetimeSpecification = {
+  hours: number;
+  temperatureC: number;
+  voltageApplied: boolean;
+  rippleApplied: boolean;
+};
 export type CustomerProduct = {
   model: string;
   application: string;
@@ -28,6 +51,7 @@ export type CustomerDecision = {
 };
 export type CustomerFixtures = {
   version: string;
+  specifications?: SpecificationProduct[];
   documents: {
     id: string;
     fileName: string;

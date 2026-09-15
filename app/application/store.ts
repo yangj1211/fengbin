@@ -10,17 +10,24 @@ import {
   type Analysis,
 } from './model';
 import type { ConversationTurn } from './conversation';
-import { resolveSource } from './knowledge-sources';
+import { resolveSource, sourceDocuments } from './knowledge-sources';
 import type { SourceReference } from './customer-types';
 import type { CustomerDecision } from './customer-types';
 import { normalizeCustomerInputs } from './customer-engine';
 import { normalizeMaintenanceInputs } from './maintenance-engine';
 import { withFixedRules } from './fixed-rules';
+import { normalizeFinalInput } from './final-data';
+// A complete standard workbook can exceed 30 references. Bound persisted
+// citations by the available source catalog so every valid answer can reload.
+const sourceReferenceLimit = sourceDocuments.reduce(
+  (total, document) => total + document.sections.length,
+  0,
+);
 function validSources(sources: unknown): boolean {
   return (
     sources === undefined ||
     (Array.isArray(sources) &&
-      sources.length <= 30 &&
+      sources.length <= sourceReferenceLimit &&
       sources.every(
         (s) =>
           s &&
@@ -164,92 +171,114 @@ function validTurn(t: ConversationTurn): boolean {
   );
 }
 function normalizeWorkspace(parsed: WorkspaceState): WorkspaceState {
-    if (
-      parsed.version !== 1 ||
-      !Array.isArray(parsed.datasets) ||
-      parsed.datasets.length !== 5 ||
-      parsed.datasets.some((d) => validateDataset(d)) ||
-      new Set(parsed.datasets.map((d) => d.id)).size !== 5 ||
-      !Array.isArray(parsed.records) ||
-      parsed.records.length > 100 ||
-      !parsed.drafts ||
-      typeof parsed.drafts !== 'object'
-    )
-      throw new Error();
-    parsed.deletedDataResourceIds = Array.isArray(parsed.deletedDataResourceIds)
-      ? [
-          ...new Set(
-            parsed.deletedDataResourceIds.filter(
-              (id) => typeof id === 'string' && id.length <= 200,
-            ),
+  if (
+    parsed.version !== 1 ||
+    !Array.isArray(parsed.datasets) ||
+    parsed.datasets.length !== 5 ||
+    !Array.isArray(parsed.records) ||
+    parsed.records.length > 100 ||
+    !parsed.drafts ||
+    typeof parsed.drafts !== 'object'
+  )
+    throw new Error();
+  // Built-in datasets can change columns between releases. Refresh them
+  // before validating against today's schema; imported data stays untouched.
+  parsed.datasets = parsed.datasets.map((d) =>
+    d?.origin === 'sample' &&
+    (d.id === 'products' ||
+      d.id === 'maintenance' ||
+      d.id === 'energy' ||
+      d.id === 'production')
+      ? initialDatasets.find((item) => item.id === d.id)!
+      : d,
+  );
+  if (
+    parsed.datasets.some((d) => validateDataset(d)) ||
+    new Set(parsed.datasets.map((d) => d.id)).size !== 5
+  )
+    throw new Error();
+  parsed.deletedDataResourceIds = Array.isArray(parsed.deletedDataResourceIds)
+    ? [
+        ...new Set(
+          parsed.deletedDataResourceIds.filter(
+            (id) => typeof id === 'string' && id.length <= 200,
           ),
-        ].slice(0, 1000)
-      : [];
-    parsed.records = parsed.records.filter(
-      (r) =>
-        r &&
-        typeof r.id === 'string' &&
-        modules.some((m) => m.id === r.module) &&
-        (r.state === '待跟进' || r.state === '已完成') &&
-        typeof r.note === 'string' &&
-        validDecision(r.customerDecision) &&
-        typeof r.sourceName === 'string' &&
-        Object.values(r.inputs ?? {}).every((v) => typeof v === 'string') &&
-        typeof r.name === 'string' &&
-        typeof r.createdAt === 'string' &&
-        r.inputs &&
-        validAnalysis(r.analysis),
-    );
-    parsed.drafts = Object.fromEntries(
-      Object.entries(parsed.drafts)
-        .filter(
-          ([id, draft]) =>
-            modules.some((m) => m.id === id) &&
-            draft &&
-            Object.values(draft).every((v) => typeof v === 'string'),
-        )
-        .map(([id, draft]) => [
-          id,
-          id === 'maintenance'
-            ? normalizeMaintenanceInputs(draft)
+        ),
+      ].slice(0, 1000)
+    : [];
+  parsed.records = parsed.records.filter(
+    (r) =>
+      r &&
+      typeof r.id === 'string' &&
+      modules.some((m) => m.id === r.module) &&
+      (r.state === '待跟进' || r.state === '已完成') &&
+      typeof r.note === 'string' &&
+      validDecision(r.customerDecision) &&
+      typeof r.sourceName === 'string' &&
+      Object.values(r.inputs ?? {}).every((v) => typeof v === 'string') &&
+      typeof r.name === 'string' &&
+      typeof r.createdAt === 'string' &&
+      r.inputs &&
+      validAnalysis(r.analysis),
+  );
+  parsed.drafts = Object.fromEntries(
+    Object.entries(parsed.drafts)
+      .filter(
+        ([id, draft]) =>
+          modules.some((m) => m.id === id) &&
+          draft &&
+          Object.values(draft).every((v) => typeof v === 'string'),
+      )
+      .map(([id, draft]) => [
+        id,
+        id === 'maintenance'
+          ? normalizeMaintenanceInputs(draft)
+          : id === 'energy' || id === 'production'
+            ? normalizeFinalInput(id, draft)
             : withFixedRules(id as keyof typeof defaultInputs, {
                 ...defaultInputs[id as keyof typeof defaultInputs],
                 ...draft,
               }),
-        ]),
-    );
-    if (!Array.isArray(parsed.sessions)) {
-      parsed.sessions = modules.flatMap((m) => {
-        const turns = (
-          Array.isArray(parsed.conversations?.[m.id])
-            ? parsed.conversations![m.id]!
-            : []
-        )
-          .filter(validTurn)
-          .slice(-20);
-        const draft = parsed.drafts[m.id];
-        if (!turns.length && !draft) return [];
-        const createdAt = turns[0]?.createdAt ?? new Date().toISOString();
-        return [
-          {
-            id: 'legacy-' + m.id,
-            module: m.id,
-            title:
-              turns[0]?.question.slice(0, 48) ||
-              draft?.question?.slice(0, 48) ||
-              '未发送的对话',
-            createdAt,
-            updatedAt: turns.at(-1)?.createdAt ?? createdAt,
-            turns,
-            draft:
-              m.id === 'customer'
-                ? normalizeCustomerInputs({
+      ]),
+  );
+  if (!Array.isArray(parsed.sessions)) {
+    parsed.sessions = modules.flatMap((m) => {
+      const turns = (
+        Array.isArray(parsed.conversations?.[m.id])
+          ? parsed.conversations![m.id]!
+          : []
+      )
+        .filter(validTurn)
+        .slice(-20);
+      const draft = parsed.drafts[m.id];
+      if (!turns.length && !draft) return [];
+      const createdAt = turns[0]?.createdAt ?? new Date().toISOString();
+      return [
+        {
+          id: 'legacy-' + m.id,
+          module: m.id,
+          title:
+            turns[0]?.question.slice(0, 48) ||
+            draft?.question?.slice(0, 48) ||
+            '未发送的对话',
+          createdAt,
+          updatedAt: turns.at(-1)?.createdAt ?? createdAt,
+          turns,
+          draft:
+            m.id === 'customer'
+              ? normalizeCustomerInputs({
+                  ...turns.at(-1)?.inputs,
+                  question: '',
+                  ...draft,
+                })
+              : m.id === 'maintenance'
+                ? normalizeMaintenanceInputs({
                     ...turns.at(-1)?.inputs,
                     question: '',
                     ...draft,
                   })
-                : m.id === 'maintenance'
-                  ? normalizeMaintenanceInputs({
+                : m.id === 'energy' || m.id === 'production'
+                  ? normalizeFinalInput(m.id, {
                       ...turns.at(-1)?.inputs,
                       question: '',
                       ...draft,
@@ -260,72 +289,83 @@ function normalizeWorkspace(parsed: WorkspaceState): WorkspaceState {
                       question: '',
                       ...draft,
                     }),
-          },
-        ];
-      });
-    } else {
-      const seen = new Set<string>();
-      parsed.sessions = parsed.sessions.filter((session) => {
-        if (
-          !session ||
-          typeof session.id !== 'string' ||
-          seen.has(session.id) ||
-          !modules.some((m) => m.id === session.module) ||
-          typeof session.title !== 'string' ||
-          typeof session.createdAt !== 'string' ||
-          !Number.isFinite(Date.parse(session.createdAt)) ||
-          typeof session.updatedAt !== 'string' ||
-          !Number.isFinite(Date.parse(session.updatedAt)) ||
-          !Array.isArray(session.turns) ||
-          !session.draft ||
-          typeof session.draft !== 'object' ||
-          Object.values(session.draft).some((v) => typeof v !== 'string')
-        )
-          return false;
-        seen.add(session.id);
-        session.titleEdited = session.titleEdited === true;
-        session.turns = session.turns.filter(validTurn).slice(-20);
-        session.draft =
-          session.module === 'customer'
-            ? normalizeCustomerInputs(session.draft)
-            : session.module === 'maintenance'
-              ? normalizeMaintenanceInputs(session.draft)
+        },
+      ];
+    });
+  } else {
+    const seen = new Set<string>();
+    parsed.sessions = parsed.sessions.filter((session) => {
+      if (
+        !session ||
+        typeof session.id !== 'string' ||
+        seen.has(session.id) ||
+        !modules.some((m) => m.id === session.module) ||
+        typeof session.title !== 'string' ||
+        typeof session.createdAt !== 'string' ||
+        !Number.isFinite(Date.parse(session.createdAt)) ||
+        typeof session.updatedAt !== 'string' ||
+        !Number.isFinite(Date.parse(session.updatedAt)) ||
+        !Array.isArray(session.turns) ||
+        !session.draft ||
+        typeof session.draft !== 'object' ||
+        Object.values(session.draft).some((v) => typeof v !== 'string')
+      )
+        return false;
+      seen.add(session.id);
+      session.titleEdited = session.titleEdited === true;
+      session.turns = session.turns.filter(validTurn).slice(-20);
+      session.draft =
+        session.module === 'customer'
+          ? normalizeCustomerInputs(session.draft)
+          : session.module === 'maintenance'
+            ? normalizeMaintenanceInputs(session.draft)
+            : session.module === 'energy' || session.module === 'production'
+              ? normalizeFinalInput(session.module, session.draft)
               : withFixedRules(session.module, {
                   ...defaultInputs[session.module],
                   ...session.draft,
                 });
-        return true;
-      });
-    }
-    parsed.activeSessionIds = Object.fromEntries(
-      modules.flatMap((m) => {
-        const sessions = parsed.sessions!.filter((s) => s.module === m.id);
-        const active =
-          sessions.find((s) => s.id === parsed.activeSessionIds?.[m.id]) ??
-          sessions[0];
-        return active ? [[m.id, active.id]] : [];
-      }),
-    );
-    delete parsed.conversations;
-    parsed.moduleViews = Object.fromEntries(
-      modules.flatMap((m) => {
-        const view = parsed.moduleViews?.[m.id];
-        return view === 'chat' || view === 'dashboard' ? [[m.id, view]] : [];
-      }),
-    );
-    parsed.drafts = {};
-    parsed.datasets = parsed.datasets.map((d) =>
-      (d.id === 'products' || d.id === 'maintenance' || d.id === 'energy') &&
-      d.origin === 'sample'
-        ? initialDatasets.find((item) => item.id === d.id)!
-        : d,
-    );
-    return parsed;
+      return true;
+    });
+  }
+  parsed.activeSessionIds = Object.fromEntries(
+    modules.flatMap((m) => {
+      const sessions = parsed.sessions!.filter((s) => s.module === m.id);
+      const active =
+        sessions.find((s) => s.id === parsed.activeSessionIds?.[m.id]) ??
+        sessions[0];
+      return active ? [[m.id, active.id]] : [];
+    }),
+  );
+  delete parsed.conversations;
+  parsed.moduleViews = Object.fromEntries(
+    modules.flatMap((m) => {
+      const view = parsed.moduleViews?.[m.id];
+      return view === 'chat' || view === 'dashboard' ? [[m.id, view]] : [];
+    }),
+  );
+  parsed.dashboardInputs = Object.fromEntries(
+    ['energy', 'production'].map((id) => [
+      id,
+      normalizeFinalInput(
+        id as 'energy' | 'production',
+        parsed.dashboardInputs?.[id as 'energy' | 'production'] || {},
+      ),
+    ]),
+  );
+  parsed.drafts = {};
+  return parsed;
 }
 
 type PersonalWorkspace = Pick<
   WorkspaceState,
-  'version' | 'records' | 'drafts' | 'sessions' | 'activeSessionIds' | 'moduleViews'
+  | 'version'
+  | 'records'
+  | 'drafts'
+  | 'sessions'
+  | 'activeSessionIds'
+  | 'moduleViews'
+  | 'dashboardInputs'
 >;
 
 function personalWorkspace(state: WorkspaceState): PersonalWorkspace {
@@ -336,6 +376,7 @@ function personalWorkspace(state: WorkspaceState): PersonalWorkspace {
     sessions: state.sessions ?? [],
     activeSessionIds: state.activeSessionIds ?? {},
     moduleViews: state.moduleViews ?? {},
+    dashboardInputs: state.dashboardInputs ?? {},
   };
 }
 function sharedWorkspace(state: WorkspaceState) {
@@ -374,19 +415,28 @@ function hydrate() {
     } as WorkspaceState);
     // Keep a recoverable admin copy before removing legacy conversations from
     // the shared business-data record. A failed write never consumes the source.
-    if (raw && ['records', 'drafts', 'sessions', 'conversations'].some(
-      (key) => Object.hasOwn(stored, key),
-    )) {
+    if (
+      raw &&
+      ['records', 'drafts', 'sessions', 'conversations'].some((key) =>
+        Object.hasOwn(stored, key),
+      )
+    ) {
       const adminRaw = localStorage.getItem(DEFAULT_ADMIN_KEY);
       if (adminRaw === null) {
-        localStorage.setItem(DEFAULT_ADMIN_KEY, serializeStored(personalWorkspace(shared)));
+        localStorage.setItem(
+          DEFAULT_ADMIN_KEY,
+          serializeStored(personalWorkspace(shared)),
+        );
       } else {
         normalizeWorkspace({
           ...parseStored(adminRaw),
           datasets: shared.datasets,
         } as WorkspaceState);
       }
-      localStorage.setItem(STORAGE_KEY, serializeStored(sharedWorkspace(shared)));
+      localStorage.setItem(
+        STORAGE_KEY,
+        serializeStored(sharedWorkspace(shared)),
+      );
     }
     const personalRaw = localStorage.getItem(workspaceUserKey);
     const personal = personalRaw
@@ -407,7 +457,10 @@ function hydrate() {
 }
 
 /** Bind before mounting Workspace so another account never renders old chats. */
-export function setWorkspaceUser(userId: string, isDefaultAdmin: boolean): boolean {
+export function setWorkspaceUser(
+  userId: string,
+  isDefaultAdmin: boolean,
+): boolean {
   if (typeof window === 'undefined') return false;
   const key = userId.trim()
     ? isDefaultAdmin
@@ -425,7 +478,11 @@ export function setWorkspaceUser(userId: string, isDefaultAdmin: boolean): boole
   return userReady;
 }
 function onStorage(event: StorageEvent) {
-  if (event.key === STORAGE_KEY || event.key === workspaceUserKey || event.key === null) {
+  if (
+    event.key === STORAGE_KEY ||
+    event.key === workspaceUserKey ||
+    event.key === null
+  ) {
     hydrated = false;
     hydrate();
     notify();
@@ -468,7 +525,10 @@ export function updateWorkspace(
   const written: { key: string; previous: string | null }[] = [];
   try {
     const changes = [
-      { key: workspaceUserKey, value: serializeStored(personalWorkspace(next)) },
+      {
+        key: workspaceUserKey,
+        value: serializeStored(personalWorkspace(next)),
+      },
       { key: STORAGE_KEY, value: serializeStored(sharedWorkspace(next)) },
     ];
     for (const change of changes) {

@@ -124,53 +124,36 @@ export function processingSummary(
         ? turn.analysis.title === '产品规格查询'
           ? '整理目录中的型号参数，并保留选型核对说明。'
           : '整理条件匹配、未入选原因及需人工确认的事项。'
-        : '整理已知条件和需要继续补充的信息。',
+        : turn.sources?.some((source) => source.documentId.startsWith('spec-'))
+          ? '按规格书核对已明确的参数及测试条件，并关联原文页码。'
+          : '整理已知条件和需要继续补充的信息。',
     ].join('\n');
   }
   if (id === 'maintenance') {
     const equipment = brief(
-      [input.device, input.model, input.code, input.symptom]
+      [input.symptom, input.code, input.standardIds, input.partIds]
         .filter(Boolean)
         .join('，'),
-      '待补充的设备与故障信息',
+      '本次维修资料问题',
     );
     return [
-      `核对设备信息：${equipment}。`,
+      `查询相关资料：${equipment}。`,
       turn.sources?.length
-        ? '根据回答关联的资料整理排查与验证要点，未确认的原因保持待核查。'
-        : '整理问题中的已知信息，资料不足时保留待补充说明。',
+        ? '整理匹配的原表内容，并关联记录依据和相关图片。'
+        : '核对问题中的名称、编号和查询条件。',
     ].join('\n');
   }
-  if (id === 'energy') {
-    const scope = brief(
-      `${scopeLabel(input.process, '全部工序')} / ${scopeLabel(input.line, '全部产线')}`,
-      '当前工序与产线范围',
-    );
-    const date = turn.question.match(
-      /(?<!\d)(?:\d{4}[-/年])?(?:0?[1-9]|1[0-2])[-/月](?:0?[1-9]|[12]\d|3[01])(?:日|号)?(?!\d)/,
-    )?.[0];
-    const range = date
-      ? `问题指定日期 ${date}`
-      : input.dateFrom || input.dateTo
-        ? `${input.dateFrom || '资料起日'}至${input.dateTo || '资料末日'}`
-        : '资料已有日期范围';
-    const forecast = input.plannedProduction?.trim()
-      ? `未来 ${input.period || '待确认'} 天计划总产量 ${input.plannedProduction} 千只`
-      : `未来 ${input.period || '待确认'} 天、产量变化 ${input.change || '0'}%`;
+  if (id === 'energy' || id === 'production') {
     return [
-      `核对用电范围：${scope}。`,
-      `核对日期与估算条件：${brief(`${range}；${forecast}`, '按本次问题与已有记录核对')}。`,
-      '按资料实际覆盖情况整理结果，缺失日期不补成零用电。',
+      `核对生产日 ${input.dateFrom} 至 ${input.dateTo}，${input.shift}，${scopeLabel(input.process, '全部工序')}。`,
+      id === 'energy'
+        ? '按班次关联用电与产量；零产量用电单列，计划用电按件数估算。'
+        : '分别核对生产、停线及同一时点在制记录，保留原始数量与核查标记。',
     ].join('\n');
   }
-  const scope =
-    id === 'production'
-      ? scopeLabel(input.line, '全部产线')
-      : scopeLabel(input.supplier, '全部供应商');
+  const scope = scopeLabel(input.supplier, '全部供应商');
   return [
-    `核对${id === 'production' ? '产线' : '供应商'}范围：${brief(scope, '当前选择范围')}。`,
-    id === 'production'
-      ? '结合生产汇总与固定判定规则整理回答，不推断未提供的日期、班次或设备原因。'
-      : '结合供应商汇总与固定评分、风险规则整理回答，不反推订单或检验数量。',
+    `核对供应商范围：${brief(scope, '当前选择范围')}。`,
+    '结合供应商汇总与固定评分、风险规则整理回答，不反推订单或检验数量。',
   ].join('\n');
 }

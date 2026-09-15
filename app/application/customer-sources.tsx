@@ -1,4 +1,6 @@
 'use client';
+/* oxlint-disable jsx-a11y/no-noninteractive-tabindex -- The scrollable source page must be focusable for keyboard scrolling. */
+/* oxlint-disable nextjs/no-img-element -- Original document pages and photos must retain their source assets and dimensions. */
 import { useState } from 'react';
 import {
   ArrowUpRight,
@@ -26,6 +28,7 @@ import type { CustomerFixtures, SourceReference } from './customer-types';
 import BackButton from './back-button';
 import { useWorkspace } from './store';
 import { isDataResourceDeleted } from './data-resources';
+import MaintenanceSourceContent from './maintenance-source-content';
 
 function OriginalPage({
   document,
@@ -40,7 +43,7 @@ function OriginalPage({
     <section
       className="source-page-viewport"
       tabIndex={0}
-      aria-label={`${document.fileName}，第 ${page} 页原文`}
+      aria-label={document.kind === 'image' ? `${document.fileName}原图` : `${document.fileName}，第 ${page} 页原文`}
     >
       {preview && !failed ? (
         <>
@@ -49,7 +52,7 @@ function OriginalPage({
             src={preview.image}
             width={preview.width}
             height={preview.height}
-            alt={`${document.fileName}，第 ${page} 页`}
+            alt={document.kind === 'image' ? document.summary : `${document.fileName}，第 ${page} 页`}
             onError={() => setFailed(true)}
           />
           <div className="sr-only">
@@ -117,7 +120,7 @@ export function SourceDrawer({
     <SourcePreviewPanel
       open={Boolean(selected) || Boolean(library)}
       title={resolved ? resolved.document.fileName : '业务资料'}
-      description="业务资料。打开后定位到引用页，可切换页码查看原文。"
+      description={module === 'maintenance' ? '故障、处理方案、操作标准和备件。打开文件可逐条查看原表记录。' : '业务资料。打开后定位到引用页，可切换页码查看原文。'}
       hideDescription={Boolean(resolved)}
       className={`customer-source-sheet${resolved ? ' is-reading' : ''}`}
       onClose={onClose}
@@ -126,6 +129,13 @@ export function SourceDrawer({
         <div className="source-sheet-body">
           <p className="source-unavailable">文件已删除，无法查看原文。</p>
         </div>
+      ) : resolved?.document.kind === 'workbook' && selected ? (
+        <MaintenanceSourceContent key={`${selected.documentId}/${selected.sectionId}`} selected={selected} library={library} onSelect={onSelect} />
+      ) : resolved?.document.kind === 'image' ? (
+        <>
+          {library && <div className="source-page-toolbar"><BackButton destination="资料列表" onClick={() => onSelect(null)} /></div>}
+          <OriginalPage key={resolved.document.id} document={resolved.document} page={1} />
+        </>
       ) : resolved ? (
         <>
           <div className="source-page-toolbar">
@@ -227,9 +237,11 @@ export function SourceDrawer({
 export function AnswerSources({
   sources,
   legacy = false,
+  emptyIsExpected = false,
 }: {
   sources?: SourceReference[];
   legacy?: boolean;
+  emptyIsExpected?: boolean;
 }) {
   const state = useWorkspace();
   const [selected, setSelected] = useState<SourceReference | null>(null);
@@ -240,6 +252,7 @@ export function AnswerSources({
     const refs = valid.filter((ref) => ref.documentId === document.id);
     return refs.length ? [{ document, refs }] : [];
   });
+  if (!groups.length && emptyIsExpected && sources?.length === 0) return null;
   if (!groups.length)
     return (
       <p className="source-unavailable">
@@ -253,6 +266,12 @@ export function AnswerSources({
       <p className="answer-source-heading">参考资料</p>
       <ol className="answer-source-files">
         {groups.map(({ document, refs }) => {
+          if (document.kind === 'workbook') return refs.map((ref) => (
+            <li key={`${document.id}/${ref.sectionId}`}>
+              {isDataResourceDeleted(state, `file:${document.id}`) ? <span className="source-reference-deleted">{document.fileName}（文件已删除）</span> : <button onClick={() => setSelected(ref)}>{document.fileName} · {ref.sectionId}</button>}
+            </li>
+          ));
+          if (document.kind === 'image') return <li key={document.id}>{isDataResourceDeleted(state, `file:${document.id}`) ? <span className="source-reference-deleted">{document.fileName}（文件已删除）</span> : <button onClick={() => setSelected(refs[0])}>{document.fileName}</button>}</li>;
           const label = `${document.fileName}（第 ${Array.from(
             new Set(refs.map((ref) => ref.page)),
           )

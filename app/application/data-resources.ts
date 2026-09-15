@@ -1,10 +1,6 @@
+import historicalTables from './historical-tables.json';
 import { type ModuleId, type WorkspaceState } from './model';
-import {
-  sourceDocuments,
-  documentsFor,
-  type SourceDocument,
-} from './knowledge-sources';
-import { dataFiles, type DataFile } from './data-files';
+import { finalSourceDefinitions } from './final-data';
 
 export type DataTableAsset = {
   id: string;
@@ -15,18 +11,10 @@ export type DataTableAsset = {
   rows: (string | number)[][];
 };
 
-type ResourceBase = { key: string; id: string; name: string; module: ModuleId };
-export type DataResource = ResourceBase &
-  (
-    | { kind: '文件'; document: SourceDocument }
-    | { kind: '文件'; file: DataFile; table: DataTableAsset }
-    | { kind: '数据表'; table: DataTableAsset }
-  );
-
 const tableComments: Record<string, string> = {
   products:
-    '记录电容器型号、额定电压、容量、温度、寿命及应用，用于需求匹配与产品推荐。',
-  maintenance: '记录设备类型、故障现象、排查方向及处理建议，用于设备维修问答。',
+    '记录客户规格书中的型号、额定电压、容量、温区、安装方式、耐久试验条件及本体尺寸公差上限。',
+  maintenance: '记录故障名称、现象、收录范围、版本和图片文件名，用于设备维修问答。',
   energy: '按工序汇总用电量、产量及基准单耗，用于工序能耗分析。',
   production: '记录各产线的计划产量、实际产量、检验数量、不良数量及停机时长。',
   suppliers:
@@ -34,17 +22,26 @@ const tableComments: Record<string, string> = {
 };
 
 export function getDataTables(state: WorkspaceState): DataTableAsset[] {
-  const tables: DataTableAsset[] = state.datasets.map((dataset) => ({
-    id: dataset.id,
-    name: dataset.name,
-    comment:
-      dataset.origin === 'sample' ? (tableComments[dataset.id] ?? '') : '',
-    module: dataset.module,
-    columns: dataset.columns,
-    rows: dataset.rows.map((row) =>
-      dataset.columns.map((column) => row[column]),
-    ),
-  }));
+  const tables: DataTableAsset[] = state.datasets
+    .filter(
+      (d) =>
+        d.origin === 'local' || (d.id !== 'energy' && d.id !== 'production'),
+    )
+    .map((dataset) => ({
+      id:
+        dataset.origin === 'local' &&
+        ['energy', 'production'].includes(dataset.id)
+          ? `local-${dataset.id}`
+          : dataset.id,
+      name: dataset.name,
+      comment:
+        dataset.origin === 'sample' ? (tableComments[dataset.id] ?? '') : '',
+      module: dataset.module,
+      columns: dataset.columns,
+      rows: dataset.rows.map((row) =>
+        dataset.columns.map((column) => row[column]),
+      ),
+    }));
   const energy = state.datasets.find((dataset) => dataset.id === 'energy');
   if (energy?.origin === 'sample' && energy.energyDetails?.length) {
     tables.push({
@@ -73,75 +70,24 @@ export function getDataTables(state: WorkspaceState): DataTableAsset[] {
       ]),
     });
   }
-  return tables;
-}
-
-export function getDataResources(state: WorkspaceState): DataResource[] {
-  const tables = getDataTables(state);
-  const customerDocumentIds = new Set(
-    documentsFor('customer').map((document) => document.id),
-  );
-  const resources: DataResource[] = [
-    ...sourceDocuments.map(
-      (document): DataResource => ({
-        key: `file:${document.id}`,
-        id: document.id,
-        name: document.fileName,
-        kind: '文件',
-        module: customerDocumentIds.has(document.id)
-          ? 'customer'
-          : 'maintenance',
-        document,
-      }),
-    ),
-    ...dataFiles.flatMap((file): DataResource[] => {
-      const table = tables.find((item) => item.id === file.tableId);
-      const dataset = state.datasets.find((item) => item.id === file.datasetId);
-      return table && dataset?.origin === 'sample'
-        ? [
-            {
-              key: `file:${file.tableId}`,
-              id: file.tableId,
-              name: file.name,
-              module: table.module,
-              kind: '文件',
-              file,
-              table,
-            },
-          ]
-        : [];
-    }),
-    ...tables.map(
-      (table): DataResource => ({
-        key: `table:${table.id}`,
-        id: table.id,
-        name: table.name,
-        kind: '数据表',
-        module: table.module,
-        table,
-      }),
-    ),
+  return [
+    ...tables,
+    ...(historicalTables as DataTableAsset[]),
+    ...finalSourceDefinitions.map((s) => ({
+      id: s.id,
+      name: s.name,
+      comment: `${s.name} · 原表共 ${s.rows.length} 条记录，行号与工作簿一致。`,
+      module: s.module,
+      columns: [...s.columns],
+      rows: s.rows.map((r) => [...r]),
+    })),
   ];
-  const deleted = new Set(state.deletedDataResourceIds ?? []);
-  return resources.filter((resource) => !deleted.has(resource.key));
 }
 
+// Honor existing browser markers when reading historical source citations.
 export function isDataResourceDeleted(
   state: Pick<WorkspaceState, 'deletedDataResourceIds'>,
   key: string,
 ): boolean {
   return state.deletedDataResourceIds?.includes(key) ?? false;
-}
-
-// Keep historical citation identities; readers honor the persisted deletion marker.
-export function removeDataResource(
-  state: WorkspaceState,
-  key: string,
-): WorkspaceState {
-  return {
-    ...state,
-    deletedDataResourceIds: [
-      ...new Set([...(state.deletedDataResourceIds ?? []), key]),
-    ],
-  };
 }

@@ -4,6 +4,7 @@ import './experience.css';
 import './dashboard.css';
 import './customer.css';
 import './dashboard-layout.css';
+import './final-dashboard.css';
 import './source-preview.css';
 import './accounts.css';
 export const metadata: Metadata = {

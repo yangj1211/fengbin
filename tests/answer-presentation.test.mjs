@@ -50,7 +50,6 @@ try {
   const { defaultInputs, initialDatasets } = require('./model.js');
   const { replyToQuestion } = require('./conversation.js');
   const { customerExamples, customerProducts } = require('./customer-data.js');
-  const { customerParameterComparison } = require('./customer-comparison.js');
   const {
     legacyAnalysisText,
     productionTurnText,
@@ -70,9 +69,7 @@ try {
   });
   const dataset = (id) => initialDatasets.find((item) => item.module === id);
 
-  // Real customer recommendations retain every currently visible comparison,
-  // later reason, exclusion, and manual confirmation, without repeating reasons 0/1.
-  let checkedCandidates = 0;
+  // Current real-spec replies stay plain text; historical product analyses remain readable.
   for (const example of customerExamples) {
     const reply = replyToQuestion(
       'customer',
@@ -81,52 +78,40 @@ try {
       dataset('customer'),
     );
     const turn = makeTurn('customer', { ...reply, question: example.question });
-    const visible = presentAnswer(turn);
     const body = answerText('customer', turn);
-    assert.ok(body.startsWith(literal(visible.answer)));
-    if (!visible.analysis) continue;
-    assert.ok(body.includes(literal(visible.analysis.summary)));
-    assert.ok(body.includes(literal(visible.analysis.recommendation)));
-    for (const candidate of visible.analysis.customerCandidates ?? []) {
-      checkedCandidates++;
-      assert.ok(body.includes(literal(candidate.product.model)));
-      for (const comparison of customerParameterComparison(
-        turn.inputs,
-        candidate.product,
-      ))
-        assert.ok(body.includes(literal(comparison)));
-      for (const reason of candidate.reasons.slice(2))
-        assert.ok(body.includes(literal(reason)));
-      for (const reason of candidate.reasons.slice(0, 2))
-        assert.ok(!body.includes(literal(reason)));
-    }
-    for (const exclusion of visible.analysis.customerExclusions ?? []) {
-      assert.ok(body.includes(literal(exclusion.model)));
-      assert.ok(body.includes(literal(exclusion.reason)));
-    }
-    assert.deepEqual(
-      answerSources('customer', turn),
-      turn.analysis.sources ?? turn.sources,
-    );
+    assert.ok(body.startsWith(literal(presentAnswer(turn).answer)));
+    assert.equal(reply.analysis, undefined);
+    assert.deepEqual(answerSources('customer', turn), reply.sources);
+    assert.ok(reply.sources.length > 0);
     assert.ok(!body.includes('documentId'));
   }
-  assert.ok(checkedCandidates > 0);
   const product = customerProducts[0];
-  const lookup = makeTurn(
-    'customer',
-    replyToQuestion(
-      'customer',
-      `查询 ${product.model} 的规格`,
-      defaultInputs.customer,
-      dataset('customer'),
-    ),
-  );
-  assert.equal(lookup.analysis.title, '产品规格查询');
+  const oldCandidate = {
+    product,
+    reasons: ['原有推荐理由', '原有校核'],
+    sources: [product.source],
+  };
+  const lookup = makeTurn('customer', {
+    analysis: {
+      title: '产品规格查询',
+      summary: '历史规格',
+      recommendation: '历史结论',
+      metrics: [],
+      columns: [],
+      rows: [],
+      bars: [],
+      chartTitle: '',
+      steps: [],
+      basis: [],
+      customerCandidates: [oldCandidate],
+      sources: [product.source],
+    },
+  });
   const lookupBody = answerText('customer', lookup);
-  for (const reason of lookup.analysis.customerCandidates[0].reasons)
-    assert.ok(lookupBody.includes(literal(reason)));
+  assert.ok(lookupBody.includes(product.model));
+  for (const reason of oldCandidate.reasons)
+    assert.ok(lookupBody.includes(reason));
   assert.ok(lookupBody.includes(`参考交期 ${product.leadDays} 天`));
-  assert.ok(lookupBody.includes(`${product.life.toLocaleString('zh-CN')} h`));
 
   const baseAnalysis = {
     title: '历史分析',
@@ -225,7 +210,7 @@ try {
   const summary = processingSummary(
     'production',
     makeTurn('production', {
-      inputs: { ...defaultInputs.production, line: encoded },
+      inputs: { ...defaultInputs.production, process: encoded },
     }),
   );
   assert.ok(summary.includes('1号产线、3号产线'));
@@ -240,9 +225,9 @@ try {
     },
   });
   const energySummary = processingSummary('energy', energy);
-  assert.ok(energySummary.includes('问题指定日期 9月1日'));
-  assert.ok(energySummary.includes('计划总产量 0 千只'));
-  assert.ok(!energySummary.includes('2026-08-01'));
+  assert.ok(energySummary.includes('2026-08-01'));
+  assert.ok(energySummary.includes('按件数估算'));
+  assert.ok(!energySummary.includes('千只'));
   console.log(
     'answer-presentation: customer content, five modules, legacy replies, citations, stopped output, Markdown links, and summaries passed',
   );

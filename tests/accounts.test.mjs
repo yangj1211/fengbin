@@ -52,6 +52,7 @@ try {
   const server = require('./admin-server.js');
   const routes = Object.fromEntries(['login', 'session', 'logout', 'password', 'users', 'user'].map(name => [name, require(`./${name}-route.js`)]));
   const page = require('./protected-page.js');
+  const { isWorkspacePath } = require('./workspace-path.js');
   const { accountPayload } = require('./account-http.js');
   const databaseFile = path.join(temp, 'accounts.sqlite');
   const defaultPassword = 'default-test-password';
@@ -90,6 +91,13 @@ try {
     const element = page.default({params:Promise.resolve({path:pathname.slice(1).split('/')})});
     return element.type(element.props);
   };
+  const agentPaths = ['customer','maintenance','energy','production','supplier'].map(agent => `/apps/${agent}`);
+  assert.equal(isWorkspacePath('/data'),false,'The retired data-management route cannot be restored through workspace navigation');
+  assert.equal(isWorkspacePath('/users'),true);
+  for(const path of agentPaths) {
+    assert.equal(isWorkspacePath(path),true);
+    assert.equal(isWorkspacePath(`${path}?mode=chat`),true);
+  }
 
   assert.equal((await store.list()).length,2);
   assert.equal((await store.get(DEFAULT_ADMIN_ID)).role,'admin');
@@ -105,15 +113,16 @@ try {
   assert.equal((await read(await routes.users.GET())).status,401);
   assert.equal((await password({oldPassword:'anything',newPassword:'12345678'})).status,401);
   assert.equal((await read(await routes.session.GET())).body.authenticated,false);
-  await assert.rejects(renderProtected('/data'),/redirect:\/login/);
+  for(const path of ['/data','/users',...agentPaths]) await assert.rejects(renderProtected(path),/^Error: redirect:\/login$/);
   assert.equal(await store.authenticate('missing-account',defaultPassword),null);
 
   const owner = await loginAs('admin',defaultPassword);
   assert.equal(owner.body.user.role,'admin');
   assert.match(owner.cookie,/HttpOnly; SameSite=Strict; Max-Age=28800; Secure/);
   assert.equal((await store.authenticate(DEFAULT_ADMIN_ACCOUNT,defaultPassword)).id,DEFAULT_ADMIN_ID);
-  assert.ok(await renderProtected('/data'));
+  await assert.rejects(renderProtected('/data'),/^Error: notFound$/);
   assert.ok(await renderProtected('/users'));
+  for(const path of agentPaths) assert.ok(await renderProtected(path));
   const created = await read(await routes.users.POST(request('/api/users',{account:' New.User ',password:' 12345678 '})));
   assert.equal(created.status,201);
   const userId=created.body.user.id;
@@ -141,8 +150,9 @@ try {
   assert.equal((await patch(userId,{role:'admin'})).status,403);
   assert.equal((await patch(DEFAULT_ADMIN_ID,{password:'intruder-password'})).status,403);
   assert.equal((await remove(secondId)).status,403);
-  for(const path of ['/data','/users']) await assert.rejects(renderProtected(path),/^Error: redirect:\/$/);
-  for(const agent of ['customer','maintenance','energy','production','supplier']) assert.ok(await renderProtected(`/apps/${agent}`));
+  await assert.rejects(renderProtected('/data'),/^Error: notFound$/);
+  await assert.rejects(renderProtected('/users'),/^Error: redirect:\/$/);
+  for(const path of agentPaths) assert.ok(await renderProtected(path));
   const originalOwnHash=(await store.get(userId)).passwordHash;
   const originalOwnerHash=(await store.get(DEFAULT_ADMIN_ID)).passwordHash;
   assert.equal((await password({newPassword:'updated-password'})).status,400);
@@ -179,6 +189,9 @@ try {
   assert.equal((await read(await routes.users.GET())).status,403);
 
   let secondary=await loginAs('second-admin','second-password');
+  await assert.rejects(renderProtected('/data'),/^Error: notFound$/);
+  assert.ok(await renderProtected('/users'));
+  for(const path of agentPaths) assert.ok(await renderProtected(path));
   assert.equal((await patch(DEFAULT_ADMIN_ID,{role:'user'})).status,403);
   assert.equal((await remove(DEFAULT_ADMIN_ID)).status,403);
   assert.equal((await remove(secondId)).status,403);

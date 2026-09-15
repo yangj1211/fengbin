@@ -29,7 +29,11 @@ try {
   for (const file of [
     'customer-fixtures.json',
     'maintenance-fixtures.json',
+    'maintenance-final.json',
     'energy-fixtures.json',
+    'energy-final.json',
+    'production-final.json',
+    'historical-tables.json',
   ])
     fs.copyFileSync(`app/application/${file}`, path.join(temp, file));
   const require = createRequire(path.join(temp, 'check.cjs'));
@@ -61,7 +65,7 @@ try {
   const supplier = initialDatasets.find((d) => d.module === 'supplier');
   const energy = initialDatasets.find((d) => d.module === 'energy');
   const all = '全部产线';
-  const names = prod.rows.map((row) => String(row['产线']));
+  const names = ['1号产线', '2号产线', '3号产线', '4号产线'];
   const two = encodeScope(['1号产线', '3号产线'], all, names);
   assert.equal(encodeScope([], all, names), all);
   assert.equal(encodeScope(names, all, names), all);
@@ -87,14 +91,8 @@ try {
     ['1号产线', '3号产线'],
   );
   assert.equal(nextScopeSelection(names, names.slice(0, -1), all, names), all);
-  assert.equal(
-    filterScope(prod.rows, '@scope:bad', all, (row) => row['产线']).length,
-    0,
-  );
-  assert.equal(
-    filterScope(prod.rows, ',,,', all, (row) => row['产线']).length,
-    0,
-  );
+  assert.equal(filterScope(names, '@scope:bad', all, (row) => row).length, 0);
+  assert.equal(filterScope(names, ',,,', all, (row) => row).length, 0);
   assert.equal(scopeLabel('@scope:bad', all), '未识别的范围');
   const punctuation = [{ name: '精密线,东区' }, { name: '其他线' }];
   assert.deepEqual(
@@ -110,80 +108,21 @@ try {
     [],
   );
 
-  const prodInput = { ...defaultInputs.production, line: two };
-  for (const line of [two, '1号产线、3号产线']) {
-    const board = buildDashboard('production', prod, { ...prodInput, line });
-    assert.deepEqual(
-      board.rows.map((row) => row['产线']),
-      ['1号产线', '3号产线'],
-    );
-    assert.deepEqual(
-      board.analysis.rows.map((row) => row[0]),
-      ['1号产线', '3号产线'],
-    );
-    assert.deepEqual(
-      board.analysis.bars.map((row) => row.label),
-      ['1号产线', '3号产线'],
-    );
-    assert.deepEqual(
-      Object.fromEntries(board.metrics.map((m) => [m.label, m.value])),
-      {
-        实际产量: '18',
-        计划完成率: '90',
-        检验良率: '98',
-        累计停机: '94',
-        异常产线: '1',
-      },
-    );
-    const reply = replyToQuestion(
-      'production',
-      '汇总当前产线的产量与进度',
-      { ...prodInput, line },
-      prod,
-    );
-    assert.match(reply.answer, /计划20万只，实际18万只|计划.*20.*实际.*18/);
-    assert.doesNotMatch(reply.answer, /2号产线|4号产线|@scope:|\["/);
-    const followup = replyToQuestion(
-      'production',
-      '比较当前产线的表现',
-      reply.inputs,
-      prod,
-    );
-    assert.equal(
-      followup.inputs.line,
-      line,
-      'unnamed comparison retains current scope',
-    );
-    assert.doesNotMatch(followup.answer, /2号产线|4号产线|@scope:/);
-  }
-  assert.equal(
-    buildDashboard('production', prod, { ...prodInput, line: '一号产线' }).rows
-      .length,
-    1,
+  const { processNames, getFinalProduction } = require('./final-data.js');
+  const prodInput = {
+    ...defaultInputs.production,
+    process: encodeScope(processNames.slice(0, 2), '全部工序'),
+  };
+  assert.equal(getFinalProduction(prodInput).perProcess.length, 2);
+  assert.equal(getFinalProduction(prodInput).singleProcess, false);
+  const productionReply = replyToQuestion(
+    'production',
+    '比较当前范围的生产',
+    prodInput,
+    prod,
   );
-  assert.match(
-    replyToQuestion('production', '查看99号产线产量', prodInput, prod).answer,
-    /没有找到/,
-  );
-  assert.equal(
-    replyToQuestion('production', '查看全部产线产量', prodInput, prod).inputs
-      .line,
-    all,
-  );
-  const many = encodeScope(
-    Array.from({ length: 800 }, (_, i) => `工业制造车间产线${i}`),
-    all,
-  );
-  assert.ok(many.length > 4000);
-  assert.equal(
-    validateInputs('production', { ...prodInput, line: many }),
-    null,
-  );
-  assert.notEqual(
-    validateInputs('production', { ...prodInput, notes: 'x'.repeat(4001) }),
-    null,
-  );
-
+  assert.doesNotMatch(productionReply.answer, /老化|@scope:/);
+  assert.equal(productionReply.inputs.process, prodInput.process);
   const supplierScope = encodeScope(
     ['供应商 A', '供应商 C'],
     '全部供应商',
@@ -231,85 +170,11 @@ try {
     1,
   );
 
-  const process = encodeScope(['老化', '含浸'], '全部工序');
-  const lineNames = [...new Set(energy.energyDetails.map((row) => row.line))];
-  const lines = encodeScope(lineNames.slice(0, 1), all, lineNames);
   const energyInput = {
     ...defaultInputs.energy,
-    process,
-    line: lines,
-    period: '7',
-    plannedProduction: '1000',
+    shift: 'B',
+    plannedProduction: '100000',
   };
-  const detail = energyDetailAnalysis(energy, energyInput);
-  const expectedReadings = energy.energyDetails.filter(
-    (row) =>
-      ['老化', '含浸'].includes(row.process) && row.line === lineNames[0],
-  );
-  assert.deepEqual(detail.rows, expectedReadings);
-  assert.equal(
-    detail.total,
-    expectedReadings.reduce((sum, row) => sum + row.kwh, 0),
-  );
-  assert.equal(detail.projected, detail.unit * 1000);
-  assert.ok(
-    detail.issues.every(
-      (row) =>
-        ['老化', '含浸'].includes(row.process) && row.line === lineNames[0],
-    ),
-  );
-  const energyReply = replyToQuestion(
-    'energy',
-    '按当前范围预测未来7天用电',
-    energyInput,
-    energy,
-  );
-  assert.equal(energyReply.inputs.process, process);
-  assert.equal(energyReply.inputs.line, lines);
-  assert.match(energyReply.answer, /老化、含浸/);
-  assert.doesNotMatch(energyReply.answer, /@scope:|\["/);
-  const namedEnergy = replyToQuestion(
-    'energy',
-    `比较${lineNames.join('和')}的老化和含浸用电`,
-    defaultInputs.energy,
-    energy,
-  );
-  assert.deepEqual(scopeValues(namedEnergy.inputs.process, '全部工序'), [
-    '老化',
-    '含浸',
-  ]);
-  assert.deepEqual(
-    energyDetailAnalysis(energy, namedEnergy.inputs).rows,
-    energy.energyDetails.filter((row) =>
-      ['老化', '含浸'].includes(row.process),
-    ),
-  );
-  const unknownEnergy = replyToQuestion(
-    'energy',
-    '查看11号产线用电量',
-    defaultInputs.energy,
-    energy,
-  );
-  assert.equal(
-    energyDetailAnalysis(energy, unknownEnergy.inputs).rows.length,
-    0,
-  );
-  const aggregate = { ...energy, origin: 'local', energyDetails: undefined };
-  assert.equal(
-    buildDashboard('energy', aggregate, energyInput).energyTotal,
-    94500,
-  );
-  assert.equal(analyze('energy', energyInput, aggregate).rows.length, 2);
-  assert.doesNotMatch(
-    replyToQuestion(
-      'energy',
-      '按当前范围估算未来7天用电',
-      energyInput,
-      aggregate,
-    ).answer,
-    /@scope:|\["/,
-  );
-
   const state = {
     datasets: initialDatasets,
     records: [],
@@ -327,8 +192,7 @@ try {
     const restored = JSON.parse(JSON.stringify(seeded));
     const saved = currentSession(restored, id);
     assert.ok(saved);
-    const key =
-      id === 'supplier' ? 'supplier' : id === 'production' ? 'line' : 'process';
+    const key = id === 'supplier' ? 'supplier' : 'process';
     assert.equal(saved.draft[key], input[key]);
     assert.ok(
       conditionSummary(id, saved.draft).every(
@@ -414,6 +278,7 @@ try {
       },
     ],
     ['./dashboard-metric', { default: () => null }],
+    ['./final-dashboard', { default: () => null }],
     ['./dashboard-chat-entry', { default: simple('button') }],
     ['./back-button', { default: simple('button') }],
     ['./identity', { AgentIdentity: () => null }],
@@ -427,6 +292,7 @@ try {
         ComparisonChart: () => null,
       },
     ],
+    ['./dashboard-dialogs', { DashboardRules: () => null }],
     ['./energy-series-chart', { default: () => null }],
     ['./energy-comparison-chart', { default: () => null }],
   ]);
@@ -510,17 +376,15 @@ try {
   combo.onValueChange([all, '3号产线']);
   assert.equal(changed, '3号产线');
 
-  // Existing conversation scopes do not narrow a dashboard's initial details or CSV.
+  // Opening the overview preserves conversation scope and exposes no detail/export controls.
   const Dashboard = loadUi('dashboard').default;
-  for (const [id, input, dataset, field, scopeKey] of [
-    ['production', prodInput, prod, '产线', 'line'],
-    ['supplier', supplierInput, supplier, '供应商', 'supplier'],
+  for (const [id, input, scopeKey] of [
+    ['supplier', supplierInput, 'supplier'],
   ]) {
     exportsSeen.length = 0;
     tablesSeen.length = 0;
     const savedState = applyDashboardConditions(state, id, input);
     const savedSnapshot = JSON.stringify(savedState);
-    const expected = dataset.rows.map((row) => String(row[field])).sort();
     const originalError = console.error;
     console.error = () => {};
     try {
@@ -535,43 +399,16 @@ try {
     } finally {
       console.error = originalError;
     }
-    const exported = exportsSeen.find(
-      (item) =>
-        item.name === (id === 'production' ? '生产产线明细' : '供应商明细'),
+    assert.equal(exportsSeen.length, 0);
+    assert.equal(tablesSeen.length, 0);
+    assert.equal(
+      currentSession(savedState, id).draft[scopeKey],
+      input[scopeKey],
     );
-    assert.ok(exported);
-    assert.deepEqual(
-      Array.from(exported.rows, (row) => row[0]).sort(),
-      expected,
-    );
-    assert.deepEqual(
-      Array.from(tablesSeen.at(-1).rows, (row) => row[0]).sort(),
-      expected,
-    );
-    assert.equal(currentSession(savedState, id).draft[scopeKey], input[scopeKey]);
     assert.equal(JSON.stringify(savedState), savedSnapshot);
   }
-  exportsSeen.length = 0;
-  const EnergyDashboard = loadUi('energy-dashboard').default;
-  renderToStaticMarkup(
-    React.createElement(EnergyDashboard, {
-      dataset: energy,
-      input: energyInput,
-      onOpenChat: () => true,
-    }),
-  );
-  const exportedIssues = exportsSeen.find(
-    (item) => item.name === '能耗异常明细',
-  );
-  assert.ok(exportedIssues);
-  assert.equal(exportedIssues.rows.length, detail.issues.length);
-  assert.ok(
-    exportedIssues.rows.every(
-      (row) => row[1] === lineNames[0] && ['老化', '含浸'].includes(row[3]),
-    ),
-  );
   console.log(
-    'PASS multiscope: single/legacy/multiple/all/unknown; KPI/chart/detail/CSV agreement; search and persistent popup; scope resets; session persistence; independent dashboard defaults; no encoded display; energy plan scope.',
+    'PASS multiscope: single/legacy/multiple/all/unknown; KPI/chart agreement; search and persistent popup; scope resets; session persistence; overview without details/export; no encoded display; energy plan scope.',
   );
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
