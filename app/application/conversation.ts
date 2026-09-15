@@ -1,3 +1,5 @@
+import { replyToFinalData, finalExamples } from './final-answer';
+import { normalizeFinalInput } from './final-data';
 import {
   modules,
   validateInputs,
@@ -10,11 +12,8 @@ import { replyToCustomer, customerConditions } from './customer-engine';
 import { customerExamples } from './customer-data';
 import { energyAnswer } from './energy-answer';
 import { replyToMaintenance } from './maintenance-engine';
-import {
-  replyToProduction,
-  productionExamples,
-  productionDailyReportExample,
-} from './production-answer';
+import { maintenanceExamples } from './maintenance-data';
+import { replyToProduction } from './production-answer';
 import { replyToSupplier, supplierExamples } from './supplier-answer';
 import type { SourceReference, CustomerDecision } from './customer-types';
 import {
@@ -60,41 +59,9 @@ export const suggestions: Record<
     title,
     question,
   })),
-  maintenance: [
-    {
-      title: '生成维修方案',
-      question:
-        '卷绕机 WND-100 换料后张力波动并断箔，请给出具体维修方案和修后验证方法。',
-    },
-    {
-      title: '查询告警代码',
-      question: '老化柜 AGE-300 出现 A-T03 告警，请说明排查步骤和注意事项。',
-    },
-    {
-      title: '查看备件与案例',
-      question:
-        '含浸机 IMP-200 真空度不足，有什么相似维修案例，需要先核对哪些备件？',
-    },
-  ],
-  energy: [
-    {
-      title: '预测下周用电',
-      question: '预计产量增长5%，预测未来7天全部工序的用电量。',
-    },
-    {
-      title: '查看趋势与异常',
-      question: '查看每日用电趋势，列出需要关注的异常点。',
-    },
-    {
-      title: '对比班次与产线',
-      question: '比较白班、夜班和不同产线的用电及单位电耗。',
-    },
-  ],
-  production: [
-    productionDailyReportExample,
-    productionExamples[3],
-    productionExamples[4],
-  ],
+  maintenance: maintenanceExamples,
+  energy: finalExamples.energy,
+  production: finalExamples.production,
   supplier: [supplierExamples[0], supplierExamples[1], supplierExamples[4]],
 };
 export function conditionSummary(id: ModuleId, input: Inputs): string[] {
@@ -103,31 +70,25 @@ export function conditionSummary(id: ModuleId, input: Inputs): string[] {
     return [input.device, input.model, input.code, input.symptom].filter(
       Boolean,
     );
-  if (id === 'energy')
+  if (id === 'energy' || id === 'production') {
+    const value = normalizeFinalInput(id, input);
     return [
-      scopeLabel(input.process, '全部工序'),
-      ...(input.line ? [scopeLabel(input.line, '全部产线')] : []),
-      ...(input.dateFrom || input.dateTo
+      value.dateFrom + '—' + value.dateTo,
+      scopeLabel(value.process, '全部工序'),
+      value.shift,
+      ...(id === 'production'
         ? [
-            `统计区间 ${input.dateFrom || '资料起日'}—${input.dateTo || '资料末日'}`,
+            scopeLabel(value.machine, '全部机台'),
+            value.order,
+            value.card ? '卡号 ' + value.card : '',
           ]
-        : []),
-      ...(input.granularity === 'month'
-        ? ['按月汇总']
-        : input.granularity === 'year'
-          ? ['按年汇总']
-          : []),
-      '未来' + input.period + '天',
-      input.plannedProduction?.trim()
-        ? '计划总产量 ' + input.plannedProduction + ' 千只'
-        : '产量变化 ' + input.change + '%',
-    ];
-  if (id === 'production')
-    return [
-      scopeLabel(input.line, '全部产线'),
-      '完成率目标 ' + input.completion + '%',
-      '不良率阈值 ' + input.defect + '%',
-    ];
+        : [
+            value.plannedProduction !== ''
+              ? '计划总产量 ' + value.plannedProduction + ' 件'
+              : '',
+          ]),
+    ].filter(Boolean);
+  }
   return [
     scopeLabel(input.supplier, '全部供应商'),
     '交付目标 ' + input.deliveryTarget + '%',
@@ -147,6 +108,8 @@ export function replyToQuestion(
   sources?: SourceReference[];
   missing?: string[];
 } {
+  if (['energy', 'production'].includes(id))
+    return replyToFinalData(id as 'energy' | 'production', question, current);
   if (id === 'customer') return replyToCustomer(question, current);
   if (id === 'maintenance') return replyToMaintenance(question, current);
   if (id === 'production') return replyToProduction(question, current, dataset);

@@ -94,7 +94,7 @@ export function ProductionChart({
         }}
         aria-describedby={descriptionId}
       />
-      <p className="dashboard-chart-note">点击柱形查看产线明细</p>
+      <p className="dashboard-chart-note">点击柱形切换产线范围</p>
       <ChartWindowControls window={window} label="产线计划与实际" />
       <ul id={descriptionId} className="sr-only">
         {visible.map((item) => (
@@ -114,12 +114,14 @@ export function ComparisonChart({
   unit,
   onSelect,
   maxValue,
+  categoryFormatter = shortChartLabel,
 }: {
   items: ChartItem[];
   labels: string[];
   unit: string;
   onSelect?: (name: string) => void;
   maxValue?: number;
+  categoryFormatter?: (name: string) => string;
 }) {
   const id = useId();
   const window = useChartWindow(items, 6, (item) => item.name);
@@ -142,7 +144,7 @@ export function ComparisonChart({
           comparisonWarning: item.comparisonWarning,
         }))}
         index="name"
-        categoryFormatter={shortChartLabel}
+        categoryFormatter={categoryFormatter}
         categories={categories}
         colors={['actual', 'reference']}
         layout="vertical"
@@ -219,9 +221,6 @@ export function SupplierRanking({
         onValueChange={(item) => onSelect(item.name)}
         showAnimation={false}
       />
-      <p className="dashboard-chart-note">
-        按综合评分排序 · 点击供应商查看评估明细
-      </p>
       <ChartWindowControls window={window} label="供应商综合评分" />
     </>
   );

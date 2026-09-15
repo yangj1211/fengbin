@@ -110,7 +110,7 @@ export default memo(function ConversationAnswer({
                 >
                   {answer}
                   {(module === 'customer' || module === 'maintenance') && (
-                    <AnswerSources sources={sourceRefs} legacy={!sourceRefs} />
+                    <AnswerSources sources={sourceRefs} legacy={!sourceRefs} emptyIsExpected={module === 'maintenance'} />
                   )}
                 </AnswerInteraction>
               ) : (

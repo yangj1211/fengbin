@@ -4,31 +4,36 @@ import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import ts from 'typescript';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import Markdown from 'react-markdown';
+
+// Use the same Markdown renderer as answers, then inspect visible text.
+const renderedText = (answer) => renderToStaticMarkup(
+  createElement(Markdown, { skipHtml: true }, answer),
+).replace(/<[^>]+>/g, '').replace(/&#x27;/g, "'").replace(/&quot;/g, '"')
+  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+const whitespace = (text) => text.replace(/\s+/g, ' ').trim();
 
 const temp = fs.mkdtempSync(
   path.join(os.tmpdir(), 'fengbin-maintenance-test-'),
 );
 try {
-  for (const file of fs
-    .readdirSync('app/application')
-    .filter((name) => name.endsWith('.ts'))) {
-    fs.writeFileSync(
-      path.join(temp, file.replace(/\.ts$/, '.js')),
-      ts.transpileModule(fs.readFileSync(`app/application/${file}`, 'utf8'), {
-        compilerOptions: {
-          module: ts.ModuleKind.CommonJS,
-          target: ts.ScriptTarget.ES2022,
-          esModuleInterop: true,
-        },
-      }).outputText,
-    );
+  for (const file of fs.readdirSync('app/application')) {
+    if (file.endsWith('.ts'))
+      fs.writeFileSync(
+        path.join(temp, file.replace(/\.ts$/, '.js')),
+        ts.transpileModule(fs.readFileSync(`app/application/${file}`, 'utf8'), {
+          compilerOptions: {
+            module: ts.ModuleKind.CommonJS,
+            target: ts.ScriptTarget.ES2022,
+            esModuleInterop: true,
+          },
+        }).outputText,
+      );
+    else if (file.endsWith('.json'))
+      fs.copyFileSync(`app/application/${file}`, path.join(temp, file));
   }
-  for (const file of [
-    'customer-fixtures.json',
-    'maintenance-fixtures.json',
-    'energy-fixtures.json',
-  ])
-    fs.copyFileSync(`app/application/${file}`, path.join(temp, file));
   fs.symlinkSync(path.resolve('node_modules'), path.join(temp, 'node_modules'));
   const require = createRequire(path.join(temp, 'check.cjs'));
   const {
@@ -37,132 +42,270 @@ try {
     normalizeMaintenanceInputs,
   } = require('./maintenance-engine.js');
   const {
-    maintenanceCases: cases,
-    maintenanceFixtures: fixtures,
+    maintenanceFaults: faults,
+    maintenancePlans: plans,
+    maintenanceStandards: standards,
+    maintenanceParts: parts,
+    maintenanceImages: images,
+    maintenanceExamples: examples,
   } = require('./maintenance-data.js');
   const { resolveSource } = require('./knowledge-sources.js');
   const { replyToQuestion, suggestions } = require('./conversation.js');
   const { initialDatasets, STORAGE_KEY } = require('./model.js');
   const dataset = initialDatasets.find((item) => item.id === 'maintenance');
-  assert.equal(cases.length, 5);
-  assert.equal(suggestions.maintenance.length, 3);
-  for (const example of cases) {
-    const result = replyToQuestion(
-      'maintenance',
-      `${example.device} ${example.model} 出现 ${example.code}，${example.symptom}，请给出排查步骤。`,
-      defaults,
-      dataset,
-    );
-    assert.equal(result.inputs.caseId, example.id);
-    assert.equal(result.inputs.model, example.model);
-    assert.match(result.answer, /1\. /);
-    assert.match(result.answer, /备件/);
-    assert.match(result.answer, /工单/);
-    assert.match(result.answer, /修后验证/);
-    assert.match(result.answer, /清理|清洁|重新穿料|修复连接/);
-    assert.match(result.answer, /确认.*时/);
-    assert.match(result.answer, /手册|工艺既定/);
-    assert.match(result.answer, /停止验证|维持.*停机/);
-    const guide = resolveSource(
-      result.sources.find(
-        (source) => source.documentId === 'maintenance-guide',
-      ),
-    );
-    for (const instruction of [...example.repair, ...example.verification])
+  const sectionIds = (result, documentId) =>
+    result.sources
+      .filter((item) => item.documentId === documentId)
+      .map((item) => item.sectionId);
+  const checkSources = (result) => {
+    for (const reference of result.sources) {
+      const resolved = resolveSource(reference);
+      assert.ok(resolved, `Missing source: ${JSON.stringify(reference)}`);
+      assert.equal(resolved.section.id, reference.sectionId);
       assert.ok(
-        guide.section.text.includes(instruction),
-        'Plan and verification must be grounded in the cited original page',
+        !/示例|设备维修手册|维修工单|维修FAQ/.test(resolved.document.fileName),
+        resolved.document.fileName,
       );
-    assert.equal(result.analysis, undefined);
-    assert.equal(result.sources.length, 3);
-    for (const source of result.sources) assert.ok(resolveSource(source));
-  }
-  for (const query of [
-    '卷绕机',
-    'WND-100',
-    '卷绕机的温度是多少',
-    '卷绕机电机异响',
-    '型号 UNKNOWN-900 故障',
-    '代码999',
-    '老化柜 AGE-300 告警 W-T01',
-  ]) {
-    const result = reply(query, defaults);
-    assert.equal(result.inputs.caseId, '', query);
-    assert.doesNotMatch(result.answer, /具体维修方案/, query);
-  }
-  const winding = reply('卷绕机 WND-100 张力波动并断箔', defaults);
-  assert.equal(winding.inputs.caseId, cases[0].id);
-  for (const query of [
-    '需要哪些备件',
-    '卷绕机有哪些备件可以先核对',
-    '原因和备件都说一下',
-  ]) {
-    const result = reply(query, winding.inputs);
-    assert.equal(result.inputs.caseId, cases[0].id);
-    assert.match(result.answer, /备件/);
-    assert.doesNotMatch(result.answer, /请补充具体故障/);
-    if (query.includes('原因')) assert.match(result.answer, /可能的原因/);
-  }
-  const combined = reply(suggestions.maintenance[1].question, defaults);
-  assert.match(combined.answer, /具体维修方案/);
-  assert.match(combined.answer, /检查时请注意/);
-  for (const query of [
-    '含浸机',
-    '含浸机真空度不足',
-    '换台设备，还是卷绕机，现在无法启动',
-    '没有断箔，只是温度偏高',
-    '现在仍然无法启动',
-  ]) {
-    const result = reply(query, winding.inputs);
-    assert.notEqual(result.inputs.caseId, cases[0].id, query);
-    assert.doesNotMatch(result.answer, /张力检测组件/, query);
-  }
-  for (const query of [
-    '给我具体维修方案',
-    '怎么修，给出步骤、备件和验证方法',
-    '请给出方案和引用来源',
-    '已检查穿料路径，请给出维修方案和备件',
-  ]) {
-    const result = reply(query, winding.inputs);
-    assert.equal(result.inputs.caseId, cases[0].id, query);
-    assert.match(result.answer, /具体维修方案/, query);
-    assert.match(result.answer, /修后验证/, query);
-    assert.match(result.answer, /备件/, query);
-  }
-  for (const query of [
-    '修完怎么验证',
-    '设备已恢复正常，如何验收',
-    '现在已经不再断箔，怎么验证维修好了',
-    '怎么确认修好了？',
-  ]) {
-    const result = reply(query, winding.inputs);
-    assert.equal(result.inputs.caseId, cases[0].id);
-    assert.match(result.answer, /修后验证/);
-    assert.doesNotMatch(result.answer, /具体维修方案/);
-    assert.match(result.answer, /张力读数趋势/);
-  }
-  const restoredSymptom = reply(
-    'WND-100',
-    reply('张力波动并断箔', defaults).inputs,
+    }
+  };
+
+  assert.equal(faults.length, 10);
+  assert.equal(plans.length, 24);
+  assert.equal(standards.length, 58);
+  assert.equal(parts.length, 10);
+  assert.equal(images.length, 10);
+  assert.equal(defaults.maintenanceVersion, '2');
+  assert.deepEqual(suggestions.maintenance, examples);
+  const cards = examples.map((example) =>
+    replyToQuestion('maintenance', example.question, defaults, dataset),
   );
-  assert.equal(restoredSymptom.inputs.caseId, cases[0].id);
-  const codeOnly = reply('W-T01', defaults);
-  assert.equal(codeOnly.inputs.device, '');
-  assert.match(codeOnly.answer, /请确认现场设备型号/);
-  assert.equal(reply('WND-100', codeOnly.inputs).inputs.caseId, cases[0].id);
-  assert.equal(reply('IMP-200', codeOnly.inputs).inputs.caseId, '');
-  const checked = reply('已检查穿料路径，还是有异常', winding.inputs);
-  assert.match(checked.answer, /已收到新的排查情况/);
-  assert.ok(checked.inputs.observations.includes('已检查'));
-  const feedback = reply('处理后已恢复正常', winding.inputs);
-  assert.match(feedback.answer, /未创建或关闭维修工单/);
+  const brush = cards[0];
+  assert.equal(brush.inputs.caseId, 'DJGZ00026');
+  assert.match(
+    brush.answer,
+    /1\. 可能原因：\*\*启动电容坏\*\*；维修参考：更换启动电容/,
+  );
+  assert.match(
+    brush.answer,
+    /2\. 可能原因：\*\*马达卡死或烧坏\*\*；维修参考：更换马达轴承或马达/,
+  );
+  assert.match(
+    brush.answer,
+    /!\[.*\]\(\/data\/maintenance\/final\/DJGZ00026\.jpeg\)/,
+  );
+  assert.deepEqual(sectionIds(brush, 'maintenance-plans'), [
+    'DJGZ00026-01',
+    'DJGZ00026-02',
+  ]);
+  assert.deepEqual(sectionIds(brush, 'maintenance-image-DJGZ00026'), [
+    'DJGZ00026',
+  ]);
+  assert.doesNotMatch(
+    brush.answer,
+    /修后验证|维修工单|库存|工时|第1步|缺失|无法/,
+  );
+  assert.match(renderedText(cards[1].answer), /外径6mm\*内径4mm/);
+  assert.match(cards[1].answer, /2排机\/4排机\/8排机\/12排机直径：3\.0mm/);
+  assert.match(cards[1].answer, /6排机：3\.5mm/);
+  assert.match(cards[1].answer, /更换前使用卡尺测量确认尺寸/);
+  assert.deepEqual(sectionIds(cards[1], 'maintenance-standards'), [
+    'CXS-GQ-0090-003',
+  ]);
+  assert.deepEqual(sectionIds(cards[2], 'maintenance-parts-final'), [
+    '4DJE31H0G0003-1',
+    '4DJE31H0G0003',
+  ]);
+  assert.match(cards[2].answer, /齿距：1\.5mm/);
+  assert.match(cards[2].answer, /齿距：1\.2mm/);
+  assert.equal((renderedText(cards[2].answer).match(/15\*55\*1mm/g) ?? []).length, 2);
+  assert.doesNotMatch(renderedText(cards[2].answer), /15551mm/);
+  for (const card of cards) {
+    assert.equal(card.analysis, undefined);
+    checkSources(card);
+  }
+
+  // Every final fault is reachable by its ID, name and available symptom.
+  for (const fault of faults) {
+    for (const phrase of [fault.id, fault.name, fault.symptom].filter(
+      Boolean,
+    )) {
+      const result = reply(`${phrase}，怎么处理？`, defaults);
+      assert.equal(result.inputs.caseId, fault.id, phrase);
+      const expected = plans.filter((plan) => plan.faultId === fault.id);
+      assert.deepEqual(
+        sectionIds(result, 'maintenance-plans'),
+        expected.map((plan) => plan.id),
+      );
+      for (const plan of expected)
+        assert.ok(
+          renderedText(result.answer).includes(
+            `可能原因：${plan.cause}；维修参考：${plan.repair}`,
+          ),
+          plan.id,
+        );
+      checkSources(result);
+    }
+    const image = reply(`${fault.id}的图片`, defaults);
+    assert.equal(
+      sectionIds(image, 'maintenance-plans').length,
+      0,
+      'Image-only questions should not add a repair plan',
+    );
+    assert.match(image.answer, new RegExp(`${fault.id}\\.jpeg`));
+    checkSources(image);
+  }
+  for (const faultId of ['DJGZ00027', 'DJGZ00028'])
+    assert.equal(
+      sectionIds(reply(faultId, defaults), 'maintenance-plans').length,
+      1,
+      'Partial source coverage must not be filled with invented groups',
+    );
+  for (const plan of plans) {
+    const result = reply(plan.id, defaults);
+    assert.deepEqual(
+      sectionIds(result, 'maintenance-plans'),
+      [plan.id],
+      'A plan ID must not expand to unrelated plans',
+    );
+    checkSources(result);
+  }
+  for (const standard of standards) {
+    const result = reply(standard.id, defaults);
+    assert.ok(whitespace(renderedText(result.answer)).includes(whitespace(standard.text)), standard.id);
+    assert.deepEqual(sectionIds(result, 'maintenance-standards'), [
+      standard.id,
+    ]);
+    checkSources(result);
+  }
+  for (const part of parts) {
+    const result = reply(part.id, defaults);
+    assert.ok(renderedText(result.answer).includes(part.spec), part.id);
+    assert.deepEqual(
+      sectionIds(result, 'maintenance-parts-final'),
+      [part.id],
+      'An exact part number must not return a longer prefix variant',
+    );
+    checkSources(result);
+  }
+
+  for (const query of [
+    '那毛刷调到什么状态？',
+    '调到什么状态？',
+    '操作标准是什么？',
+  ]) {
+    const result = reply(query, brush.inputs);
+    assert.deepEqual(
+      sectionIds(result, 'maintenance-standards'),
+      ['CXS-GQ-0089-021'],
+      query,
+    );
+    assert.match(
+      result.answer,
+      /毛刷正常转动，上下毛刷接触箔两面,过导针时无划伤铝箔与导针/,
+    );
+    assert.doesNotMatch(result.answer, /启动电容坏|维修工单/);
+    checkSources(result);
+  }
+  const cause = reply('只看原因', brush.inputs);
+  assert.match(cause.answer, /启动电容坏/);
+  assert.doesNotMatch(cause.answer, /更换启动电容|!\[/);
+  const imageFollowup = reply('有图片吗？', brush.inputs);
+  assert.match(imageFollowup.answer, /DJGZ00026\.jpeg/);
+  assert.equal(sectionIds(imageFollowup, 'maintenance-plans').length, 0);
+  const combined = reply(
+    '毛刷马达不转，怎么处理？操作标准是什么？有图片吗？',
+    defaults,
+  );
+  assert.deepEqual(sectionIds(combined, 'maintenance-standards'), [
+    'CXS-GQ-0089-021',
+  ]);
+  assert.equal(sectionIds(combined, 'maintenance-plans').length, 2);
+  checkSources(combined);
+  const mainMotor = reply('换个故障，主马达不转怎么办？', brush.inputs);
+  assert.equal(mainMotor.inputs.caseId, 'CJGZ00002');
+  assert.doesNotMatch(mainMotor.answer, /启动电容|毛刷/);
+  const silicone = reply('含浸机硅胶条用什么尺寸？', brush.inputs);
+  assert.equal(silicone.inputs.caseId, '');
+  assert.doesNotMatch(silicone.answer, /毛刷|启动电容/);
+  assert.equal(reply(examples[2].question, brush.inputs).inputs.caseId, '');
+  const ambiguous = reply('马达不转，怎么办？', brush.inputs);
+  assert.equal(ambiguous.inputs.caseId, '');
+  assert.match(ambiguous.answer, /主马达不转/);
+  assert.match(ambiguous.answer, /毛刷故障/);
+  assert.match(ambiguous.answer, /请确认/);
+  assert.equal(reply('是毛刷', ambiguous.inputs).inputs.caseId, 'DJGZ00026');
+  const bulb = reply('报警灯泡的规格和料号是什么？', defaults);
+  assert.match(bulb.answer, /SDL0240110902A/);
+  assert.match(bulb.answer, /卡口  24V 8W/);
+  assert.deepEqual(sectionIds(bulb, 'maintenance-parts-final'), [
+    'SDL0240110902A',
+  ]);
+  for (const query of ['卷针有哪些规格？', '卷針有哪些规格？']) {
+    const result = reply(query, defaults);
+    assert.deepEqual(sectionIds(result, 'maintenance-parts-final'), [
+      '4DJF0600C0001-5',
+      '4DJF0600C0001-8',
+    ]);
+  }
+  assert.deepEqual(
+    sectionIds(reply('电磁阀怎么保养？', defaults), 'maintenance-standards'),
+    ['CXS-GQ-0090-007'],
+  );
+  assert.deepEqual(
+    sectionIds(
+      reply('电磁阀料号和规格是什么？', defaults),
+      'maintenance-parts-final',
+    ),
+    ['5108031166-1'],
+  );
+  assert.deepEqual(
+    sectionIds(reply('选孔针座的标准', defaults), 'maintenance-standards'),
+    ['CXS-GQ-0090-018'],
+  );
+  assert.deepEqual(
+    sectionIds(reply('导针平送的标准', defaults), 'maintenance-standards'),
+    ['CXS-GQ-0089-005'],
+  );
+
+  for (const query of [
+    '卷绕机 WND-100 张力波动并断箔',
+    '老化柜 AGE-300 出现 A-T03 告警',
+    '含浸机 IMP-200 真空度不足',
+    '代码 UNKNOWN-900',
+    'DJGZ99999',
+    'CXS-GQ-0089-999',
+    '现在漏油怎么处理',
+    '现在无法启动，怎么修？',
+    '没有毛刷故障，只有设备异响',
+    '空压机压力不足',
+  ]) {
+    const result = reply(query, brush.inputs);
+    assert.equal(result.inputs.caseId, '', query);
+    assert.match(result.answer, /未查到/, query);
+    assert.doesNotMatch(result.answer, /更换启动电容|更换直线轴承/, query);
+    assert.equal(result.sources.length, 0, query);
+  }
+  assert.equal(reply('切纸刀库存多少？', defaults).answer, '未查到库存数据。');
+  assert.equal(
+    reply('这次维修工时是多少？', brush.inputs).answer,
+    '未查到维修工时数据。',
+  );
+
   const legacyDraft = {
-    device: '卷绕机 W-03',
-    symptom: '张力波动 / 断箔',
+    device: '卷绕机',
+    model: 'WND-100',
+    code: 'W-T01',
+    symptom: '断箔',
+    caseId: 'winding',
+    maintenanceVersion: '1',
     question: '旧草稿',
   };
-  assert.equal(normalizeMaintenanceInputs(legacyDraft).device, '');
-  assert.equal(normalizeMaintenanceInputs(legacyDraft).question, '旧草稿');
+  const normalizedDraft = normalizeMaintenanceInputs(legacyDraft);
+  assert.equal(normalizedDraft.device, '');
+  assert.equal(normalizedDraft.caseId, '');
+  assert.equal(normalizedDraft.question, '旧草稿');
+  assert.equal(normalizedDraft.maintenanceVersion, '2');
+  assert.equal(normalizeMaintenanceInputs(brush.inputs).caseId, 'DJGZ00026');
   const base = {
     version: 1,
     datasets: initialDatasets,
@@ -186,7 +329,9 @@ try {
     turns: [],
     draft: legacyDraft,
   };
-  const stored = new Map([[STORAGE_KEY, JSON.stringify({ ...base, sessions: [oldSession] })]]);
+  const stored = new Map([
+    [STORAGE_KEY, JSON.stringify({ ...base, sessions: [oldSession] })],
+  ]);
   global.window = {};
   global.localStorage = {
     getItem: (key) => stored.get(key) ?? null,
@@ -199,27 +344,12 @@ try {
     updateWorkspace((state) => {
       assert.equal(state.sessions[0].draft.device, '');
       assert.equal(state.sessions[0].draft.question, '旧草稿');
+      assert.equal(state.sessions[0].draft.maintenanceVersion, '2');
       return state;
     }),
   );
-  for (const document of fixtures.documents) {
-    assert.ok(
-      fs
-        .readFileSync(`public${document.url}`)
-        .subarray(0, 5)
-        .equals(Buffer.from('%PDF-')),
-    );
-    for (const page of document.pages) {
-      const png = fs.readFileSync(`public${page.image}`);
-      assert.equal(png.readUInt32BE(16), page.width);
-      assert.equal(png.readUInt32BE(20), page.height);
-      assert.ok(
-        document.sections.some((section) => section.page === page.page),
-      );
-    }
-  }
   console.log(
-    'Maintenance: five concrete repair plans and verification, followups, conflicts, legacy drafts, source grounding and original pages passed.',
+    'Maintenance: final workbook records, three cards, images, exact IDs, paired references, context changes, aliases and legacy draft migration passed.',
   );
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });

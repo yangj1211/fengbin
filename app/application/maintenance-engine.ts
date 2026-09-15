@@ -1,8 +1,12 @@
 import type { Inputs } from './model';
 import {
-  maintenanceCases,
-  maintenanceFixtures,
-  type MaintenanceCase,
+  maintenanceFaults,
+  maintenancePlans,
+  maintenanceStandards,
+  maintenanceParts,
+  maintenanceImages,
+  type MaintenanceFault,
+  type MaintenanceStandard,
 } from './maintenance-data';
 import type { SourceReference } from './customer-types';
 
@@ -13,63 +17,151 @@ export const maintenanceDefaults: Inputs = {
   symptom: '',
   caseId: '',
   observations: '',
+  standardIds: '',
+  partIds: '',
+  pendingFaultIds: '',
   question: '',
-  maintenanceVersion: '1',
+  maintenanceVersion: '2',
 };
+
 export function normalizeMaintenanceInputs(input: Inputs): Inputs {
-  // Old drafts contain automatically selected equipment and faults; keep the
-  // original turns, but do not treat those defaults as confirmed field facts.
-  return input.maintenanceVersion === '1'
+  // Earlier drafts contain demo models and alarms absent from the final data.
+  return input.maintenanceVersion === '2'
     ? { ...maintenanceDefaults, ...input }
     : { ...maintenanceDefaults, question: input.question ?? '' };
 }
-const intakeSection = maintenanceFixtures.documents
-  .find((document) => document.id === 'maintenance-parts')!
-  .sections.find((section) => section.id === 'intake')!;
-const intake: SourceReference[] = [
-  {
-    documentId: 'maintenance-parts',
-    sectionId: 'intake',
-    page: intakeSection.page,
-  },
-];
-const list = (items: string[], numbered = false) =>
-  items
-    .map((item, index) => `${numbered ? `${index + 1}.` : '-'} ${item}`)
-    .join('\n');
-const aliases: Record<string, string[]> = {
-  卷绕机: ['卷绕机', '卷绕设备'],
-  含浸机: ['含浸机', '含浸设备'],
-  老化柜: ['老化柜', '老化测试设备', '老化设备'],
-  电容测试仪: ['电容测试仪', '测试仪'],
-  空压机: ['空压机', '空气压缩机'],
+
+const normalized = (value: string) =>
+  value
+    .toUpperCase()
+    .replace(/針/g, '针')
+    .replace(/機/g, '机')
+    .replace(/膠/g, '胶')
+    .replace(/鋁/g, '铝')
+    .replace(/電/g, '电')
+    .replace(/燈/g, '灯')
+    .replace(/繼/g, '继')
+    .replace(/电机/g, '马达')
+    .replace(/\s+/g, '');
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const hasId = (question: string, id: string) =>
+  new RegExp(`(^|[^A-Z0-9-])${escapeRegExp(id)}(?=$|[^A-Z0-9-])`, 'i').test(
+    question,
+  );
+const source = (documentId: string, sectionId: string): SourceReference => ({
+  documentId,
+  sectionId,
+  page: 1,
+});
+// Workbook cells are literal content, including multiplication stars in sizes.
+const literal = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/[\\`*_{}[\]()<>~|#!]/g, '\\$&')
+    .replace(/^(\s*)(\d+)\.(?=\s)/gm, '$1$2\\.')
+    .replace(/^([ \t]*)([-+])(?=\s)/gm, '$1\\$2')
+    // Leading source indentation must not turn a standard into a code block.
+    .replace(/^[ \t]+/gm, (space) => space.replace(/ /g, '&#32;').replace(/\t/g, '&#9;'));
+const numberedList = (items: string[]) =>
+  items.map((item, index) => `${index + 1}. ${item}`).join('\n');
+const faultAliases: Record<string, RegExp> = {
+  CJGZ00001: /胶盖(?:破损|破了|损坏)/,
+  CJGZ00002: /主马达(?:不转|转不动|故障)|机台不动作/,
+  DJGZ00024: /掉素子|素子掉落/,
+  DJGZ00025: /花瓣(?:箔灰重|处箔灰多)|钉接(?:花瓣)?处?箔灰多/,
+  DJGZ00026: /毛刷(?:马达)?(?:不转|转不动|故障)/,
+  DJGZ00027: /断箔/,
+  DJGZ00028: /花瓣(?:残缺|大小不均|不均匀|大小不一)/,
+  RJGZ00001: /导针(?:弯曲|弯了)/,
+  RJGZ00002: /虚焊|焊接不牢/,
+  RJGZ00003: /素子平送不顺畅|卡素子/,
 };
-const faultSignals: Record<string, RegExp> = {
-  卷绕机: /张力(?:波动|不稳|异常)|断箔/,
-  含浸机: /真空(?:度)?(?:不足|不够|偏低|达不到|上不去)/,
-  老化柜: /温度(?:偏高|过高|异常升高)|温升异常|超温/,
-  电容测试仪: /(?:测试)?读数(?:波动|不稳)|测量(?:结果)?(?:波动|不稳定)/,
-  空压机: /(?:供气)?压力(?:不足|偏低|不够)|供气不足/,
-};
-function hasSymptom(text: string, example: MaintenanceCase) {
-  return text.split(/[，,。；;！!？?]/).some((clause) => {
-    const hit = clause.match(faultSignals[example.device]);
-    return (
-      hit &&
-      !/没有|未见|并无|不是|已无|不再|并非/.test(clause.slice(0, hit.index))
-    );
+
+function faultMatches(question: string): MaintenanceFault[] {
+  const clauses = normalized(question)
+    .split(/[，,。；;！!？?]/)
+    .filter((clause) => !/没有|未见|并无|不是|已无|不再|并非/.test(clause));
+  const scored = maintenanceFaults.map((fault) => {
+    let score = 0;
+    for (const clause of clauses) {
+      if (clause.includes(normalized(fault.name))) score = Math.max(score, 90);
+      if (fault.symptom && clause.includes(normalized(fault.symptom)))
+        score = Math.max(score, 90);
+      if (faultAliases[fault.id]?.test(clause)) score = Math.max(score, 80);
+      // An unspecified motor could mean either of the two motor fault records.
+      if (
+        /马达(?:不转|转不动)/.test(clause) &&
+        !/毛刷|主马达/.test(clause) &&
+        ['CJGZ00002', 'DJGZ00026'].includes(fault.id)
+      )
+        score = Math.max(score, 60);
+    }
+    return { fault, score };
   });
+  const maximum = Math.max(...scored.map((item) => item.score));
+  return maximum > 0
+    ? scored.filter((item) => item.score === maximum).map((item) => item.fault)
+    : [];
 }
-function partsText(example: MaintenanceCase) {
-  return list(example.parts.map((part) => `${part.name}：${part.condition}`));
-}
-function repairPlanText(example: MaintenanceCase) {
+
+function standardTerms(standard: MaintenanceStandard): string[] {
+  const mainName = standard.name.split(/[（(]/)[0];
   return [
-    '维修前先记录当前告警和已检查结果，由授权人员按适用手册完成停机、隔离及检查条件确认。',
-    `具体维修方案：\n\n${list(example.repair, true)}`,
-    `修后验证：\n\n${list(example.verification, true)}`,
-  ].join('\n\n');
+    mainName,
+    ...standard.name.split(/[（()）/、，,;；]/),
+    mainName.replace(/装置|机构/g, ''),
+  ]
+    .map(normalized)
+    .filter((term) => term.length > 1);
 }
+
+function namedStandards(question: string): MaintenanceStandard[] {
+  const q = normalized(question)
+    .split(/[，,。；;！!？?]/)
+    .filter((clause) => !/没有|未见|并无|不是|已无|不再|并非/.test(clause))
+    .join(' ');
+  const matches = maintenanceStandards
+    .map((standard) => ({
+      standard,
+      terms: standardTerms(standard).filter((term) => q.includes(term)),
+    }))
+    .filter((item) => item.terms.length > 0);
+  // A specific component (导针平送) takes precedence over a generic substring
+  // (平送) in a different component's title.
+  return matches
+    .filter(
+      (item) =>
+        !matches.some((other) =>
+          item.terms.every((term) =>
+            other.terms.some(
+              (otherTerm) =>
+                otherTerm.length > term.length && otherTerm.includes(term),
+            ),
+          ),
+        ),
+    )
+    .map((item) => item.standard);
+}
+
+function relatedStandards(fault: MaintenanceFault): MaintenanceStandard[] {
+  if (fault.id === 'DJGZ00026')
+    return maintenanceStandards.filter((item) => item.id === 'CXS-GQ-0089-021');
+  const referenceText = maintenancePlans
+    .filter((plan) => plan.faultId === fault.id)
+    .map((plan) => `${plan.cause} ${plan.repair}`)
+    .join(' ');
+  return namedStandards(referenceText);
+}
+
+function namedParts(question: string) {
+  const q = normalized(question)
+    .split(/[，,。；;！!？?]/)
+    .filter((clause) => !/没有|未见|并无|不是|已无|不再|并非/.test(clause))
+    .join(' ');
+  return maintenanceParts.filter((part) => q.includes(normalized(part.name)));
+}
+
 export function replyToMaintenance(
   question: string,
   current: Inputs,
@@ -78,274 +170,289 @@ export function replyToMaintenance(
   inputs: Inputs;
   sources: SourceReference[];
 } {
-  let input = normalizeMaintenanceInputs(current);
   const q = question.trim();
-  input = { ...input, question: q };
-  if (/换(?:一)?台|另一台|换个设备|切换设备|新的故障|新故障|另一个故障/.test(q))
+  let input: Inputs = { ...normalizeMaintenanceInputs(current), question: q };
+  const reset = () => {
     input = { ...maintenanceDefaults, question: q };
-  const reply = (answer: string, sources = intake) => ({
+  };
+  const reply = (answer: string, sources: SourceReference[] = []) => ({
     answer,
     inputs: input,
-    sources,
-  });
-  if (
-    /^(你好|您好|hi|hello|谢谢|感谢)[！!。\s]*$/i.test(q) ||
-    /能做什么|怎么用|如何使用/.test(q)
-  )
-    return reply(
-      '可以告诉我设备型号、告警代码或具体故障现象。我会结合设备手册、历史工单和备件资料，给出具体维修方案，包括处理步骤、所需备件及修后验证；不清楚的信息会先向你确认。',
-    );
-
-  const labeledCode = q.match(
-    /(?:故障码|故障代码|代码|告警码|报警码)\s*(?:是|为)?\s*[:：]?\s*([a-zA-Z0-9_-]+)/,
-  )?.[1];
-  const tokens = [
-    ...new Set(
-      [
-        ...(q.match(
-          /\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b|\b[A-Z]{1,4}\d{2,6}\b/gi,
-        ) ?? []),
-        ...(labeledCode ? [labeledCode] : []),
-      ].map((token) => token.toUpperCase()),
+    sources: sources.filter(
+      (item, index) =>
+        sources.findIndex(
+          (other) =>
+            other.documentId === item.documentId &&
+            other.sectionId === item.sectionId,
+        ) === index,
     ),
+  });
+  if (!q || /^(你好|您好|嗨|HI|HELLO|谢谢|感谢)[！!。\s]*$/i.test(q))
+    return reply('可以描述故障现象，或询问部件的操作标准、备件料号和规格。');
+  if (/能做什么|怎么用|如何使用|什么功能/.test(q))
+    return reply(
+      '我可以查询故障原因与维修参考、相关图片、操作标准，以及备件料号和规格。比如“毛刷马达不转，怎么处理？有图片吗？”',
+    );
+  if (/换(?:一)?台|另一台|换个设备|切换设备|新的故障|新故障|另一个故障/.test(q))
+    reset();
+
+  const exactPlans = maintenancePlans.filter((item) => hasId(q, item.id));
+  const exactFaults = maintenanceFaults.filter((item) => hasId(q, item.id));
+  const exactStandards = maintenanceStandards.filter((item) =>
+    hasId(q, item.id),
+  );
+  const exactParts = maintenanceParts.filter((item) => hasId(q, item.id));
+  const standardFileNumbers = [
+    ...new Set(maintenanceStandards.map((item) => item.fileNumber)),
   ];
-  const models = maintenanceCases.filter((item) => tokens.includes(item.model));
-  const codes = maintenanceCases.filter((item) => tokens.includes(item.code));
-  const devices = Object.entries(aliases)
-    .filter(([, names]) => names.some((name) => q.includes(name)))
-    .map(([name]) => name);
-  const unknown = tokens.filter(
-    (token) =>
-      !maintenanceCases.some(
-        (item) => item.model === token || item.code === token,
-      ),
+  const exactFiles = standardFileNumbers.filter((id) => hasId(q, id));
+  let unrecognized = q.toUpperCase();
+  const knownIds = [
+    ...maintenanceFaults,
+    ...maintenancePlans,
+    ...maintenanceStandards,
+    ...maintenanceParts,
+  ].map((item) => item.id);
+  for (const id of [...knownIds, ...standardFileNumbers].sort(
+    (a, b) => b.length - a.length,
+  ))
+    unrecognized = unrecognized.replace(
+      new RegExp(`(^|[^A-Z0-9-])${escapeRegExp(id)}(?=$|[^A-Z0-9-])`, 'g'),
+      '$1 ',
+    );
+  const unknownIds = unrecognized.match(
+    /\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b|\b[A-Z]{1,8}\d{3,}[A-Z0-9-]*\b/g,
   );
-  if (unknown.length) {
-    input = { ...maintenanceDefaults, question: q };
-    return reply(
-      `当前资料中没有 ${unknown.join('、')} 的适用说明，不能套用其他型号或故障码的维修建议。请补充对应设备型号、告警原文及具体表现，我会先确认资料是否适用。`,
-    );
+  if (unknownIds?.length) {
+    reset();
+    return reply(`未查到 ${literal([...new Set(unknownIds)].join('、'))} 的对应记录。`);
   }
-  if (
-    devices.length > 1 ||
-    models.length > 1 ||
-    codes.length > 1 ||
-    (models[0] && codes[0] && models[0].id !== codes[0].id) ||
-    (devices[0] &&
-      [models[0], codes[0]].some((item) => item && item.device !== devices[0]))
-  ) {
-    input = { ...maintenanceDefaults, question: q };
-    return reply(
-      '这条描述中有多台设备，或型号与告警代码的适用关系不一致。请先确认要排查的设备型号和告警原文，我再继续，避免把不同设备的处理方法混在一起。',
-    );
-  }
-  const device = devices[0] ?? models[0]?.device;
-  if (device && device !== input.device) {
-    input = input.device
-      ? { ...maintenanceDefaults, device, question: q }
-      : { ...input, device };
-  }
-  if (models[0]) input.model = models[0].model;
-  if (codes[0]) {
-    if (input.device && input.device !== codes[0].device) {
-      input = { ...maintenanceDefaults, question: q };
-      return reply(
-        '这个告警代码与前面设备的资料不一致。请确认是否已切换设备，并补充型号。',
-      );
-    }
-    input.code = codes[0].code;
-  }
-  let identityText = q;
-  for (const token of tokens)
-    identityText = identityText.replaceAll(new RegExp(token, 'gi'), '');
-  for (const names of Object.values(aliases))
-    for (const name of names) identityText = identityText.replaceAll(name, '');
-  const identityOnly =
-    Boolean(device || models[0] || codes[0]) &&
-    /^(?:设备型号|型号|设备|机型|这台|确认|改成|换成|是|为|\s|[:：，,。.!])*$/u.test(
-      identityText,
-    );
-  const signalText = identityOnly && input.symptom ? input.symptom : q;
-  const symptomMatches = maintenanceCases.filter((item) =>
-    hasSymptom(signalText, item),
+
+  const asksImage = /图片|配图|照片|图示|看图/.test(q);
+  const asksCause = /原因|为什么|为何/.test(q);
+  const supportedQuestion = q.replace(
+    /维修工时|维修时间|历史工单|维修工单|历史案例|相似案例|维修记录|维修验收|修后验证/g,
+    '',
   );
-  const matchedSymptom = symptomMatches.find(
-    (item) => item.device === input.device,
-  );
-  const activeCode = maintenanceCases.find((item) => item.code === input.code);
-  if (activeCode && input.device && activeCode.device !== input.device) {
-    input = { ...maintenanceDefaults, question: q };
-    return reply(
-      '前面提到的告警代码与补充的设备型号不一致，请核对铭牌和告警原文后再继续。',
+  const asksRepair =
+    /处理|维修|修理|怎么修|怎么办|如何修|解决|方法|方案|步骤|怎么换|换什么|更换什么/.test(
+      supportedQuestion,
     );
-  }
-  const asksVerification = /验证|验收|怎么确认|如何确认|怎样确认/.test(q);
-  const followup =
-    asksVerification ||
-    /备件|配件|更换什么|换什么|历史|案例|工单|依据|原因|为什么|注意|步骤|方案|维修|处理|怎么修|如何修|怎么做|详细|继续|仍|还是|已经|已检查|检查过|换料|校准|反馈|处理结果|恢复|解决/.test(
+  const asksStandard =
+    /标准|尺寸|怎么调|如何调|怎样调|调到|调节|调整到|间隙|什么状态|保养|温度|多宽|多高|多大/.test(
       q,
     );
-  const negatedFault =
-    !matchedSymptom &&
-    q
-      .split(/[，,。；;]/)
-      .some(
-        (clause) =>
-          /没有|未见|并无|不是|已无|不再|并非/.test(clause) &&
-          maintenanceCases.some((item) =>
-            faultSignals[item.device].test(clause),
-          ),
-      );
+  const asksParts = /备件|配件|料号|规格|品名|单位/.test(q);
+  const missingRequests = [
+    { pattern: /库存|有货|余量/, label: '库存' },
+    { pattern: /工时|维修时间|多久修好/, label: '维修工时' },
+    {
+      pattern: /历史工单|维修工单|历史案例|相似案例|维修记录/,
+      label: '维修工单或历史案例',
+    },
+    {
+      pattern: /修后验证|维修验收|修完怎么验证|怎么确认修好/,
+      label: '修后验证',
+    },
+  ].filter((item) => item.pattern.test(q));
+  const missingText = missingRequests.length
+    ? `未查到${missingRequests.map((item) => item.label).join('、')}数据。`
+    : '';
   if (
-    /无法启动|不能启动|异响|漏油|振动|冒烟|漏电|通信中断/.test(q) ||
-    (negatedFault && !(asksVerification && input.caseId))
-  ) {
-    input.symptom = q;
-    input.caseId = '';
-    input.code = '';
-    return reply(
-      '当前现象与前面的故障不同，现有资料还不足以给出对应方案。请补充当前设备型号、告警原文和仍存在的具体表现，我会重新核对，不继续套用先前的故障原因。',
-    );
-  }
-  if (symptomMatches.length && !matchedSymptom && input.device) {
-    input.symptom = q;
-    input.caseId = '';
-    input.code = '';
-    return reply(
-      `我还没有找到“${input.device}”与这条现象对应的维修资料。请补充型号、告警原文和异常发生时的工况；暂不沿用前一个故障的建议。`,
-    );
-  }
-  if (matchedSymptom) {
-    input.symptom = signalText;
-    input.caseId = matchedSymptom.id;
-    if (!codes[0] && !identityOnly) input.code = '';
-  } else if (activeCode && input.device && (identityOnly || codes[0])) {
-    input.caseId = activeCode.id;
-  } else if (!followup && !device && !models.length && !codes.length) {
-    input.symptom = q;
-    input.caseId = '';
-    input.code = '';
-  } else if (
-    device &&
-    !followup &&
-    !identityOnly &&
-    !matchedSymptom &&
-    !codes.length
-  ) {
-    input.symptom = '';
-    input.caseId = '';
-    input.code = '';
-  }
-  if (!input.device) {
-    if (codes[0])
-      return reply(
-        `在设备手册中，${codes[0].code} 对应 ${codes[0].device} ${codes[0].model} 的“${codes[0].symptom}”。请确认现场设备型号及告警原文，故障码含义需结合适用手册核对，不能仅凭代码认定故障。`,
-        [
-          ...codes[0].sources.filter(
-            (source) => source.documentId === 'maintenance-guide',
-          ),
-          ...intake,
-        ],
-      );
-    return reply(
-      '请先补充设备类型或型号，以及告警原文或具体异常现象。例如：卷绕机 WND-100 换料后张力波动并断箔。仅凭当前描述还不能确定适用哪份维修资料。',
-    );
-  }
-  const example = maintenanceCases.find(
-    (item) => item.id === input.caseId && item.device === input.device,
-  );
-  if (!example)
-    return reply(
-      `已了解设备是${input.device}${input.model ? ` ${input.model}` : ''}。请补充具体故障现象或告警代码，例如异常表现、何时发生，以及最近是否换料或维修；我不会仅凭设备名称推断故障。`,
-    );
-
-  const scope = input.model
-    ? `根据你提供的 ${input.device} ${input.model}${input.code ? `、告警 ${input.code}` : ''}，可以参考设备手册中“${example.symptom}”的维修方案。`
-    : `你描述的是${input.device}的${example.symptom}。现有相似资料适用于型号 ${example.model}，请补充现场型号确认是否适用。`;
-  const cautious =
-    '处理动作需根据检查结果选择，不能直接将可能原因当作已确认故障。';
-  const wantsPlan =
-    /排查|步骤|方案|怎么修|如何修|怎么处理|如何处理|怎么做/.test(q);
-  const references = (kinds: string[]) =>
-    example.sources.filter((source) => kinds.includes(source.documentId));
-  if (
-    /已恢复|恢复正常|已解决|解决了|处理结果|反馈/.test(q) &&
-    !wantsPlan &&
-    !asksVerification
-  ) {
-    input.observations = [input.observations, q]
-      .filter(Boolean)
-      .join('\n')
-      .slice(-3000);
-    return reply(
-      '这条处理反馈会随当前对话保留。请继续补充实际检查项、处理动作及复查结果，便于后续复盘；现场恢复使用仍需按规定由负责人确认。当前仅保存对话，未创建或关闭维修工单。',
-    );
-  }
-  if (/仍|还是|已检查|已经检查|检查过/.test(q)) {
-    input.observations = [input.observations, q]
-      .filter(Boolean)
-      .join('\n')
-      .slice(-3000);
-    if (!wantsPlan && !/备件|配件/.test(q) && !asksVerification)
-      return reply(
-        `已收到新的排查情况：“${q}”。请结合实际检查结果选择对应处理分支；已经确认正常的项目无需重复处置。\n\n${repairPlanText(example)}\n\n${example.precautions.join(' ')}\n\n请补充实际检查发现与复测结果，以便进一步调整方案。`,
-        [...references(['maintenance-guide']), ...intake],
-      );
-  }
-  const partsOnly = /备件|配件|更换什么|换什么/.test(q);
-  const historyOnly = /历史|案例|工单/.test(q);
-  const causesOnly = /原因|为什么/.test(q);
-  const precautionsOnly = /注意|安全/.test(q);
-  const verificationOnly = asksVerification;
-  if (
-    (partsOnly ||
-      historyOnly ||
-      causesOnly ||
-      precautionsOnly ||
-      verificationOnly) &&
-    !wantsPlan
+    missingText &&
+    !asksImage &&
+    !asksCause &&
+    !asksRepair &&
+    !asksStandard &&
+    !asksParts
   )
-    return reply(
-      [
-        scope,
-        causesOnly
-          ? `${cautious}可能的原因包括：\n\n${list(example.causes)}`
-          : '',
-        historyOnly
-          ? `相似历史工单：${example.history} 历史原因不能直接当作本次故障结论。`
-          : '',
-        partsOnly
-          ? `备件应在检查确认后再核对适配关系：\n\n${partsText(example)}\n\n备件适配以现场铭牌、手册版本和实际部件规格为准。`
-          : '',
-        precautionsOnly ? `检查时请注意：\n\n${list(example.precautions)}` : '',
-        verificationOnly
-          ? `修后验证：\n\n${list(example.verification, true)}`
-          : '',
-      ]
-        .filter(Boolean)
-        .join('\n\n'),
-      references([
-        ...(partsOnly ? ['maintenance-parts'] : []),
-        ...(historyOnly ? ['maintenance-cases'] : []),
-        'maintenance-guide',
-      ]),
+    return reply(missingText);
+  let faults = exactPlans.length
+    ? maintenanceFaults.filter((fault) =>
+        exactPlans.some((plan) => plan.faultId === fault.id),
+      )
+    : exactFaults.length
+      ? exactFaults
+      : faultMatches(q);
+  let standards = exactStandards.length
+    ? exactStandards
+    : exactFiles.length
+      ? maintenanceStandards.filter((item) =>
+          exactFiles.includes(item.fileNumber),
+        )
+      : namedStandards(q);
+  let parts = exactParts.length ? exactParts : namedParts(q);
+  if (!faults.length && input.pendingFaultIds) {
+    faults = maintenanceFaults.filter(
+      (item) =>
+        input.pendingFaultIds.split(',').includes(item.id) &&
+        normalized(q).includes(normalized(item.name.replace(/故障|不转/g, ''))),
     );
-  if (/依据|引用|来源/.test(q) && !wantsPlan)
-    return reply(
-      '本次建议参考了对应型号的维修手册、相似历史工单与备件说明。文件和页码列在文末，点击可核对原文；历史处理记录不能直接确定本次故障原因。',
-      example.sources,
+    if (faults.length === 1 && !asksStandard) standards = [];
+  }
+  const oldFault = maintenanceFaults.find((item) => item.id === input.caseId);
+  const hasExplicitFault = faults.length > 0;
+  const hasExplicitStandard = standards.length > 0;
+  const hasExplicitPart = parts.length > 0;
+  const hasNewUnmatchedSymptom =
+    !hasExplicitFault &&
+    /无法启动|不能启动|异响|漏油|振动异常|冒烟|漏电|通信中断|真空度不足|没有|不再|不是|未见/.test(
+      q,
     );
-
-  return reply(
-    [
-      `${scope} ${cautious}`,
-      `可能的原因包括：\n\n${list(example.causes)}`,
-      repairPlanText(example),
-      `检查时请注意：${example.precautions.join(' ')}`,
-      `如检查指向部件问题，再核对这些备件：\n\n${partsText(example)}`,
-      `相似历史工单：${example.history} 该记录仅提供参考，不能据此确定本次根因。`,
-      '可以继续补充检查发现和修后验证结果，我会据此调整维修方案。',
-    ].join('\n\n'),
-    example.sources,
-  );
+  const followup =
+    !hasNewUnmatchedSymptom &&
+    /^(?:那|这个|那个|它|这|该|再|继续)|^(?:请|给我|说一下|说下|看下|看一下|有|什么|怎么|如何|具体|只看|只要|仅看|仅要|的|是|和|及|原因|为什么|图片|配图|照片|处理|操作|相关|对应|还有|应该|需要|正常|标准|调到|状态|料号|规格|尺寸|维修|方法|方案|步骤|吗|呢|一下|哪些|多少|[，,。？！?!\s])+$/u.test(
+      q,
+    );
+  if (
+    !faults.length &&
+    !hasExplicitStandard &&
+    !hasExplicitPart &&
+    followup &&
+    oldFault
+  )
+    faults = [oldFault];
+  if (!standards.length && asksStandard && faults.length === 1)
+    standards = relatedStandards(faults[0]);
+  if (
+    !standards.length &&
+    !hasExplicitFault &&
+    !hasExplicitPart &&
+    followup &&
+    input.standardIds
+  )
+    standards = maintenanceStandards.filter((item) =>
+      input.standardIds.split(',').includes(item.id),
+    );
+  if (
+    !parts.length &&
+    !hasExplicitFault &&
+    !hasExplicitStandard &&
+    followup &&
+    input.partIds
+  )
+    parts = maintenanceParts.filter((item) =>
+      input.partIds.split(',').includes(item.id),
+    );
+  const showStandards =
+    standards.length > 0 &&
+    (asksStandard ||
+      exactStandards.length > 0 ||
+      exactFiles.length > 0 ||
+      (!faults.length && !asksParts));
+  const showParts =
+    parts.length > 0 &&
+    (asksParts || exactParts.length > 0 || (!faults.length && !showStandards));
+  const showFault =
+    faults.length > 0 &&
+    (asksRepair ||
+      asksCause ||
+      asksImage ||
+      (!asksStandard && !asksParts && !missingText));
+  if (
+    faults.length > 1 &&
+    showFault &&
+    !exactFaults.length &&
+    !exactPlans.length
+  ) {
+    reset();
+    input.pendingFaultIds = faults.map((item) => item.id).join(',');
+    return reply(
+      `查到 ${faults.length} 条可能对应的故障，请确认是哪一种：\n\n${faults
+        .map(
+          (item) =>
+            `- ${literal(item.name)}（${literal(item.id)}）${item.symptom ? `：${literal(item.symptom)}` : ''}`,
+        )
+        .join('\n')}`,
+      faults.map((item) => source('maintenance-faults', item.id)),
+    );
+  }
+  if (!showFault && !showStandards && !showParts) {
+    reset();
+    return reply(
+      missingText ||
+        '未查到对应记录。可以换用故障名称、部件名称、标准编号或备件料号查询。',
+    );
+  }
+  // Keep fault context for its own standards, but clear it for a new subject.
+  const retainedFault =
+    faults.length === 1
+      ? faults[0]
+      : !hasExplicitPart &&
+          oldFault &&
+          standards.some((standard) =>
+            relatedStandards(oldFault).some(
+              (related) => related.id === standard.id,
+            ),
+          )
+        ? oldFault
+        : undefined;
+  reset();
+  if (retainedFault) {
+    input.caseId = retainedFault.id;
+    input.symptom = retainedFault.symptom || retainedFault.name;
+  }
+  if (showStandards)
+    input.standardIds = standards.map((item) => item.id).join(',');
+  if (showParts) input.partIds = parts.map((item) => item.id).join(',');
+  const sections: string[] = [];
+  const sources: SourceReference[] = [];
+  if (showFault)
+    for (const fault of faults) {
+      const plans = exactPlans.length
+        ? exactPlans.filter((item) => item.faultId === fault.id)
+        : maintenancePlans.filter((item) => item.faultId === fault.id);
+      const title = `**${literal(fault.name)}（${literal(fault.id)}）**${fault.symptom ? `\n\n记录现象：${literal(fault.symptom)}。` : ''}`;
+      const imageOnly = asksImage && !asksCause && !asksRepair;
+      const causeOnly = asksCause && !asksRepair;
+      if (!imageOnly) {
+        sections.push(
+          `${title}\n\n${
+            causeOnly
+              ? `记录中的可能原因：\n\n${plans.map((plan) => `- ${literal(plan.cause)}`).join('\n')}`
+              : `记录中的可能原因与对应维修参考：\n\n${numberedList(
+                  plans.map(
+                    (plan) =>
+                      `可能原因：**${literal(plan.cause)}**；维修参考：${literal(plan.repair)}。`,
+                  ),
+                )}`
+          }`,
+        );
+        sources.push(
+          ...plans.map((plan) => source('maintenance-plans', plan.id)),
+        );
+      } else sections.push(title);
+      sources.push(source('maintenance-faults', fault.id));
+      if (asksImage) {
+        const image = maintenanceImages.find(
+          (item) => item.faultId === fault.id,
+        );
+        if (image) {
+          sections.push(`![${literal(fault.name)}参考图片](${image.url})`);
+          sources.push(source(`maintenance-image-${fault.id}`, fault.id));
+        }
+      }
+    }
+  if (showStandards)
+    for (const standard of standards) {
+      sections.push(
+        `**${literal(standard.name)} · ${literal(standard.location)}**\n\n${literal(standard.text)}\n\n标准编号：${literal(standard.id)}（${literal(standard.version)}）。`,
+      );
+      sources.push(source('maintenance-standards', standard.id));
+    }
+  if (showParts) {
+    sections.push(
+      `查到 ${parts.length} 条备件记录：\n\n${numberedList(
+        parts.map(
+          (part) =>
+            `**${literal(part.name)}（${literal(part.id)}）**：${literal(part.spec)}；工序：${literal(part.process)}；单位：${literal(part.unit)}。`,
+        ),
+      )}`,
+    );
+    sources.push(
+      ...parts.map((part) => source('maintenance-parts-final', part.id)),
+    );
+  }
+  if (missingText) sections.push(missingText);
+  return reply(sections.join('\n\n'), sources);
 }

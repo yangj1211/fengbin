@@ -210,7 +210,7 @@ try {
   const summary = processingSummary(
     'production',
     makeTurn('production', {
-      inputs: { ...defaultInputs.production, line: encoded },
+      inputs: { ...defaultInputs.production, process: encoded },
     }),
   );
   assert.ok(summary.includes('1号产线、3号产线'));
@@ -225,9 +225,9 @@ try {
     },
   });
   const energySummary = processingSummary('energy', energy);
-  assert.ok(energySummary.includes('问题指定日期 9月1日'));
-  assert.ok(energySummary.includes('计划总产量 0 千只'));
-  assert.ok(!energySummary.includes('2026-08-01'));
+  assert.ok(energySummary.includes('2026-08-01'));
+  assert.ok(energySummary.includes('按件数估算'));
+  assert.ok(!energySummary.includes('千只'));
   console.log(
     'answer-presentation: customer content, five modules, legacy replies, citations, stopped output, Markdown links, and summaries passed',
   );

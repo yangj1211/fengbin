@@ -34,6 +34,7 @@ import { AgentIdentity } from './identity';
 import AnalysisConditions from './conditions';
 import { SourceLibrary } from './customer-sources';
 import ConversationAnswer from './conversation-answer';
+import { normalizeFinalInput } from './final-data';
 import { answerText, processingSummary } from './answer-presentation';
 import { normalizeMaintenanceInputs } from './maintenance-engine';
 import { normalizeCustomerInputs } from './customer-engine';
@@ -76,7 +77,9 @@ export default function ModuleWorkspace({
       ? normalizeCustomerInputs(draft)
       : id === 'maintenance'
         ? normalizeMaintenanceInputs(draft)
-        : draft;
+        : id === 'energy' || id === 'production'
+          ? normalizeFinalInput(id, draft)
+          : draft;
   const [question, setQuestion] = useState<string | null>(null);
   const text = question ?? input.question ?? '';
   const [localTurns, setLocalTurns] = useState<ConversationTurn[] | null>(null);
@@ -398,7 +401,7 @@ export default function ModuleWorkspace({
               {id === 'customer'
                 ? '为客户，找到更合适的产品。'
                 : id === 'maintenance'
-                  ? '把设备问题，变成具体维修方案。'
+                  ? '查故障处理，也查标准与备件。'
                   : id === 'energy'
                     ? '让每一度电，都有据可循。'
                     : id === 'production'
@@ -409,7 +412,7 @@ export default function ModuleWorkspace({
               {id === 'customer'
                 ? '描述应用、参数或替代型号。信息不完整时，我会先帮你补齐；每条建议都可以查看原文件。'
                 : id === 'maintenance'
-                  ? '描述设备、告警或现象，获取处理步骤、备件建议和修后验证方法。'
+                  ? '描述故障现象，或输入标准项目、备件名称，查看处理参考和原始资料。'
                   : id === 'production'
                     ? '生成生产日报，查询产量、质量和停机情况，也可以比较产线、追问异常依据。'
                     : id === 'supplier'
@@ -532,11 +535,11 @@ export default function ModuleWorkspace({
                 id === 'customer'
                   ? '例如：需要100μF、额定电压不低于35V的电容，有哪些型号符合？'
                   : id === 'maintenance'
-                    ? '描述设备、告警或现象，也可以补充已检查的结果…'
+                    ? '例如：毛刷马达不转怎么处理？也可以查询操作标准或备件规格。'
                     : id === 'energy'
-                      ? '问问用电、异常或优化建议，例如：产量增长5%，下周用电多少？'
+                      ? '例如：比较A班与B班单耗，或估算计划生产100000件的用电。'
                       : id === 'production'
-                        ? '例如：哪些产线没达到计划？3号产线有哪些异常？'
+                        ? '例如：9月1日老化工序的计划、产量、质量和停线情况如何？'
                         : '例如：哪些供应商交付未达标？供应商C的评分怎么算？'
               }
               maxLength={2000}

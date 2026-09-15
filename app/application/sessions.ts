@@ -1,3 +1,4 @@
+import { normalizeFinalInput } from './final-data';
 import {
   defaultInputs,
   type Inputs,
@@ -87,16 +88,11 @@ export function currentSession(
   );
 }
 export function energyConditions(input: Inputs): Inputs {
-  return {
-    process: input.process ?? defaultInputs.energy.process,
-    line: input.line || '全部产线',
-    period: input.period ?? defaultInputs.energy.period,
-    change: input.change ?? defaultInputs.energy.change,
-    dateFrom: input.dateFrom ?? '',
-    dateTo: input.dateTo ?? '',
-    granularity: input.granularity || 'day',
-    plannedProduction: input.plannedProduction ?? '',
-  };
+  const { question: _question, ...conditions } = normalizeFinalInput(
+    'energy',
+    input,
+  );
+  return conditions;
 }
 export function applyEnergyDashboardConditions(
   state: WorkspaceState,
@@ -114,7 +110,11 @@ export function applyDashboardConditions(
     module === 'energy'
       ? energyConditions(input)
       : module === 'production'
-        ? { line: input.line ?? defaultInputs.production.line }
+        ? Object.fromEntries(
+            Object.entries(normalizeFinalInput('production', input)).filter(
+              ([key]) => key !== 'question',
+            ),
+          )
         : { supplier: input.supplier ?? defaultInputs.supplier.supplier };
   if (!current) return startConversation(state, module, conditions);
   return {
@@ -164,11 +164,13 @@ export function startConversation(
         ? normalizeCustomerInputs(draft)
         : module === 'maintenance'
           ? normalizeMaintenanceInputs(draft ?? {})
-          : withFixedRules(module, {
-              ...defaultInputs[module],
-              ...draft,
-              question: draft?.question ?? '',
-            }),
+          : module === 'energy' || module === 'production'
+            ? normalizeFinalInput(module, draft ?? {})
+            : withFixedRules(module, {
+                ...defaultInputs[module],
+                ...draft,
+                question: draft?.question ?? '',
+              }),
   };
   return {
     ...state,

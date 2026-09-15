@@ -30,6 +30,9 @@ try {
   const { dataFiles } = require('./data-files.js');
   const tables = getDataTables({ datasets: initialDatasets });
   for (const file of dataFiles) {
+    // Final workbooks are exported verbatim; this legacy generator must not
+    // rewrite their original columns, date representation or numeric precision.
+    if (file.url.startsWith('/data/final/')) continue;
     const table = tables.find((item) => item.id === file.tableId);
     if (!table) throw new Error(`Missing source table: ${file.tableId}`);
     const target = path.join(root, 'public', file.url);

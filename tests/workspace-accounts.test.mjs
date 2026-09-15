@@ -25,7 +25,8 @@ try {
   }
   fs.symlinkSync(path.resolve('node_modules'), path.join(temp, 'node_modules'));
   const require = createRequire(path.join(temp, 'check.cjs'));
-  const { initialDatasets, defaultInputs, STORAGE_KEY } = require('./model.js');
+  const { initialDatasets, defaultInputs, STORAGE_KEY, validateDataset } = require('./model.js');
+  const { maintenanceTables } = require('./maintenance-data.js');
   const source = fs.readFileSync(path.join(temp, 'store.js'), 'utf8');
   const adminKey = `${STORAGE_KEY}.user.default-admin`;
   const accountKey = (id) => `${STORAGE_KEY}.user.account.${encodeURIComponent(id)}`;
@@ -85,15 +86,49 @@ try {
     moduleViews: { production: 'chat' },
     deletedDataResourceIds: ['file:legacy-deleted'],
   };
+  const finalFaults = initialDatasets.find(dataset => dataset.id === 'maintenance');
+  assert.equal(validateDataset(finalFaults), null, 'Actual blank fault symptoms must not prevent workspace hydration');
+  assert.deepEqual(
+    maintenanceTables[0].rows.filter(row => row[2] === null).map(row => row[0]),
+    ['CJGZ00001', 'DJGZ00024', 'RJGZ00001'],
+    'The final source preserves its three original null symptoms',
+  );
+  assert.deepEqual(
+    finalFaults.rows.filter(row => row['现象描述'] === '').map(row => row['故障ID']),
+    ['CJGZ00001', 'DJGZ00024', 'RJGZ00001'],
+    'The dataset display keeps the same symptoms blank without inventing content',
+  );
+  for (const blank of [null, '']) {
+    const localFaults = { ...clone(finalFaults), origin: 'local', fileName: '故障表.csv' };
+    localFaults.rows[0]['现象描述'] = blank;
+    assert.equal(validateDataset(localFaults), null, 'The real optional symptom accepts source null or display blank');
+    for (const column of localFaults.columns.filter(column => column !== '现象描述')) {
+      const invalid = clone(localFaults);
+      invalid.rows[0][column] = blank;
+      assert.ok(validateDataset(invalid), `${column} remains required`);
+    }
+  }
+  const missingSymptom = clone(finalFaults);
+  delete missingSymptom.rows[0]['现象描述'];
+  assert.ok(validateDataset(missingSymptom), 'A missing field is not an intentional source blank');
+  const overlongSymptom = clone(finalFaults);
+  overlongSymptom.rows[0]['现象描述'] = '字'.repeat(1001);
+  assert.ok(validateDataset(overlongSymptom), 'Optional symptoms still obey content-length validation');
   // An earlier browser stores the six-column catalog, before specification fields were introduced.
   const oldCatalog = {
     id: 'products', name: '电容器产品目录', module: 'customer', origin: 'sample',
     columns: ['产品型号', '额定电压(V)', '容量(μF)', '温度(℃)', '寿命(h)', '应用'],
     rows: [{ '产品型号': 'FB-LH470', '额定电压(V)': 450, '容量(μF)': 470, '温度(℃)': 105, '寿命(h)': 5000, '应用': '工业电源' }],
   };
+  const oldMaintenance = {
+    id: 'maintenance', name: '设备维修知识', module: 'maintenance', origin: 'sample',
+    columns: ['案例编号', '设备类型', '故障现象', '排查方向', '处理建议'],
+    rows: [{ '案例编号': '旧案例', '设备类型': '卷绕机', '故障现象': '张力波动', '排查方向': '检查张力', '处理建议': '调整张力' }],
+  };
   const oldWorkspace = clone(legacy);
   oldWorkspace.datasets = oldWorkspace.datasets.map(dataset => dataset.id === 'products'
     ? oldCatalog
+    : dataset.id === 'maintenance' ? oldMaintenance
     : dataset.id === 'production' ? { ...dataset, origin: 'local', fileName: '工厂报表.csv' } : dataset);
   for (const split of [false, true]) {
     const { datasets, deletedDataResourceIds, ...personal } = oldWorkspace;
@@ -107,9 +142,57 @@ try {
     assert.deepEqual(state.sessions, oldWorkspace.sessions, 'Answers, drafts and feedback survive the sample-data refresh');
     assert.deepEqual(state.activeSessionIds, oldWorkspace.activeSessionIds);
     assert.deepEqual(state.datasets.find(dataset => dataset.id === 'products'), initialDatasets.find(dataset => dataset.id === 'products'));
+    assert.deepEqual(state.datasets.find(dataset => dataset.id === 'maintenance'), finalFaults, 'Old sample maintenance data refreshes to the final fault table with real blanks');
     assert.deepEqual(state.datasets.find(dataset => dataset.id === 'production'), oldWorkspace.datasets.find(dataset => dataset.id === 'production'), 'Imported business data is preserved');
     assert.deepEqual(state.deletedDataResourceIds, oldWorkspace.deletedDataResourceIds);
     assert.equal(load(historicalStorage).setWorkspaceUser('admin-id', true), true, 'Reload stays recoverable');
+  }
+  // Old energy plans were in thousands of pieces; migration must inspect
+  // the original version before adding current defaults. Historical answers stay intact.
+  for (const oldConversationFormat of [false, true]) {
+    const old = clone(legacy);
+    const oldInput = { process: '老化', line: '1号产线', plannedProduction: '1000', dateFrom: '2026-09-01', dateTo: '2026-09-07', question: '旧草稿' };
+    const oldSession = { ...session('old-energy', '旧能耗结果'), module: 'energy', draft: oldInput };
+    oldSession.turns[0].inputs = { ...oldInput };
+    old.drafts.energy = { ...oldInput };
+    old.sessions = [oldSession];
+    if (oldConversationFormat) { delete old.sessions; old.conversations = { energy: oldSession.turns }; }
+    const saved = load(memoryStorage([[STORAGE_KEY, JSON.stringify(old)]]));
+    assert.equal(saved.setWorkspaceUser('admin-id', true), true);
+    const migrated = saved.read().sessions.find(s => s.module === 'energy');
+    assert.equal(migrated.draft.plannedProduction, '');
+    assert.equal(migrated.draft.dataVersion, defaultInputs.energy.dataVersion);
+    assert.equal(migrated.draft.process, defaultInputs.energy.process);
+    assert.equal(migrated.draft.question, '旧草稿');
+    assert.deepEqual(migrated.turns, oldSession.turns);
+  }
+  for (const id of ['energy', 'production', 'maintenance']) {
+    const old = clone(legacy);
+    const columns = id === 'energy' ? ['工序', '用电量(kWh)', '产量(千只)', '基准单耗(kWh/千只)'] : id === 'production' ? ['产线', '计划产量(万只)', '实际产量(万只)', '检验数量', '不良数量', '停机时长(min)'] : ['案例编号', '设备类型', '故障现象', '排查方向', '处理建议'];
+    const values = id === 'energy' ? ['老化', 100, 10, 9] : id === 'production' ? ['一号线', 10, 9.8, 10000, 120, 18] : ['历史案例一', '钉卷机', '毛刷不转', '检查启动电容', '更换启动电容'];
+    const imported = { id, module: id, origin: 'local', name: '历史导入', fileName: '历史导入.csv', columns, rows: [Object.fromEntries(columns.map((c,i) => [c,values[i]]))] };
+    old.datasets = old.datasets.map(d => d.id === id ? imported : d);
+    for (const split of [false, true]) {
+      const { datasets, deletedDataResourceIds, ...personal } = old;
+      const entries = split
+        ? [[STORAGE_KEY, JSON.stringify({ version: 1, datasets, deletedDataResourceIds })], [adminKey, JSON.stringify(personal)]]
+        : [[STORAGE_KEY, JSON.stringify(old)]];
+      const saved = memoryStorage(entries);
+      const migrated = load(saved);
+      assert.equal(migrated.setWorkspaceUser('admin-id', true), true, 'Historical imported tables must not block login');
+      assert.deepEqual(migrated.read().datasets.find(d => d.id === id), imported, 'Historical imports are retained verbatim');
+      assert.equal(load(saved).setWorkspaceUser('admin-id', true), true, 'Historical imports also survive the next reload');
+    }
+    if (id === 'maintenance') {
+      assert.equal(validateDataset(imported), null, 'All five legacy maintenance fields are text');
+      const invalid = clone(imported);
+      invalid.rows[0]['故障现象'] = '';
+      assert.ok(validateDataset(invalid), 'Legacy fault descriptions do not inherit optional final-table symptoms');
+      const raw = JSON.stringify({ ...old, datasets: old.datasets.map(d => d.id === id ? invalid : d) });
+      const saved = memoryStorage([[STORAGE_KEY, raw]]);
+      assert.equal(load(saved).setWorkspaceUser('admin-id', true), false, 'Invalid maintenance imports are still rejected');
+      assert.equal(saved.getItem(STORAGE_KEY), raw, 'Failed migration preserves the original import');
+    }
   }
   const importedOldCatalog = { ...oldWorkspace, datasets: oldWorkspace.datasets.map(dataset => dataset.id === 'products' ? { ...dataset, origin: 'local', fileName: '旧产品目录.csv' } : dataset) };
   const importedRaw = JSON.stringify(importedOldCatalog);
@@ -132,7 +215,7 @@ try {
     moduleViews: { production: 'chat' },
     deletedDataResourceIds: ['file:shared-deleted'],
     datasets: state.datasets.map((dataset) => dataset.id === 'production'
-      ? { ...dataset, name: '共同生产资料' } : dataset),
+      ? { ...dataset, origin: 'local', name: '共同生产资料' } : dataset),
   })), true);
   const beforeSameUser = store.read();
   assert.equal(store.setWorkspaceUser('user-a', false), true);

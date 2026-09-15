@@ -5,14 +5,15 @@ import type {
   CustomerDecision,
 } from './customer-types';
 import { specificationProducts } from './customer-data';
-import { maintenanceCases } from './maintenance-data';
+import { maintenanceTables, maintenanceFaults, maintenancePlans } from './maintenance-data';
 import { maintenanceDefaults } from './maintenance-engine';
 import { buildCustomerAnalysis, customerDefaults } from './customer-engine';
-import { energySampleReadings, type EnergyReading } from './energy-data';
+import { type EnergyReading } from './energy-data';
 import { belowProductionThreshold as belowProduction } from './production-metrics';
 import { supplierScore, supplierRisk } from './supplier-metrics';
-import { productionRules, supplierRules, withFixedRules } from './fixed-rules';
+import { supplierRules, withFixedRules } from './fixed-rules';
 import { filterScope, normalizeScopeName, validInputString } from './scope';
+import { finalDefaults, finalSourceDefinitions } from './final-data';
 export const modules = [
   {
     id: 'customer',
@@ -30,10 +31,10 @@ export const modules = [
     scene: '29',
     name: '设备维修助手',
     category: '设备管理',
-    description: '结合维修资料，给出处理方案与修后验证方法。',
-    action: '生成维修方案',
+    description: '查询故障处理参考、操作标准和备件规格。',
+    action: '查询维修资料',
     inputTitle: '故障信息',
-    resultTitle: '维修方案',
+    resultTitle: '维修参考',
     dataset: 'maintenance',
   },
   {
@@ -52,7 +53,7 @@ export const modules = [
     scene: '10',
     name: '生产洞察与预警',
     category: '生产管理',
-    description: '查看产线表现，追踪产量与质量偏差。',
+    description: '查看工序生产、停线与在制记录，追踪产量和质量偏差。',
     action: '分析生产表现',
     inputTitle: '分析范围',
     resultTitle: '生产分析',
@@ -106,7 +107,17 @@ export const initialDatasets: Dataset[] = [
     'products',
     '电容器产品目录',
     'customer',
-    ['产品型号', '额定电压(V)', '容量(μF)', '工作温区(℃)', '安装方式', 'Endurance(h)', 'Endurance测试条件', '本体最大直径(mm)', '本体最大长度(mm)'],
+    [
+      '产品型号',
+      '额定电压(V)',
+      '容量(μF)',
+      '工作温区(℃)',
+      '安装方式',
+      'Endurance(h)',
+      'Endurance测试条件',
+      '本体最大直径(mm)',
+      '本体最大长度(mm)',
+    ],
     specificationProducts.map((p) => [
       p.model,
       p.ratedVoltageV,
@@ -121,50 +132,25 @@ export const initialDatasets: Dataset[] = [
   ),
   data(
     'maintenance',
-    '设备故障知识库',
+    '故障表',
     'maintenance',
-    ['案例编号', '设备类型', '故障现象', '排查方向', '处理建议'],
-    maintenanceCases.map((item) => [
-      item.id,
-      item.device,
-      item.symptom,
-      item.causes.join('；'),
-      item.steps.join('；'),
-    ]),
+    [...maintenanceTables[0].columns],
+    maintenanceTables[0].rows.map((row) => row.map((value) => typeof value === 'boolean' ? String(value) : value ?? '')),
   ),
-  {
-    ...data(
-      'energy',
-      '工序用电与产量',
-      'energy',
-      ['工序', '用电量(kWh)', '产量(千只)', '基准单耗(kWh/千只)'],
-      [
-        ['老化', 56700, 4200, 12],
-        ['含浸', 37800, 4200, 8.8],
-        ['其他', 31500, 4200, 7.5],
-      ],
-    ),
-    energyDetails: energySampleReadings,
-  },
-  data(
-    'production',
-    '产线生产日报',
-    'production',
-    [
-      '产线',
-      '计划产量(万只)',
-      '实际产量(万只)',
-      '检验数量',
-      '不良数量',
-      '停机时长(min)',
-    ],
-    [
-      ['1号产线', 10, 9.8, 10000, 120, 18],
-      ['2号产线', 10, 9.6, 10000, 150, 25],
-      ['3号产线', 10, 8.2, 10000, 280, 76],
-      ['4号产线', 10, 9.7, 10000, 110, 21],
-    ],
-  ),
+  ...(['energy', 'production'] as const).map((id) => {
+    const source = finalSourceDefinitions.find(
+      (s) =>
+        s.id ===
+        (id === 'energy' ? 'final-energy-readings' : 'final-production'),
+    )!;
+    return data(
+      id,
+      source.name,
+      id,
+      [...source.columns],
+      source.rows.map((r) => [...r]),
+    );
+  }),
   data(
     'suppliers',
     '供应商交付与质量',
@@ -181,18 +167,8 @@ export type Inputs = Record<string, string>;
 export const defaultInputs: Record<ModuleId, Inputs> = {
   customer: customerDefaults,
   maintenance: maintenanceDefaults,
-  energy: {
-    period: '7',
-    change: '0',
-    plannedProduction: '',
-    dateFrom: '',
-    dateTo: '',
-    granularity: 'day',
-    process: '全部工序',
-    line: '全部产线',
-    notes: '',
-  },
-  production: { line: '全部产线', ...productionRules, notes: '' },
+  energy: { ...finalDefaults.energy },
+  production: { ...finalDefaults.production },
   supplier: {
     supplier: '全部供应商',
     ...supplierRules,
@@ -242,6 +218,7 @@ export type WorkspaceState = {
   activeSessionIds?: Partial<Record<ModuleId, string>>;
   moduleViews?: Partial<Record<ModuleId, 'dashboard' | 'chat'>>;
   deletedDataResourceIds?: string[];
+  dashboardInputs?: Partial<Record<ModuleId, Inputs>>;
 };
 export const STORAGE_KEY = 'fengbin.application.v1';
 const n = (row: Row, key: string) => Number(row[key]);
@@ -286,7 +263,14 @@ export function validateInputs(id: ModuleId, input: Inputs): string | null {
       return '计划产量应为大于或等于 0 的有效数值。';
   }
   const numeric: Record<ModuleId, string[]> = {
-    customer: ['voltage', 'capacity', 'temperature', 'life', 'diameter', 'height'].filter(key => Boolean(input[key])),
+    customer: [
+      'voltage',
+      'capacity',
+      'temperature',
+      'life',
+      'diameter',
+      'height',
+    ].filter((key) => Boolean(input[key])),
     maintenance: [],
     energy: ['change'],
     production: ['completion', 'defect'],
@@ -301,8 +285,11 @@ export function validateInputs(id: ModuleId, input: Inputs): string | null {
     if (!finite(input[key])) return '请填写有效的数值。';
   if (
     id === 'customer' &&
-    (['voltage', 'capacity', 'life', 'diameter', 'height'].some((k) => input[k] && Number(input[k]) <= 0) ||
-      (input.temperature && (Number(input.temperature) < -55 || Number(input.temperature) > 200)))
+    (['voltage', 'capacity', 'life', 'diameter', 'height'].some(
+      (k) => input[k] && Number(input[k]) <= 0,
+    ) ||
+      (input.temperature &&
+        (Number(input.temperature) < -55 || Number(input.temperature) > 200)))
   )
     return '请检查电压、容量、温度与寿命要求。';
   if (
@@ -360,55 +347,21 @@ export function analyze(
   };
   if (id === 'customer') return buildCustomerAnalysis(input);
   if (id === 'maintenance') {
-    const type = input.device.replace(/\s+(?:W-03|I-02|A-06)$/, '');
-    const matches = dataset.rows.filter(
-      (r) =>
-        String(r['设备类型']) === type &&
-        String(r['故障现象']) === input.symptom,
-    );
+    const fault = maintenanceFaults.find((item) => item.id === (input.faultId || input.caseId || input.code));
+    const matches = maintenancePlans.filter((item) => item.faultId === fault?.id);
     return {
       ...common,
-      title: matches.length
-        ? `为 ${input.device} 整理了 ${matches.length} 条排查线索`
-        : '未找到匹配的故障知识',
-      summary: matches.length
-        ? `当前现象：${input.symptom}。以下方案依据设备类型和故障知识生成，按步骤核查后记录结果。`
-        : '请核对设备型号与故障现象，并补充现场检查结果。',
+      title: fault ? `${fault.name}的处理参考` : '未找到匹配的故障知识',
+      summary: fault ? `查到${matches.length}组可能原因与对应维修参考。` : '当前资料中未查到相关记录。',
       empty: !matches.length,
-      metrics: [
-        { label: '设备', value: input.device, detail: type + '设备' },
-        { label: '故障现象', value: input.symptom, detail: '匹配知识库分类' },
-        { label: '优先级', value: input.priority, detail: '由提交人指定' },
-      ],
-      columns: ['案例编号', '排查方向', '处理建议'],
-      rows: matches.map((r) => [
-        String(r['案例编号']),
-        String(r['排查方向']),
-        String(r['处理建议']),
-      ]),
+      metrics: [],
+      columns: ['可能原因', '维修参考'],
+      rows: matches.map((item) => [item.cause, item.repair]),
       bars: [],
       chartTitle: '',
-      steps: [
-        {
-          title: '确认现场状态',
-          body: '由设备人员按现场规程停机隔离，核对报警和运行记录。',
-        },
-        ...matches.map((r) => ({
-          title: String(r['排查方向']),
-          body: String(r['处理建议']),
-        })),
-        {
-          title: '验证并留档',
-          body: '完成维修后按规程复机验证，将排查结果记录到分析单。',
-        },
-      ],
-      recommendation:
-        '维修方案须由设备人员结合对应型号手册确认；完成后在记录详情中填写处置结果。',
-      basis: [
-        ...common.basis,
-        '按设备类型与故障类别关联知识条目，补充描述保留在分析记录中。',
-        '匹配案例为排查依据，不能单独确认故障根因。',
-      ],
+      steps: [],
+      recommendation: '',
+      basis: fault ? [`故障表.xlsx：${fault.id}；故障处理方案表.xlsx：${matches.map((item) => item.id).join('、')}。`] : [],
     };
   }
   if (id === 'energy') {
@@ -642,23 +595,59 @@ export function validateDataset(dataset: Dataset): string | null {
     return '数据应包含 1–10,000 行。';
   const reference = initialDatasets.find((d) => d.id === dataset.id);
   if (!reference) return '不支持此数据类型。';
+  // Earlier local imports remain readable as history. Current maintenance,
+  // energy and production views use the final assets instead of these columns.
+  const legacyColumns =
+    dataset.id === 'energy'
+      ? ['工序', '用电量(kWh)', '产量(千只)', '基准单耗(kWh/千只)']
+      : dataset.id === 'production'
+        ? [
+            '产线',
+            '计划产量(万只)',
+            '实际产量(万只)',
+            '检验数量',
+            '不良数量',
+            '停机时长(min)',
+          ]
+        : dataset.id === 'maintenance'
+          ? ['案例编号', '设备类型', '故障现象', '排查方向', '处理建议']
+          : [];
+  const historical =
+    dataset.origin === 'local' &&
+    legacyColumns.length > 0 &&
+    dataset.columns.length === legacyColumns.length &&
+    legacyColumns.every((c) => dataset.columns.includes(c));
+  const columns = historical ? legacyColumns : reference.columns;
   if (
-    dataset.columns.length !== reference.columns.length ||
-    reference.columns.some((c) => !dataset.columns.includes(c))
+    dataset.columns.length !== columns.length ||
+    columns.some((c) => !dataset.columns.includes(c))
   )
     return '列名不完整，请使用对应模板。';
   for (const row of dataset.rows) {
-    for (const key of reference.columns) {
+    for (const key of columns) {
       if (
         !row ||
         typeof row !== 'object' ||
         String(row[key] ?? '').length > 1000
       )
         return '字段内容不正确或过长。';
-      if (row[key] === undefined || String(row[key]).trim() === '')
+      // The final fault table contains three genuinely blank symptom cells.
+      // Retain those source blanks; every other required field stays required.
+      const nullableSymptom =
+        dataset.id === 'maintenance' &&
+        !historical &&
+        key === '现象描述' &&
+        row[key] !== undefined;
+      if (
+        (row[key] == null || String(row[key]).trim() === '') &&
+        !nullableSymptom
+      )
         return '存在空字段，请补全后导入。';
       if (
-        typeof reference.rows[0][key] === 'number' &&
+        (historical
+          ? (dataset.id === 'energy' || dataset.id === 'production') &&
+            key !== columns[0]
+          : typeof reference.rows[0][key] === 'number') &&
         (!Number.isFinite(Number(row[key])) ||
           Number(row[key]) < 0 ||
           Number(row[key]) > 1e12)
@@ -667,11 +656,13 @@ export function validateDataset(dataset: Dataset): string | null {
     }
     if (
       dataset.id === 'energy' &&
+      dataset.columns.includes('基准单耗(kWh/千只)') &&
       (n(row, '产量(千只)') <= 0 || n(row, '基准单耗(kWh/千只)') <= 0)
     )
       return '产量与基准单耗必须大于 0。';
     if (
       dataset.id === 'production' &&
+      dataset.columns.includes('计划产量(万只)') &&
       (n(row, '计划产量(万只)') <= 0 ||
         n(row, '检验数量') <= 0 ||
         n(row, '不良数量') > n(row, '检验数量'))

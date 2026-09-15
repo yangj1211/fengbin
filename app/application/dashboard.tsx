@@ -36,13 +36,13 @@ import {
 } from './dashboard-data';
 import { AgentIdentity } from './identity';
 import DashboardChatEntry from './dashboard-chat-entry';
+import { DashboardRules } from './dashboard-dialogs';
 import { Choice, Field, DataTable, EmptyState } from './ui';
 import DetailExport from './detail-export';
 import ListPagination, { getPageRange } from './list-pagination';
 import {
   withFixedRules,
   productionRuleDescription,
-  supplierRuleDescription,
 } from './fixed-rules';
 const ProductionChart = lazy(() =>
   import('./dashboard-charts').then((m) => ({ default: m.ProductionChart })),
@@ -63,8 +63,8 @@ const ComparisonChart = lazy(() =>
 );
 const SeriesPlot = lazy(() => import('./energy-series-chart'));
 import DashboardMetric from './dashboard-metric';
-import EnergyDashboard from './energy-dashboard';
-import { supplierScore, supplierRisk } from './supplier-metrics';
+import FinalDashboard from './final-dashboard';
+import { supplierRisk } from './supplier-metrics';
 import { belowProductionThreshold } from './production-metrics';
 
 function Panel({
@@ -74,7 +74,7 @@ function Panel({
   className = '',
 }: {
   title: string;
-  description: string;
+  description?: string;
   children: ReactNode;
   className?: string;
 }) {
@@ -82,7 +82,7 @@ function Panel({
     <section className={'dashboard-panel ' + className}>
       <div className="dashboard-panel-heading">
         <h2>{title}</h2>
-        <p>{description}</p>
+        {description && <p>{description}</p>}
       </div>
       {children}
     </section>
@@ -141,23 +141,17 @@ function Forecast({
 type DashboardProps = {
   id: DashboardId;
   state: WorkspaceState;
-  onOpenChat: () => boolean;
+  onOpenChat: (input?: Inputs) => boolean;
   navigate: (path: string) => boolean;
   energyInput?: Inputs;
   onEnergyInputChange?: Dispatch<SetStateAction<Inputs>>;
 };
 export default function BusinessDashboard(props: DashboardProps) {
-  const dataset = props.state.datasets.find((d) => d.module === props.id)!;
-  if (
-    props.id === 'energy' &&
-    dataset.origin === 'sample' &&
-    dataset.energyDetails?.length
-  )
+  if (props.id === 'energy' || props.id === 'production')
     return (
-      <EnergyDashboard
-        dataset={dataset}
-        input={props.energyInput}
-        onInputChange={props.onEnergyInputChange}
+      <FinalDashboard
+        id={props.id}
+        state={props.state}
         onOpenChat={props.onOpenChat}
       />
     );
@@ -186,7 +180,6 @@ function AggregateDashboard({
   const [draft, setDraft] = useState<Inputs>(input);
   const [error, setError] = useState('');
   const [productionStatus, setProductionStatus] = useState('全部');
-  const [supplierStatus, setSupplierStatus] = useState('全部');
   const [detailPage, setDetailPage] = useState(1);
   const [detailPageSize, setDetailPageSize] = useState(10);
   const detailTableId = useId();
@@ -219,19 +212,6 @@ function AggregateDashboard({
           );
         })
       : [];
-  const supplierRows =
-    id === 'supplier'
-      ? rows
-          .filter((row) => {
-            const risk = supplierRisk(row, input);
-            const abnormal = risk.delivery || risk.quality;
-            return (
-              supplierStatus === '全部' ||
-              (supplierStatus === '异常' ? abnormal : !abnormal)
-            );
-          })
-          .sort((a, b) => supplierScore(b, input) - supplierScore(a, input))
-      : [];
   const productionColumns = [
     '产线',
     '计划产量（万只）',
@@ -258,35 +238,12 @@ function AggregateDashboard({
       issueDetails.get(row) ?? '',
     ];
   });
-  const supplierColumns = [
-    '供应商',
-    '交付及时率',
-    '来料合格率',
-    '响应评分',
-    '综合评分',
-    '是否异常',
-    '异常说明',
-  ];
-  const supplierTableRows = supplierRows.map((row) => {
-    const risk = supplierRisk(row, input);
-    return [
-      String(row['供应商']),
-      `${f(Number(row['交付及时率(%)']), 2)}%`,
-      `${f(Number(row['来料合格率(%)']), 2)}%`,
-      f(Number(row['响应评分']), 1),
-      f(supplierScore(row, input), 1),
-      risk.delivery || risk.quality ? '是' : '否',
-      issueDetails.get(row) ?? '',
-    ];
-  });
-  const detailTableRows =
-    id === 'production' ? productionTableRows : supplierTableRows;
   const detailRange = getPageRange(
-    detailTableRows.length,
+    productionTableRows.length,
     detailPage,
     detailPageSize,
   );
-  const visibleDetailRows = detailTableRows.slice(
+  const visibleDetailRows = productionTableRows.slice(
     detailRange.offset,
     detailRange.offset + detailPageSize,
   );
@@ -297,7 +254,6 @@ function AggregateDashboard({
   const descriptions = {
     energy: '关注工序用能变化，把异常转化为优化行动。',
     production: '从产线表现到异常明细，掌握生产执行情况。',
-    supplier: '综合交付、质量与响应，及时发现供应风险。',
   };
   return (
     <div className={'business-dashboard dashboard-' + id}>
@@ -309,10 +265,13 @@ function AggregateDashboard({
               {agent.category} / 业务看板
             </span>
             <h1>{agent.name}</h1>
-            <p>{descriptions[id]}</p>
+            {id !== 'supplier' && <p>{descriptions[id]}</p>}
           </div>
         </div>
-        <DashboardChatEntry onClick={onOpenChat} />
+        <div className="dashboard-heading-actions">
+          {id === 'supplier' && <DashboardRules id="supplier" />}
+          <DashboardChatEntry onClick={onOpenChat} />
+        </div>
       </div>
       <div
         className={
@@ -372,29 +331,31 @@ function AggregateDashboard({
             />
           </>
         )}
-        <div className="dashboard-toolbar-actions">
-          <span className="dashboard-source">
-            <i />
-            {rows.length} 条记录
-          </span>
-        </div>
+        {id !== 'supplier' && (
+          <div className="dashboard-toolbar-actions">
+            <span className="dashboard-source">
+              <i />
+              {rows.length} 条记录
+            </span>
+          </div>
+        )}
       </div>
       {id === 'energy' && error && (
         <p className="energy-input-error" role="alert">
           {error}
         </p>
       )}
-      <section className="dashboard-rule-note" aria-label="默认规则">
-        <strong>默认规则</strong>
-        <p>
-          {id === 'production'
-            ? productionRuleDescription
-            : id === 'supplier'
-              ? supplierRuleDescription
+      {id !== 'supplier' && (
+        <section className="dashboard-rule-note" aria-label="默认规则">
+          <strong>默认规则</strong>
+          <p>
+            {id === 'production'
+              ? productionRuleDescription
               : '工序实际单耗 = 用电量 ÷ 产量（千只），高于资料中基准单耗 5% 时提示异常，等于阈值不触发。预测用电按近 7 天用电、预测天数与计划产量变化估算。'}
-          当前规则固定，不支持修改。
-        </p>
-      </section>
+            当前规则固定，不支持修改。
+          </p>
+        </section>
+      )}
       {!rows.length ? (
         <EmptyState
           title="当前范围没有数据"
@@ -409,6 +370,9 @@ function AggregateDashboard({
               <DashboardMetric
                 key={metric.label}
                 {...metric}
+                detail={
+                  id === 'supplier' && index < 2 ? '' : metric.detail
+                }
                 icon={
                   (id === 'production'
                     ? [Boxes, Target, BadgeCheck, Timer, AlertTriangle]
@@ -541,7 +505,6 @@ function AggregateDashboard({
                 <>
                   <Panel
                     title="供应商综合评分"
-                    description={`交付 ${input.deliveryWeight}% · 质量 ${input.qualityWeight}% · 响应 ${100 - Number(input.deliveryWeight) - Number(input.qualityWeight)}%`}
                     className="dashboard-primary-chart"
                   >
                     <SupplierRanking
@@ -555,17 +518,13 @@ function AggregateDashboard({
                   </Panel>
                   <Panel
                     title="供应风险分布"
-                    description="每家供应商仅归入一种风险状态"
                     className="dashboard-compact-chart"
                   >
                     <SupplierRiskDistribution
                       items={rows.map((row) => supplierRisk(row, input))}
                     />
                   </Panel>
-                  <Panel
-                    title="交付与质量对比"
-                    description={`目标：交付 ≥ ${input.deliveryTarget}% · 质量 ≥ ${input.qualityTarget}%`}
-                  >
+                  <Panel title="交付与质量对比">
                     <ComparisonChart
                       items={rows.map((r) => ({
                         name: String(r['供应商']),
@@ -647,7 +606,7 @@ function AggregateDashboard({
                 </p>
               )}
               <ListPagination
-                total={detailTableRows.length}
+                total={productionTableRows.length}
                 page={detailRange.currentPage}
                 pageSize={detailPageSize}
                 onPageChange={setDetailPage}
@@ -657,55 +616,7 @@ function AggregateDashboard({
                 sizeLabel="每页产线条数"
               />
             </section>
-          ) : (
-            <section className="dashboard-detail-panel supplier-detail">
-              <div className="dashboard-detail-heading">
-                <div>
-                  <h2>供应商明细</h2>
-                  <p>
-                    交付及时率低于 {input.deliveryTarget}% 或来料合格率低于{' '}
-                    {input.qualityTarget}% 时提示异常，等于目标不触发。
-                  </p>
-                </div>
-                <div className="supplier-detail-controls">
-                  <span aria-live="polite">共 {supplierRows.length} 条</span>
-                  <Choice
-                    label="是否异常"
-                    name="supplier-status"
-                    value={supplierStatus}
-                    options={['全部', '异常', '正常']}
-                    onChange={(value) => {
-                      setSupplierStatus(value);
-                      setDetailPage(1);
-                    }}
-                  />
-                  <DetailExport
-                    name="供应商明细"
-                    columns={supplierColumns}
-                    rows={supplierTableRows}
-                  />
-                </div>
-              </div>
-              <div id={detailTableId}>
-                <DataTable columns={supplierColumns} rows={visibleDetailRows} />
-              </div>
-              {supplierRows.length === 0 && (
-                <p className="supplier-detail-empty" role="status">
-                  当前筛选条件下没有供应商记录。
-                </p>
-              )}
-              <ListPagination
-                total={detailTableRows.length}
-                page={detailRange.currentPage}
-                pageSize={detailPageSize}
-                onPageChange={setDetailPage}
-                onPageSizeChange={setDetailPageSize}
-                controls={detailTableId}
-                label="供应商明细分页"
-                sizeLabel="每页供应商条数"
-              />
-            </section>
-          )}
+          ) : null}
         </>
       )}
       {id === 'energy' ? (

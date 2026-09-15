@@ -23,7 +23,7 @@ export default function DashboardMetric({
   label: string;
   value: string | number;
   unit: string;
-  detail: string;
+  detail?: string;
   warning?: boolean;
   icon: LucideIcon;
   progress?: number;
@@ -73,7 +73,7 @@ export default function DashboardMetric({
           </div>
         ) : null}
       </div>
-      <p>{detail}</p>
+      {detail && <p>{detail}</p>}
     </Card>
   );
 }

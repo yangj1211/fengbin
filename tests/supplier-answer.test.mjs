@@ -29,7 +29,11 @@ try {
   for (const file of [
     'customer-fixtures.json',
     'maintenance-fixtures.json',
+    'maintenance-final.json',
     'energy-fixtures.json',
+    'energy-final.json',
+    'production-final.json',
+    'historical-tables.json',
   ])
     fs.copyFileSync(`app/application/${file}`, path.join(temp, file));
   const require = createRequire(path.join(temp, 'check.cjs'));

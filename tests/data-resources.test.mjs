@@ -23,7 +23,7 @@ try {
       );
   }
   const require = createRequire(path.join(temp, 'check.cjs'));
-  const { modules, initialDatasets, csvExport } = require('./model.js');
+  const { modules, initialDatasets, csvExport, parseCSV } = require('./model.js');
   const {
     getDataTables,
     isDataResourceDeleted,
@@ -52,10 +52,9 @@ try {
   for (const file of dataFiles) {
     const table = tables.find((item) => item.id === file.tableId);
     assert.ok(table, `${file.name} remains available for citation previews`);
-    assert.equal(
-      fs.readFileSync('public' + file.url, 'utf8').replace(/^\ufeff/, ''),
-      csvExport(table.columns, table.rows),
-    );
+    const normalize = rows => rows.map(row => row.map(v => String(v).replace(/T00:00:00$/, '').replace(' ', 'T')));
+    const raw = parseCSV(fs.readFileSync('public' + file.url, 'utf8').replace(/^\ufeff+/, ''));
+    assert.deepEqual(normalize(raw), normalize([table.columns, ...table.rows]));
     assert.equal(findDataFile(encodeURI(file.url)), file);
   }
   assert.equal(
