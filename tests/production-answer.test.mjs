@@ -83,6 +83,21 @@ withApplication((require) => {
   const two = reply('比较钉卷和组立的生产情况');
   assert.equal(scopeValues(two.inputs.process, '全部工序').length, 2);
   assert.doesNotMatch(two.answer, /老化|@scope:/);
+  const machineComparison = reply(
+    '比较钉卷6DD117和6DD119机台的生产情况，再核对6dd117',
+  );
+  assert.deepEqual(scopeValues(machineComparison.inputs.machine, '全部机台'), [
+    '6DD117',
+    '6DD119',
+  ]);
+  const comparedProduction = getFinalProduction(machineComparison.inputs);
+  assert.equal(comparedProduction.rows.length, 115);
+  assert.equal(comparedProduction.summary.output, 138073);
+  assert.equal(comparedProduction.summary.planned, 138000);
+  assert.match(machineComparison.answer, /报工138,073件/);
+  assert.match(machineComparison.answer, /6DD117：报工65,536件/);
+  assert.match(machineComparison.answer, /6DD119：报工72,537件/);
+  assert.doesNotMatch(machineComparison.answer, /@scope:/);
   assert.match(
     reply('追溯工单SF313-2608000384卡号16').answer,
     /SF313-2608000384/,

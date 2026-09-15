@@ -27,6 +27,7 @@ try {
   const require = createRequire(path.join(temp, 'check.cjs'));
   const { initialDatasets, defaultInputs, STORAGE_KEY, validateDataset } = require('./model.js');
   const { maintenanceTables } = require('./maintenance-data.js');
+  const { replyToMaintenance, maintenanceDefaults } = require('./maintenance-engine.js');
   const source = fs.readFileSync(path.join(temp, 'store.js'), 'utf8');
   const adminKey = `${STORAGE_KEY}.user.default-admin`;
   const accountKey = (id) => `${STORAGE_KEY}.user.account.${encodeURIComponent(id)}`;
@@ -194,6 +195,37 @@ try {
       assert.equal(saved.getItem(STORAGE_KEY), raw, 'Failed migration preserves the original import');
     }
   }
+  // A whole-workbook answer has more references than the old 30-item cap.
+  // Saving, another workspace update and a fresh store must preserve the turn.
+  const standardsAnswer = replyToMaintenance('CXS-GQ-0090', maintenanceDefaults);
+  assert.equal(standardsAnswer.sources.length, 32);
+  const standardsSession = {
+    ...session('all-standards', 'CXS-GQ-0090'),
+    module: 'maintenance',
+    draft: standardsAnswer.inputs,
+  };
+  standardsSession.turns[0] = {
+    ...standardsSession.turns[0],
+    answer: standardsAnswer.answer,
+    inputs: standardsAnswer.inputs,
+    sources: standardsAnswer.sources,
+    sourceName: '操作标准',
+  };
+  const standardsStorage = memoryStorage();
+  const standardsStore = load(standardsStorage);
+  assert.equal(standardsStore.setWorkspaceUser('standards-user', false), true);
+  assert.equal(standardsStore.updateWorkspace(state => ({
+    ...state,
+    sessions: [standardsSession],
+    activeSessionIds: { maintenance: standardsSession.id },
+  })), true);
+  assert.equal(standardsStore.updateWorkspace(state => state), true);
+  assert.deepEqual(standardsStore.read().sessions[0].turns, standardsSession.turns,
+    'A later update must not silently remove the 32-reference answer');
+  const reloadedStandardsStore = load(standardsStorage);
+  assert.equal(reloadedStandardsStore.setWorkspaceUser('standards-user', false), true);
+  assert.deepEqual(reloadedStandardsStore.read().sessions[0].turns, standardsSession.turns,
+    'Reload must retain the entire standard workbook answer and its references');
   const importedOldCatalog = { ...oldWorkspace, datasets: oldWorkspace.datasets.map(dataset => dataset.id === 'products' ? { ...dataset, origin: 'local', fileName: '旧产品目录.csv' } : dataset) };
   const importedRaw = JSON.stringify(importedOldCatalog);
   const importedStorage = memoryStorage([[STORAGE_KEY, importedRaw]]);

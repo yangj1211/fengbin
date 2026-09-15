@@ -10,18 +10,24 @@ import {
   type Analysis,
 } from './model';
 import type { ConversationTurn } from './conversation';
-import { resolveSource } from './knowledge-sources';
+import { resolveSource, sourceDocuments } from './knowledge-sources';
 import type { SourceReference } from './customer-types';
 import type { CustomerDecision } from './customer-types';
 import { normalizeCustomerInputs } from './customer-engine';
 import { normalizeMaintenanceInputs } from './maintenance-engine';
 import { withFixedRules } from './fixed-rules';
 import { normalizeFinalInput } from './final-data';
+// A complete standard workbook can exceed 30 references. Bound persisted
+// citations by the available source catalog so every valid answer can reload.
+const sourceReferenceLimit = sourceDocuments.reduce(
+  (total, document) => total + document.sections.length,
+  0,
+);
 function validSources(sources: unknown): boolean {
   return (
     sources === undefined ||
     (Array.isArray(sources) &&
-      sources.length <= 30 &&
+      sources.length <= sourceReferenceLimit &&
       sources.every(
         (s) =>
           s &&

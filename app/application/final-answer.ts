@@ -123,8 +123,10 @@ function extractInput(
       input.machine = '全部机台';
       input.snapshot = '';
     }
-    const machine = q.match(/\b6[A-Z]+\d+\b/i);
-    if (machine) input.machine = machine[0].toUpperCase();
+    const machines = [...q.matchAll(/\b6[A-Z]+\d+\b/gi)].map((match) =>
+      match[0].toUpperCase(),
+    );
+    if (machines.length) input.machine = encodeScope(machines, '全部机台');
     if (/全部机台|所有机台/.test(q)) input.machine = '全部机台';
     const order = q.match(/SF313-\d+/i);
     if (order) input.order = order[0].toUpperCase();
